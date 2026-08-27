@@ -1,1 +1,3 @@
 source venv/Scripts/activate
+
+git rm --cached FinTrack_Specification.md 
