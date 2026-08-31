@@ -1,3 +1,5 @@
 source venv/Scripts/activate
 
 git rm --cached FinTrack_Specification.md 
+
+python -c "from app.models.transaction import Transaction; print(Transaction)"
