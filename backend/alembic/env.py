@@ -4,6 +4,9 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
+from app.models.user import User  # noqa: F401
+from app.models.category import Category  # noqa: F401
+from app.models.transaction import Transaction  # noqa: F401
 
 import sys
 import os
