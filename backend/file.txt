@@ -3,3 +3,7 @@ source venv/Scripts/activate
 git rm --cached FinTrack_Specification.md 
 
 python -c "from app.models.transaction import Transaction; print(Transaction)"
+
+uvicorn app.main:app --reload
+
+http://127.0.0.1:8000/docs
