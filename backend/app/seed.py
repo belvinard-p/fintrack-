@@ -17,8 +17,12 @@ DEFAULT_CATEGORIES = [
 ]
 
 
-def seed_default_categories():
-    db = SessionLocal()
+def seed_default_categories(db=None):
+    """Seed default categories using the given session, or create a new one if not provided."""
+    owns_session = db is None
+    if owns_session:
+        db = SessionLocal()
+
     try:
         existing = {c.name for c in db.query(Category).filter(Category.is_default == True).all()}
         for name in DEFAULT_CATEGORIES:
@@ -26,9 +30,10 @@ def seed_default_categories():
                 db.add(Category(name=name, user_id=None, is_default=True))
         db.commit()
         print(f"Seeded {len(DEFAULT_CATEGORIES)} default categories (skipping existing).")
-    finally:
-        db.close()
 
+    finally:
+        if owns_session:
+            db.close()
 
 
 if __name__ == "__main__":
