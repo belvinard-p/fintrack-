@@ -1,14 +1,13 @@
 from fastapi import FastAPI
 
-from app.routers import auth
-
-from app.routers import auth, transactions
+from app.routers import auth, categories, transactions
 
 
 app = FastAPI(title="FinTrack API", version="0.1.0")
 
 app.include_router(auth.router)
 app.include_router(transactions.router)
+app.include_router(categories.router)
 
 
 @app.get("/")

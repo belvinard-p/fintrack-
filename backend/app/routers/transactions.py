@@ -1,5 +1,6 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from sqlalchemy import extract, func
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -9,9 +10,12 @@ from app.services.csv_import import parse_csv, CSVParseError
 from app.models.user import User
 from app.models.transaction import Transaction
 from app.models.category import Category
+from app.schemas.dashboard import CategorySpending, MonthlySpending
 from app.schemas.transaction import TransactionCreate, TransactionUpdate, TransactionOut
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
+
+TRANSACTION_NOT_FOUND = "Transaction not found"
 
 
 @router.post("/", response_model=TransactionOut, status_code=status.HTTP_201_CREATED)
@@ -44,7 +48,60 @@ def list_transactions(
     )
 
 
-@router.get("/{transaction_id}", response_model=TransactionOut)
+@router.get("/dashboard/by-category", response_model=list[CategorySpending])
+def spending_by_category(
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+):
+    results = (
+        db.query(
+            Transaction.category_id,
+            Category.name.label("category_name"),
+            func.sum(Transaction.amount).label("total"),
+        )
+        .outerjoin(Category, Transaction.category_id == Category.id)
+        .filter(Transaction.user_id == current_user.id)
+        .group_by(Transaction.category_id, Category.name)
+        .all()
+    )
+
+    return [
+        CategorySpending(
+            category_id=r.category_id,
+            category_name=r.category_name or "Uncategorized",
+            total=abs(r.total),
+        )
+        for r in results
+    ]
+
+
+@router.get("/dashboard/by-month", response_model=list[MonthlySpending])
+def spending_by_month(
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+):
+    results = (
+        db.query(
+            extract("year", Transaction.date).label("year"),
+            extract("month", Transaction.date).label("month"),
+            func.sum(Transaction.amount).label("total"),
+        )
+        .filter(Transaction.user_id == current_user.id)
+        .group_by(extract("year", Transaction.date), extract("month", Transaction.date))
+        .order_by(extract("year", Transaction.date), extract("month", Transaction.date))
+        .all()
+    )
+
+    return [
+        MonthlySpending(
+            month=f"{int(r.year)}-{int(r.month):02d}",
+            total=abs(r.total),
+        )
+        for r in results
+    ]
+
+
+@router.get("/{transaction_id}", response_model=TransactionOut, responses={404: {"description": TRANSACTION_NOT_FOUND}})
 def get_transaction(
     transaction_id: int,
     db: Annotated[Session, Depends(get_db)],
@@ -56,11 +113,11 @@ def get_transaction(
         .first()
     )
     if not transaction:
-        raise HTTPException(status_code=404, detail="Transaction not found")
+        raise HTTPException(status_code=404, detail=TRANSACTION_NOT_FOUND)
     return transaction
 
 
-@router.patch("/{transaction_id}", response_model=TransactionOut)
+@router.patch("/{transaction_id}", response_model=TransactionOut, responses={404: {"description": TRANSACTION_NOT_FOUND}})
 def update_transaction(
     transaction_id: int,
 
@@ -74,7 +131,7 @@ def update_transaction(
         .first()
     )
     if not transaction:
-        raise HTTPException(status_code=404, detail="Transaction not found")
+        raise HTTPException(status_code=404, detail=TRANSACTION_NOT_FOUND)
 
     update_data = transaction_in.model_dump(exclude_unset=True)
     for field, value in update_data.items():
@@ -85,7 +142,7 @@ def update_transaction(
     return transaction
 
 
-@router.delete("/{transaction_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{transaction_id}", status_code=status.HTTP_204_NO_CONTENT, responses={404: {"description": TRANSACTION_NOT_FOUND}})
 def delete_transaction(
     transaction_id: int,
     db: Annotated[Session, Depends(get_db)],
@@ -98,7 +155,7 @@ def delete_transaction(
     )
 
     if not transaction:
-        raise HTTPException(status_code=404, detail="Transaction not found")
+        raise HTTPException(status_code=404, detail=TRANSACTION_NOT_FOUND)
 
     db.delete(transaction)
     db.commit()

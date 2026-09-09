@@ -5,7 +5,6 @@ from typing import Optional
 
 from app.models.transaction import TransactionSource
 
-
 class TransactionBase(BaseModel):
     date: date
     description: str = Field(min_length=1, max_length=255)
