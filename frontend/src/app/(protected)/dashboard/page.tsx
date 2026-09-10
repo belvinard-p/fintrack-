@@ -24,7 +24,7 @@ export default function DashboardPage() {
           <CardContent>
             {categoryLoading && <p>Loading...</p>}
             {categoryError && <p className="text-red-600">Failed to load data</p>}
-            {categoryData && categoryData.length === 0 && (
+            {categoryData?.length === 0 && (
               <p className="text-gray-500">No transactions yet</p>
             )}
             {categoryData && categoryData.length > 0 && (
@@ -40,7 +40,7 @@ export default function DashboardPage() {
           <CardContent>
             {monthlyLoading && <p>Loading...</p>}
             {monthlyError && <p className="text-red-600">Failed to load data</p>}
-            {monthlyData && monthlyData.length === 0 && (
+            {monthlyData?.length === 0 && (
               <p className="text-gray-500">No transactions yet</p>
             )}
             {monthlyData && monthlyData.length > 0 && (
