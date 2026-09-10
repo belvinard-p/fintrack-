@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { api } from "@/lib/api";
+import { login } from "@/features/auth";
+import { setToken } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,13 +25,12 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const response = await api.post("/auth/login", { email, password });
-      sessionStorage.setItem("access_token", response.data.access_token);
+      const { access_token } = await login({ email, password });
+      setToken(access_token);
       router.push("/dashboard");
     } catch (err: any) {
       setError(err.response?.data?.detail || "Login failed");
     }
-
   }
 
   return (

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { api } from "@/lib/api";
+import { register } from "@/features/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,7 +24,7 @@ export default function RegisterPage() {
     setError(null);
 
     try {
-      await api.post("/auth/register", { email, password });
+      await register({ email, password });
       router.push("/login");
     } catch (err: any) {
       setError(err.response?.data?.detail || "Registration failed");

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { getToken } from "@/lib/session";
 
 export default function ProtectedLayout({
   children,
@@ -12,7 +13,7 @@ export default function ProtectedLayout({
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
-    const token = sessionStorage.getItem("access_token");
+    const token = getToken();
     if (!token) {
       router.push("/login");
     } else {
