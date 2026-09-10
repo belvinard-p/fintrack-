@@ -3,6 +3,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "@/components/ui/card";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -21,38 +30,48 @@ export default function LoginPage() {
     } catch (err: any) {
       setError(err.response?.data?.detail || "Login failed");
     }
+
   }
 
   return (
     <main className="flex min-h-screen items-center justify-center">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
-        <h1 className="text-2xl font-bold">Log in</h1>
+      <Card className="w-full max-w-sm">
+        <CardHeader>
+          <CardTitle>Log in</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && <p className="text-red-600 text-sm">{error}</p>}
 
-        {error && <p className="text-red-600 text-sm">{error}</p>}
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
 
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="w-full border rounded px-3 py-2"
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          className="w-full border rounded px-3 py-2"
-        />
-        <button
-          type="submit"
-          className="w-full bg-black text-white rounded py-2 hover:bg-gray-800"
-        >
-          Log in
-        </button>
-      </form>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+
+            </div>
+
+            <Button type="submit" className="w-full">
+              Log in
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </main>
   );
 }
