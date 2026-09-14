@@ -2,27 +2,44 @@
 
 import { useState } from "react";
 import { useCreateTransaction } from "../hooks/use-create-transaction";
+import { useCategories } from "@/features/categories";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function TransactionForm() {
   const [date, setDate] = useState("");
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
+  const [categoryId, setCategoryId] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
   const createTransaction = useCreateTransaction();
+  const { data: categories } = useCategories();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
     try {
-      await createTransaction.mutateAsync({ date, description, amount });
+      await createTransaction.mutateAsync({
+
+        date,
+        description,
+        amount,
+        category_id: categoryId ? parseInt(categoryId, 10) : null,
+      });
       setDate("");
       setDescription("");
       setAmount("");
+      setCategoryId("");
     } catch (err: any) {
       setError(err.response?.data?.detail || "Failed to create transaction");
     }
@@ -34,13 +51,7 @@ export function TransactionForm() {
 
       <div className="space-y-2">
         <Label htmlFor="date">Date</Label>
-        <Input
-          id="date"
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          required
-        />
+        <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
       </div>
 
       <div className="space-y-2">
@@ -52,6 +63,7 @@ export function TransactionForm() {
           onChange={(e) => setDescription(e.target.value)}
           required
         />
+
       </div>
 
       <div className="space-y-2">
@@ -67,7 +79,31 @@ export function TransactionForm() {
         />
       </div>
 
+      <div className="space-y-2">
+        <Label htmlFor="category">Category</Label>
+        <Select
+          value={categoryId}
+          onValueChange={(value) => setCategoryId(value ?? "")}
+          items={categories?.map((category) => ({
+            value: String(category.id),
+            label: category.name,
+          }))}
+        >
+          <SelectTrigger id="category" className="w-full">
+            <SelectValue placeholder="Uncategorized" />
+          </SelectTrigger>
+          <SelectContent>
+            {categories?.map((category) => (
+              <SelectItem key={category.id} value={String(category.id)}>
+                {category.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       <Button type="submit" className="w-full" disabled={createTransaction.isPending}>
+
         {createTransaction.isPending ? "Adding..." : "Add Transaction"}
       </Button>
     </form>
