@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { TransactionForm } from "@/features/transactions";
+import { TransactionForm, TransactionList } from "@/features/transactions";
 
 export default function TransactionsPage() {
   return (
@@ -14,6 +14,15 @@ export default function TransactionsPage() {
         </CardHeader>
         <CardContent>
           <TransactionForm />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>All Transactions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <TransactionList />
         </CardContent>
       </Card>
     </main>
