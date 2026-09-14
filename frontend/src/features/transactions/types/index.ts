@@ -15,3 +15,9 @@ export interface TransactionCreate {
   amount: string;
   category_id?: number | null;
 }
+
+export interface ImportResult {
+  created: number;
+  skipped_duplicates: number;
+  total_rows: number;
+}
