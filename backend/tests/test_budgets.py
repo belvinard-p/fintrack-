@@ -168,6 +168,64 @@ def test_update_nonexistent_budget(client):
     assert response.status_code == 404
 
 
+def test_delete_own_budget(client):
+    headers = register_and_login(client)
+    category_id = get_category_id(client, headers, "Groceries")
+
+    created = client.post(
+        "/budgets/",
+        json={"category_id": category_id, "monthly_limit": "200.00", "month": "2026-08"},
+        headers=headers,
+    ).json()
+
+    response = client.delete(f"/budgets/{created['id']}", headers=headers)
+    assert response.status_code == 204
+
+    status_response = client.get("/budgets/status?month=2026-08", headers=headers)
+    assert status_response.json() == []
+
+
+def test_delete_budget_allows_recreating_same_category_and_month(client):
+    headers = register_and_login(client)
+    category_id = get_category_id(client, headers, "Groceries")
+
+    created = client.post(
+        "/budgets/",
+        json={"category_id": category_id, "monthly_limit": "200.00", "month": "2026-08"},
+        headers=headers,
+    ).json()
+
+    client.delete(f"/budgets/{created['id']}", headers=headers)
+
+    response = client.post(
+        "/budgets/",
+        json={"category_id": category_id, "monthly_limit": "300.00", "month": "2026-08"},
+        headers=headers,
+    )
+    assert response.status_code == 201
+
+
+def test_cannot_delete_another_users_budget(client):
+    headers_a = register_and_login(client, email="budgetdeletera@example.com")
+    headers_b = register_and_login(client, email="budgetdeleterb@example.com")
+    category_id = get_category_id(client, headers_a, "Groceries")
+
+    created = client.post(
+        "/budgets/",
+        json={"category_id": category_id, "monthly_limit": "200.00", "month": "2026-08"},
+        headers=headers_a,
+    ).json()
+
+    response = client.delete(f"/budgets/{created['id']}", headers=headers_b)
+    assert response.status_code == 404
+
+
+def test_delete_nonexistent_budget(client):
+    headers = register_and_login(client)
+    response = client.delete("/budgets/999999", headers=headers)
+    assert response.status_code == 404
+
+
 def test_budget_status_under_budget(client):
     headers = register_and_login(client)
     category_id = get_category_id(client, headers, "Groceries")

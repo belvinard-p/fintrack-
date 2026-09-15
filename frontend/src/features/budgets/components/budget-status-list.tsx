@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useBudgetStatus } from "../hooks/use-budget-status";
 import { useUpdateBudget } from "../hooks/use-update-budget";
+import { useDeleteBudget } from "../hooks/use-delete-budget";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +16,17 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export function BudgetStatusList() {
   const [month, setMonth] = useState(() => {
@@ -24,6 +36,7 @@ export function BudgetStatusList() {
 
   const { data: statuses, isLoading, error } = useBudgetStatus(month);
   const updateBudget = useUpdateBudget();
+  const deleteBudget = useDeleteBudget();
 
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editLimit, setEditLimit] = useState("");
@@ -126,6 +139,31 @@ export function BudgetStatusList() {
                     </form>
                   </DialogContent>
                 </Dialog>
+
+                <AlertDialog>
+                  <AlertDialogTrigger
+                    render={<Button variant="ghost" size="sm" />}
+                  >
+                    Delete
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        Delete budget for {status.category_name}?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This only removes the budget limit — your transactions in this
+                        category are not affected. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => deleteBudget.mutate(status.id)}>
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
           ))}

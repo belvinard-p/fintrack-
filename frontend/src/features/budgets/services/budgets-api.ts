@@ -11,6 +11,10 @@ export async function updateBudget(id: number, payload: BudgetUpdate): Promise<B
   return response.data;
 }
 
+export async function deleteBudget(id: number): Promise<void> {
+  await api.delete(`/budgets/${id}`);
+}
+
 export async function fetchBudgetStatus(month: string): Promise<BudgetStatus[]> {
   const response = await api.get<BudgetStatus[]>("/budgets/status", {
     params: { month },
