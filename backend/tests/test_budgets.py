@@ -54,6 +54,120 @@ def test_create_duplicate_budget_rejected(client):
     assert response.status_code == 400
 
 
+def test_update_budget_limit(client):
+    headers = register_and_login(client)
+    category_id = get_category_id(client, headers, "Groceries")
+
+    created = client.post(
+        "/budgets/",
+        json={"category_id": category_id, "monthly_limit": "200.00", "month": "2026-08"},
+        headers=headers,
+    ).json()
+
+    response = client.patch(
+        f"/budgets/{created['id']}",
+        json={"monthly_limit": "250.00"},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["monthly_limit"] == "250.00"
+    assert data["category_name"] == "Groceries"
+    assert data["month"] == "2026-08"
+
+
+def test_update_budget_category(client):
+    headers = register_and_login(client)
+    groceries_id = get_category_id(client, headers, "Groceries")
+    dining_id = get_category_id(client, headers, "Dining Out")
+
+    created = client.post(
+        "/budgets/",
+        json={"category_id": groceries_id, "monthly_limit": "200.00", "month": "2026-08"},
+        headers=headers,
+    ).json()
+
+    response = client.patch(
+        f"/budgets/{created['id']}",
+        json={"category_id": dining_id},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["category_id"] == dining_id
+    assert data["category_name"] == "Dining Out"
+
+
+def test_update_budget_nonexistent_category_rejected(client):
+    headers = register_and_login(client)
+    category_id = get_category_id(client, headers, "Groceries")
+
+    created = client.post(
+        "/budgets/",
+        json={"category_id": category_id, "monthly_limit": "200.00", "month": "2026-08"},
+        headers=headers,
+    ).json()
+
+    response = client.patch(
+        f"/budgets/{created['id']}",
+        json={"category_id": 999999},
+        headers=headers,
+    )
+    assert response.status_code == 404
+
+
+def test_update_budget_conflict_rejected(client):
+    headers = register_and_login(client)
+    category_id = get_category_id(client, headers, "Groceries")
+
+    client.post(
+        "/budgets/",
+        json={"category_id": category_id, "monthly_limit": "200.00", "month": "2026-08"},
+        headers=headers,
+    )
+    created_september = client.post(
+        "/budgets/",
+        json={"category_id": category_id, "monthly_limit": "150.00", "month": "2026-09"},
+        headers=headers,
+    ).json()
+
+    response = client.patch(
+        f"/budgets/{created_september['id']}",
+        json={"month": "2026-08"},
+        headers=headers,
+    )
+    assert response.status_code == 400
+
+
+def test_cannot_update_another_users_budget(client):
+    headers_a = register_and_login(client, email="budgetupdatera@example.com")
+    headers_b = register_and_login(client, email="budgetupdaterb@example.com")
+    category_id = get_category_id(client, headers_a, "Groceries")
+
+    created = client.post(
+        "/budgets/",
+        json={"category_id": category_id, "monthly_limit": "200.00", "month": "2026-08"},
+        headers=headers_a,
+    ).json()
+
+    response = client.patch(
+        f"/budgets/{created['id']}",
+        json={"monthly_limit": "1.00"},
+        headers=headers_b,
+    )
+    assert response.status_code == 404
+
+
+def test_update_nonexistent_budget(client):
+    headers = register_and_login(client)
+    response = client.patch(
+        "/budgets/999999",
+        json={"monthly_limit": "100.00"},
+        headers=headers,
+    )
+    assert response.status_code == 404
+
+
 def test_budget_status_under_budget(client):
     headers = register_and_login(client)
     category_id = get_category_id(client, headers, "Groceries")

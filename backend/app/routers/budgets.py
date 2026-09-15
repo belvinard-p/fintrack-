@@ -10,7 +10,7 @@ from app.models.user import User
 from app.models.budget import Budget
 from app.models.category import Category
 from app.models.transaction import Transaction
-from app.schemas.budget import BudgetCreate, BudgetOut, BudgetStatus
+from app.schemas.budget import BudgetCreate, BudgetOut, BudgetStatus, BudgetUpdate
 
 router = APIRouter(prefix="/budgets", tags=["budgets"])
 
@@ -52,6 +52,57 @@ def create_budget(
     )
 
 
+@router.patch(
+    "/{budget_id}",
+    response_model=BudgetOut,
+    responses={
+        404: {"description": "Budget or category not found"},
+        400: {"description": "A budget for this category and month already exists"},
+    },
+)
+def update_budget(
+    budget_id: int,
+    budget_in: BudgetUpdate,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+):
+    budget = (
+        db.query(Budget)
+        .filter(Budget.id == budget_id, Budget.user_id == current_user.id)
+        .first()
+    )
+    if not budget:
+        raise HTTPException(status_code=404, detail="Budget not found")
+
+    update_data = budget_in.model_dump(exclude_unset=True)
+
+    if "category_id" in update_data:
+        category = db.query(Category).filter(Category.id == update_data["category_id"]).first()
+        if not category:
+            raise HTTPException(status_code=404, detail="Category not found")
+
+    for field, value in update_data.items():
+        setattr(budget, field, value)
+
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=400,
+            detail="A budget for this category and month already exists",
+        )
+    db.refresh(budget)
+
+    return BudgetOut(
+        id=budget.id,
+        category_id=budget.category_id,
+        category_name=budget.category.name,
+        monthly_limit=budget.monthly_limit,
+        month=budget.month,
+    )
+
+
 @router.get("/status", response_model=list[BudgetStatus])
 def get_budget_status(
     month: str,
@@ -80,6 +131,7 @@ def get_budget_status(
         actual_spending = abs(spent)
         result.append(
             BudgetStatus(
+                id=budget.id,
                 category_id=budget.category_id,
                 category_name=budget.category.name,
                 monthly_limit=budget.monthly_limit,

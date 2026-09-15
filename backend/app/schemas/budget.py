@@ -1,5 +1,6 @@
 from pydantic import BaseModel, ConfigDict, field_validator
 from decimal import Decimal
+from typing import Optional
 import re
 
 
@@ -16,6 +17,19 @@ class BudgetCreate(BaseModel):
         return v
 
 
+class BudgetUpdate(BaseModel):
+    category_id: Optional[int] = None
+    monthly_limit: Optional[Decimal] = None
+    month: Optional[str] = None
+
+    @field_validator("month")
+    @classmethod
+    def validate_month_format(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and not re.match(r"^\d{4}-\d{2}$", v):
+            raise ValueError("month must be in YYYY-MM format")
+        return v
+
+
 class BudgetOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -27,6 +41,7 @@ class BudgetOut(BaseModel):
 
 
 class BudgetStatus(BaseModel):
+    id: int
     category_id: int
     category_name: str
     monthly_limit: Decimal
