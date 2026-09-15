@@ -1,6 +1,7 @@
 "use client";
 
 import { BudgetForm, BudgetStatusList } from "@/features/budgets";
+import { CategoryManager } from "@/features/categories";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 export default function BudgetsPage() {
@@ -27,6 +28,16 @@ export default function BudgetsPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+
+        <CardHeader>
+          <CardTitle>Manage Categories</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <CategoryManager />
+        </CardContent>
+      </Card>
     </main>
   );
 }

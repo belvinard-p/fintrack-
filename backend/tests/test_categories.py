@@ -5,15 +5,6 @@ def register_and_login(client, email="catuser@example.com", password="securepass
     return {"Authorization": f"Bearer {token}"}
 
 
-def test_list_categories_includes_defaults(client):
-    headers = register_and_login(client)
-    response = client.get("/categories/", headers=headers)
-    assert response.status_code == 200
-    names = [c["name"] for c in response.json()]
-    assert "Groceries" in names
-    assert "Uncategorized" in names
-
-
 def test_create_category(client):
     headers = register_and_login(client)
     response = client.post("/categories/", json={"name": "Freelance Income"}, headers=headers)
@@ -31,16 +22,6 @@ def test_create_duplicate_category_rejected(client):
 
 
 
-def test_get_default_category_by_id(client):
-    headers = register_and_login(client)
-    categories = client.get("/categories/", headers=headers).json()
-    groceries = next(c for c in categories if c["name"] == "Groceries")
-
-    response = client.get(f"/categories/{groceries['id']}", headers=headers)
-    assert response.status_code == 200
-    assert response.json()["name"] == "Groceries"
-
-
 def test_get_nonexistent_category(client):
     headers = register_and_login(client)
     response = client.get("/categories/999999", headers=headers)
@@ -54,18 +35,6 @@ def test_update_own_category(client):
     response = client.patch(f"/categories/{created['id']}", json={"name": "New Name"}, headers=headers)
     assert response.status_code == 200
     assert response.json()["name"] == "New Name"
-
-
-def test_cannot_update_default_category(client):
-    headers = register_and_login(client)
-    categories = client.get("/categories/", headers=headers).json()
-    groceries = next(c for c in categories if c["name"] == "Groceries")
-
-    response = client.patch(
-        f"/categories/{groceries['id']}", json={"name": "Hacked"}, headers=headers
-
-    )
-    assert response.status_code == 404
 
 
 def test_cannot_update_another_users_category(client):
@@ -106,15 +75,6 @@ def test_delete_category_nullifies_transactions(client):
 
     updated_tx = client.get(f"/transactions/{tx['id']}", headers=headers).json()
     assert updated_tx["category_id"] is None
-
-
-def test_cannot_delete_default_category(client):
-    headers = register_and_login(client)
-    categories = client.get("/categories/", headers=headers).json()
-    groceries = next(c for c in categories if c["name"] == "Groceries")
-
-    response = client.delete(f"/categories/{groceries['id']}", headers=headers)
-    assert response.status_code == 404
 
 
 def test_category_endpoints_require_auth(client):

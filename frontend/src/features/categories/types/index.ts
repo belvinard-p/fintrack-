@@ -3,3 +3,11 @@ export interface Category {
   name: string;
   is_default: boolean;
 }
+
+export interface CategoryCreate {
+  name: string;
+}
+
+export interface CategoryUpdate {
+  name: string;
+}

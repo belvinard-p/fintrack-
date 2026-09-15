@@ -6,8 +6,8 @@ def register_and_login(client, email="dashuser@example.com", password="securepas
 
 
 def get_category_id(client, headers, name):
-    categories = client.get("/categories/", headers=headers).json()
-    return next(c["id"] for c in categories if c["name"] == name)
+    response = client.post("/categories/", json={"name": name}, headers=headers)
+    return response.json()["id"]
 
 
 def test_spending_by_category(client):

@@ -35,6 +35,11 @@ def test_import_creates_transactions(client):
 
 def test_import_categorizes_transactions(client):
     headers = register_and_login(client)
+    category_response = client.post(
+        "/categories/", headers=headers, json={"name": "Transport"}
+    )
+    category_id = category_response.json()["id"]
+
     csv_content = (
         "date,description,amount\n"
         "2026-08-01,UBER TRIP,-12.30\n"
@@ -46,7 +51,7 @@ def test_import_categorizes_transactions(client):
     transactions = list_response.json()
     assert len(transactions) == 1
     assert transactions[0]["description"] == "UBER TRIP"
-    assert transactions[0]["category_id"] is not None
+    assert transactions[0]["category_id"] == category_id
 
 
 def test_import_skips_duplicates_on_second_upload(client):

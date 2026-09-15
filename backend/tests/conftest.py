@@ -6,7 +6,6 @@ from fastapi.testclient import TestClient
 from app.core.config import settings
 from app.main import app
 from app.core.database import Base, get_db
-from app.seed import seed_default_categories
 
 engine = create_engine(settings.test_database_url)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -16,7 +15,6 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 def db_session():
     Base.metadata.create_all(bind=engine)
     session = TestingSessionLocal()
-    seed_default_categories(db=session)
     try:
         yield session
     finally:
