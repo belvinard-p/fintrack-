@@ -88,3 +88,22 @@ def delete_category(
 
     db.delete(category)
     db.commit()
+
+
+@router.get("/{category_id}", response_model=CategoryOut)
+def get_category(
+    category_id: int,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+):
+    category = (
+        db.query(Category)
+        .filter(
+            Category.id == category_id,
+            (Category.user_id == current_user.id) | (Category.is_default == True),
+        )
+        .first()
+    )
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    return category
