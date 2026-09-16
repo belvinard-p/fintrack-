@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { useCreateGoal } from "../hooks/use-create-goal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +28,7 @@ export function GoalForm() {
       setName("");
       setTargetAmount("");
       setTargetDate("");
+      toast.success("Goal created");
     } catch (err: any) {
       setError(err.response?.data?.detail || "Failed to create goal");
     }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { useCreateTransaction } from "../hooks/use-create-transaction";
 import { useCategories } from "@/features/categories";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,7 @@ export function TransactionForm() {
       setDescription("");
       setAmount("");
       setCategoryId("");
+      toast.success("Transaction added");
     } catch (err: any) {
       setError(err.response?.data?.detail || "Failed to create transaction");
     }

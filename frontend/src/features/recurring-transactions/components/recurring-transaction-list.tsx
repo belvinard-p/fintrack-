@@ -1,10 +1,13 @@
 "use client";
 
+import { toast } from "sonner";
 import { useRecurringTransactions } from "../hooks/use-recurring-transactions";
 import { useUpdateRecurringTransaction } from "../hooks/use-update-recurring-transaction";
 import { useDeleteRecurringTransaction } from "../hooks/use-delete-recurring-transaction";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
@@ -52,18 +55,24 @@ export function RecurringTransactionList() {
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 {!item.is_active && <Badge variant="secondary">Paused</Badge>}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    updateRecurring.mutate({
-                      id: item.id,
-                      payload: { is_active: !item.is_active },
-                    })
-                  }
-                >
-                  {item.is_active ? "Pause" : "Resume"}
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor={`active-${item.id}`} className="text-sm">
+                    Active
+                  </Label>
+                  <Switch
+                    id={`active-${item.id}`}
+                    checked={item.is_active}
+                    onCheckedChange={(checked) =>
+                      updateRecurring.mutate(
+                        { id: item.id, payload: { is_active: checked } },
+                        {
+                          onSuccess: () =>
+                            toast.success(checked ? "Recurring transaction resumed" : "Recurring transaction paused"),
+                        }
+                      )
+                    }
+                  />
+                </div>
                 <AlertDialog>
                   <AlertDialogTrigger render={<Button variant="ghost" size="sm" />}>
                     Delete
@@ -78,7 +87,13 @@ export function RecurringTransactionList() {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => deleteRecurring.mutate(item.id)}>
+                      <AlertDialogAction
+                        onClick={() =>
+                          deleteRecurring.mutate(item.id, {
+                            onSuccess: () => toast.success("Recurring transaction deleted"),
+                          })
+                        }
+                      >
                         Delete
                       </AlertDialogAction>
                     </AlertDialogFooter>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { useCreateRecurringTransaction } from "../hooks/use-create-recurring-transaction";
 import { useCategories } from "@/features/categories";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,7 @@ export function RecurringTransactionForm() {
       setDayOfMonth("1");
       setStartDate("");
       setCategoryId("");
+      toast.success("Recurring transaction created");
     } catch (err: any) {
       setError(err.response?.data?.detail || "Failed to create recurring transaction");
     }

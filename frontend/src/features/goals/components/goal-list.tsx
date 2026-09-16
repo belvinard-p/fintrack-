@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { useGoals } from "../hooks/use-goals";
 import { useContributeToGoal } from "../hooks/use-contribute-to-goal";
 import { useDeleteGoal } from "../hooks/use-delete-goal";
@@ -10,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from "@/components/ui/progress";
 import {
   Dialog,
   DialogContent,
@@ -50,6 +52,7 @@ function ContributeDialog({ goal }: Readonly<{ goal: Goal }>) {
       await contribute.mutateAsync({ id: goal.id, payload: { amount } });
       setAmount("");
       setOpen(false);
+      toast.success("Funds added");
     } catch (err: any) {
       setError(err.response?.data?.detail || "Failed to add contribution");
     }
@@ -103,7 +106,7 @@ export function GoalList() {
   }
   if (error) return <p aria-live="polite" className="text-red-600">Failed to load goals</p>;
   if (!goals || goals.length === 0) {
-    return <p aria-live="polite" className="text-gray-500">No goals yet</p>;
+    return <p aria-live="polite" className="text-muted-foreground">No goals yet</p>;
   }
 
   return (
@@ -121,12 +124,7 @@ export function GoalList() {
             {goal.is_completed && <Badge>Goal reached</Badge>}
           </div>
 
-          <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
-            <div
-              className="h-full bg-primary"
-              style={{ width: `${progressPercent(goal)}%` }}
-            />
-          </div>
+          <Progress value={progressPercent(goal)} />
 
           <div className="flex flex-wrap gap-2">
             <ContributeDialog goal={goal} />
@@ -143,7 +141,13 @@ export function GoalList() {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => deleteGoal.mutate(goal.id)}>
+                  <AlertDialogAction
+                    onClick={() =>
+                      deleteGoal.mutate(goal.id, {
+                        onSuccess: () => toast.success("Goal deleted"),
+                      })
+                    }
+                  >
                     Delete
                   </AlertDialogAction>
                 </AlertDialogFooter>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { useBudgetStatus } from "../hooks/use-budget-status";
 import { useUpdateBudget } from "../hooks/use-update-budget";
 import { useDeleteBudget } from "../hooks/use-delete-budget";
@@ -57,6 +58,7 @@ export function BudgetStatusList() {
         payload: { monthly_limit: editLimit },
       });
       setEditingId(null);
+      toast.success("Budget updated");
     } catch (err: any) {
       setEditError(err.response?.data?.detail || "Failed to update budget");
     }
@@ -164,7 +166,13 @@ export function BudgetStatusList() {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => deleteBudget.mutate(status.id)}>
+                      <AlertDialogAction
+                        onClick={() =>
+                          deleteBudget.mutate(status.id, {
+                            onSuccess: () => toast.success("Budget deleted"),
+                          })
+                        }
+                      >
                         Delete
                       </AlertDialogAction>
                     </AlertDialogFooter>

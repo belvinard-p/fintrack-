@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { useCreateBudget } from "../hooks/use-create-budget";
 import { useCategories } from "@/features/categories";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,7 @@ export function BudgetForm() {
       setCategoryId("");
       setMonthlyLimit("");
       setMonth("");
+      toast.success("Budget created");
     } catch (err: any) {
       setError(err.response?.data?.detail || "Failed to create budget");
     }

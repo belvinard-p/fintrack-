@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { useCategories } from "../hooks/use-categories";
 import { useCreateCategory } from "../hooks/use-create-category";
 import { useUpdateCategory } from "../hooks/use-update-category";
@@ -48,6 +49,7 @@ export function CategoryManager() {
     try {
       await createCategory.mutateAsync({ name: newName });
       setNewName("");
+      toast.success("Category created");
     } catch (err: any) {
       setCreateError(err.response?.data?.detail || "Failed to create category");
     }
@@ -67,6 +69,7 @@ export function CategoryManager() {
 
       await updateCategory.mutateAsync({ id: editingId, name: editName });
       setEditingId(null);
+      toast.success("Category updated");
     } catch (err: any) {
       setEditError(err.response?.data?.detail || "Failed to update category");
     }
@@ -164,7 +167,13 @@ export function CategoryManager() {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => deleteCategory.mutate(category.id)}>
+                      <AlertDialogAction
+                        onClick={() =>
+                          deleteCategory.mutate(category.id, {
+                            onSuccess: () => toast.success("Category deleted"),
+                          })
+                        }
+                      >
                         Delete
                       </AlertDialogAction>
                     </AlertDialogFooter>
