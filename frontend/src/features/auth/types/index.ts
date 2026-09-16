@@ -17,3 +17,9 @@ export interface PasswordChangePayload {
   current_password: string;
   new_password: string;
 }
+
+export interface CurrentUser {
+  id: number;
+  email: string;
+  created_at: string;
+}

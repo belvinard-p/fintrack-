@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useGoals } from "../hooks/use-goals";
 import { useContributeToGoal } from "../hooks/use-contribute-to-goal";
 import { useDeleteGoal } from "../hooks/use-delete-goal";
+import { useCurrentUser } from "@/features/auth";
 import { Goal } from "../types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -94,6 +95,7 @@ function ContributeDialog({ goal }: Readonly<{ goal: Goal }>) {
 export function GoalList() {
   const { data: goals, isLoading, error } = useGoals();
   const deleteGoal = useDeleteGoal();
+  const { data: currentUser } = useCurrentUser();
 
   if (isLoading) {
     return (
@@ -118,7 +120,7 @@ export function GoalList() {
               <p className="font-medium">{goal.name}</p>
               <p className="text-sm text-muted-foreground">
                 {goal.current_amount} / {goal.target_amount}
-                {goal.target_date ? ` · by ${goal.target_date}` : ""}
+                {currentUser ? ` · ${currentUser.email}` : ""}
               </p>
             </div>
             {goal.is_completed && <Badge>Goal reached</Badge>}
