@@ -4,10 +4,12 @@ import { useState } from "react";
 import { useBudgetStatus } from "../hooks/use-budget-status";
 import { useUpdateBudget } from "../hooks/use-update-budget";
 import { useDeleteBudget } from "../hooks/use-delete-budget";
+import { getCurrentMonth } from "../utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -29,10 +31,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export function BudgetStatusList() {
-  const [month, setMonth] = useState(() => {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-  });
+  const [month, setMonth] = useState(getCurrentMonth);
 
   const { data: statuses, isLoading, error } = useBudgetStatus(month);
   const updateBudget = useUpdateBudget();
@@ -75,27 +74,34 @@ export function BudgetStatusList() {
         />
       </div>
 
-      {isLoading && <p>Loading...</p>}
-      {error && <p className="text-red-600">Failed to load budget status</p>}
-      {statuses && statuses.length === 0 && (
-        <p className="text-gray-500">No budgets set for this month</p>
-
-      )}
+      <div aria-live="polite">
+        {isLoading && (
+          <div className="space-y-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-16 w-full rounded-lg" />
+            ))}
+          </div>
+        )}
+        {error && <p className="text-red-600">Failed to load budget status</p>}
+        {statuses && statuses.length === 0 && (
+          <p className="text-muted-foreground">No budgets set for this month</p>
+        )}
+      </div>
 
       {statuses && statuses.length > 0 && (
         <div className="space-y-3">
           {statuses.map((status) => (
             <div
               key={status.id}
-              className="flex items-center justify-between border rounded-lg p-4"
+              className="flex flex-col gap-3 border rounded-lg p-4 sm:flex-row sm:items-center sm:justify-between"
             >
               <div>
                 <p className="font-medium">{status.category_name}</p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   {status.actual_spending} / {status.monthly_limit}
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <Badge variant={status.is_over_budget ? "destructive" : "secondary"}>
                   {status.is_over_budget ? "Over budget" : "On track"}
                 </Badge>

@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useImportCsv } from "../hooks/use-import-csv";
+import { ImportResult } from "../types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,11 +10,7 @@ import { Label } from "@/components/ui/label";
 export function CsvImportForm() {
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<{
-    created: number;
-    skipped_duplicates: number;
-    total_rows: number;
-  } | null>(null);
+  const [result, setResult] = useState<ImportResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const importCsv = useImportCsv();
@@ -45,10 +42,22 @@ export function CsvImportForm() {
       {error && <p className="text-red-600 text-sm">{error}</p>}
 
       {result && (
-        <div className="text-sm bg-green-50 border border-green-200 rounded p-3 text-green-800">
+        <div className="text-sm bg-green-50 border border-green-200 rounded p-3 text-green-800 space-y-1">
           <p>Imported {result.created} new transaction(s).</p>
           {result.skipped_duplicates > 0 && (
             <p>{result.skipped_duplicates} duplicate(s) skipped.</p>
+          )}
+          {result.invalid_rows > 0 && (
+            <div className="text-amber-800">
+              <p>{result.invalid_rows} row(s) could not be read and were skipped:</p>
+              <ul className="list-disc list-inside">
+                {result.invalid_row_details.map((detail) => (
+                  <li key={detail.row_number}>
+                    Row {detail.row_number}: {detail.reason}
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </div>
       )}
@@ -63,7 +72,8 @@ export function CsvImportForm() {
           onChange={(e) => setFile(e.target.files?.[0] || null)}
         />
         <p className="text-xs text-gray-500">
-          Expected columns: date, description, amount
+          Needs a date, description, and amount column (common bank export names are
+          recognized automatically).
         </p>
       </div>
 

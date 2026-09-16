@@ -48,7 +48,7 @@ def test_import_categorizes_transactions(client):
     client.post("/transactions/import", headers=headers, files=make_csv_file(csv_content))
 
     list_response = client.get("/transactions/", headers=headers)
-    transactions = list_response.json()
+    transactions = list_response.json()["items"]
     assert len(transactions) == 1
     assert transactions[0]["description"] == "UBER TRIP"
     assert transactions[0]["category_id"] == category_id
@@ -82,6 +82,43 @@ def test_import_rejects_invalid_csv(client):
         "/transactions/import", headers=headers, files=make_csv_file(bad_csv)
     )
     assert response.status_code == 400
+
+
+def test_import_accepts_common_column_name_variants(client):
+    headers = register_and_login(client, email="aliasuser@example.com")
+    csv_content = (
+        "Transaction Date,Memo,Value\n"
+        "2026-08-01,STARBUCKS COFFEE,-4.50\n"
+    )
+
+    response = client.post(
+        "/transactions/import", headers=headers, files=make_csv_file(csv_content)
+    )
+    assert response.status_code == 201
+    data = response.json()
+    assert data["created"] == 1
+    assert data["total_rows"] == 1
+
+
+def test_import_skips_invalid_rows_without_failing_whole_file(client):
+    headers = register_and_login(client, email="partialfailuser@example.com")
+    csv_content = (
+        "date,description,amount\n"
+        "2026-08-01,Good row one,-4.50\n"
+        "not-a-date,Bad row,notanumber\n"
+        "2026-08-02,Good row two,-10.00\n"
+    )
+
+    response = client.post(
+        "/transactions/import", headers=headers, files=make_csv_file(csv_content)
+    )
+    assert response.status_code == 201
+    data = response.json()
+    assert data["created"] == 2
+    assert data["invalid_rows"] == 1
+    assert data["total_rows"] == 3
+    assert len(data["invalid_row_details"]) == 1
+    assert data["invalid_row_details"][0]["row_number"] == 3
 
 
 def test_import_requires_auth(client):

@@ -1,2 +1,4 @@
 export { login, register } from "./services/auth-api";
-export type { LoginCredentials, RegisterPayload, AuthResponse } from "./types";
+export { ChangePasswordForm } from "./components/change-password-form";
+export { DeleteAccountSection } from "./components/delete-account-section";
+export type { LoginCredentials, RegisterPayload, AuthResponse, PasswordChangePayload } from "./types";

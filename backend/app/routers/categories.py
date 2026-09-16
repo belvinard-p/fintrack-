@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app.core.database import get_db
 from app.core.deps import get_current_user
+from app.core.audit import log_action
 from app.models.user import User
 from app.models.category import Category
 from app.models.transaction import Transaction
@@ -82,10 +83,18 @@ def delete_category(
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
 
-    db.query(Transaction).filter(Transaction.category_id == category_id).update(
-        {"category_id": None}
+    affected = (
+        db.query(Transaction)
+        .filter(Transaction.category_id == category_id)
+        .update({"category_id": None})
     )
 
+    log_action(
+        db,
+        current_user.id,
+        "delete_category",
+        f"'{category.name}' — {affected} transaction(s) became uncategorized",
+    )
     db.delete(category)
     db.commit()
 

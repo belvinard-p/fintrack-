@@ -6,6 +6,7 @@ from sqlalchemy import func
 
 from app.core.database import get_db
 from app.core.deps import get_current_user
+from app.core.audit import log_action
 from app.models.user import User
 from app.models.budget import Budget
 from app.models.category import Category
@@ -121,6 +122,12 @@ def delete_budget(
     if not budget:
         raise HTTPException(status_code=404, detail="Budget not found")
 
+    log_action(
+        db,
+        current_user.id,
+        "delete_budget",
+        f"{budget.category.name} — {budget.month} (limit {budget.monthly_limit})",
+    )
     db.delete(budget)
     db.commit()
 

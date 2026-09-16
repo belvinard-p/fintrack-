@@ -8,6 +8,7 @@ import { useDeleteCategory } from "../hooks/use-delete-category";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -71,8 +72,16 @@ export function CategoryManager() {
     }
   }
 
-  if (isLoading) return <p>Loading categories...</p>;
-  if (error) return <p className="text-red-600">Failed to load categories</p>;
+  if (isLoading) {
+    return (
+      <div aria-live="polite" className="space-y-2">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-12 w-full rounded-lg" />
+        ))}
+      </div>
+    );
+  }
+  if (error) return <p aria-live="polite" className="text-red-600">Failed to load categories</p>;
 
   return (
     <div className="space-y-6">
@@ -93,7 +102,7 @@ export function CategoryManager() {
         {categories?.map((category) => (
           <div
             key={category.id}
-            className="flex items-center justify-between border rounded-lg p-3"
+            className="flex flex-col gap-3 border rounded-lg p-3 sm:flex-row sm:items-center sm:justify-between"
           >
             <div className="flex items-center gap-2">
 
@@ -102,7 +111,7 @@ export function CategoryManager() {
             </div>
 
             {!category.is_default && (
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Dialog
                   open={editingId === category.id}
                   onOpenChange={(open) => !open && setEditingId(null)}

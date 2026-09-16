@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 export default function BudgetsPage() {
   return (
-    <main className="p-8 space-y-8">
+    <main className="p-4 space-y-8 sm:p-8">
       <h1 className="text-2xl font-bold">Budgets</h1>
 
       <div className="grid gap-8 md:grid-cols-2">

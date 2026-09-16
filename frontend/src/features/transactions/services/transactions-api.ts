@@ -1,8 +1,15 @@
 import { api } from "@/services/http-client";
-import { TransactionCreate, Transaction, ImportResult } from "../types";
+import {
+  TransactionCreate,
+  ImportResult,
+  TransactionListParams,
+  TransactionListResponse,
+} from "../types";
 
-export async function fetchTransactions(): Promise<Transaction[]> {
-  const response = await api.get<Transaction[]>("/transactions/");
+export async function fetchTransactions(
+  params: TransactionListParams = {}
+): Promise<TransactionListResponse> {
+  const response = await api.get<TransactionListResponse>("/transactions/", { params });
   return response.data;
 }
 
@@ -22,5 +29,10 @@ export async function importCsv(file: File): Promise<ImportResult> {
   const response = await api.post<ImportResult>("/transactions/import", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
+  return response.data;
+}
+
+export async function exportTransactionsCsv(): Promise<Blob> {
+  const response = await api.get("/transactions/export", { responseType: "blob" });
   return response.data;
 }

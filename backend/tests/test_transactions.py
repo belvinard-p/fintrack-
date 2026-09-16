@@ -19,6 +19,90 @@ def test_create_transaction(client):
     assert data["source"] == "manual"
 
 
+def test_create_transaction_auto_categorizes_when_matching_category_exists(client):
+    headers = register_and_login(client, email="autocatuser@example.com")
+    category = client.post(
+        "/categories/", json={"name": "Transport"}, headers=headers
+    ).json()
+
+    response = client.post(
+        "/transactions/",
+        json={"date": "2026-08-15", "description": "UBER TRIP", "amount": "-12.30"},
+        headers=headers,
+    )
+    assert response.status_code == 201
+    assert response.json()["category_id"] == category["id"]
+
+
+def test_create_transaction_leaves_uncategorized_when_no_matching_category(client):
+    headers = register_and_login(client, email="nocatuser@example.com")
+
+    response = client.post(
+        "/transactions/",
+        json={"date": "2026-08-15", "description": "UBER TRIP", "amount": "-12.30"},
+        headers=headers,
+    )
+    assert response.status_code == 201
+    assert response.json()["category_id"] is None
+
+
+def test_create_transaction_respects_explicit_category(client):
+    headers = register_and_login(client, email="explicitcatuser@example.com")
+    transport_category = client.post(
+        "/categories/", json={"name": "Transport"}, headers=headers
+    ).json()
+    custom_category = client.post(
+        "/categories/", json={"name": "My Custom Category"}, headers=headers
+    ).json()
+
+    response = client.post(
+        "/transactions/",
+        json={
+            "date": "2026-08-15",
+            "description": "UBER TRIP",
+            "amount": "-12.30",
+            "category_id": custom_category["id"],
+        },
+        headers=headers,
+    )
+    assert response.status_code == 201
+    assert response.json()["category_id"] == custom_category["id"]
+    assert response.json()["category_id"] != transport_category["id"]
+
+
+def test_export_transactions_csv(client):
+    headers = register_and_login(client, email="exportuser@example.com")
+    category = client.post(
+        "/categories/", json={"name": "Export Category"}, headers=headers
+    ).json()
+    client.post(
+        "/transactions/",
+        json={
+            "date": "2026-08-15",
+            "description": "Exported tx",
+            "amount": "-25.00",
+            "category_id": category["id"],
+        },
+        headers=headers,
+    )
+
+    response = client.get("/transactions/export", headers=headers)
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/csv")
+    assert "attachment" in response.headers["content-disposition"]
+
+    body = response.text
+    lines = body.strip().splitlines()
+    assert lines[0] == "date,description,amount,category,source"
+    assert "Exported tx" in lines[1]
+    assert "Export Category" in lines[1]
+
+
+def test_export_transactions_requires_auth(client):
+    response = client.get("/transactions/export")
+    assert response.status_code == 401
+
+
 def test_create_transaction_requires_auth(client):
     response = client.post(
         "/transactions/",
@@ -46,8 +130,95 @@ def test_list_transactions_only_returns_own(client):
     response = client.get("/transactions/", headers=headers_a)
     assert response.status_code == 200
     data = response.json()
-    assert len(data) == 1
-    assert data[0]["description"] == "User A tx"
+    assert data["total"] == 1
+    assert len(data["items"]) == 1
+    assert data["items"][0]["description"] == "User A tx"
+
+
+def test_list_transactions_pagination(client):
+    headers = register_and_login(client, email="paginationuser@example.com")
+
+    for i in range(5):
+        client.post(
+            "/transactions/",
+            json={"date": "2026-08-15", "description": f"Tx {i}", "amount": "10.00"},
+            headers=headers,
+        )
+
+    response = client.get("/transactions/?page=1&page_size=2", headers=headers)
+    data = response.json()
+    assert data["total"] == 5
+    assert data["page"] == 1
+    assert data["page_size"] == 2
+    assert data["total_pages"] == 3
+    assert len(data["items"]) == 2
+
+    page_two = client.get("/transactions/?page=2&page_size=2", headers=headers).json()
+    assert len(page_two["items"]) == 2
+    assert page_two["items"] != data["items"]
+
+
+def test_list_transactions_search(client):
+    headers = register_and_login(client, email="searchuser@example.com")
+    client.post(
+        "/transactions/",
+        json={"date": "2026-08-15", "description": "Starbucks Coffee", "amount": "-4.50"},
+        headers=headers,
+    )
+    client.post(
+        "/transactions/",
+        json={"date": "2026-08-15", "description": "Rent payment", "amount": "-1200.00"},
+        headers=headers,
+    )
+
+    response = client.get("/transactions/?search=coffee", headers=headers)
+    data = response.json()
+    assert data["total"] == 1
+    assert data["items"][0]["description"] == "Starbucks Coffee"
+
+
+def test_list_transactions_filter_by_category(client):
+    headers = register_and_login(client, email="filteruser@example.com")
+    category = client.post(
+        "/categories/", json={"name": "Test Category"}, headers=headers
+    ).json()
+
+    client.post(
+        "/transactions/",
+        json={"date": "2026-08-15", "description": "Categorized", "amount": "-10.00", "category_id": category["id"]},
+        headers=headers,
+    )
+    client.post(
+        "/transactions/",
+        json={"date": "2026-08-15", "description": "Uncategorized", "amount": "-20.00"},
+        headers=headers,
+    )
+
+    response = client.get(f"/transactions/?category_id={category['id']}", headers=headers)
+    data = response.json()
+    assert data["total"] == 1
+    assert data["items"][0]["description"] == "Categorized"
+
+
+def test_list_transactions_filter_by_date_range(client):
+    headers = register_and_login(client, email="daterangeuser@example.com")
+    client.post(
+        "/transactions/",
+        json={"date": "2026-01-01", "description": "January", "amount": "-10.00"},
+        headers=headers,
+    )
+    client.post(
+        "/transactions/",
+        json={"date": "2026-08-15", "description": "August", "amount": "-10.00"},
+        headers=headers,
+    )
+
+    response = client.get(
+        "/transactions/?date_from=2026-08-01&date_to=2026-08-31", headers=headers
+    )
+    data = response.json()
+    assert data["total"] == 1
+    assert data["items"][0]["description"] == "August"
 
 
 def test_get_single_transaction(client):

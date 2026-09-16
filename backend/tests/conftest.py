@@ -6,6 +6,9 @@ from fastapi.testclient import TestClient
 from app.core.config import settings
 from app.main import app
 from app.core.database import Base, get_db
+from app.core.limiter import limiter
+
+limiter.enabled = False
 
 engine = create_engine(settings.test_database_url)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
