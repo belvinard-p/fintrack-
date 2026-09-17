@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
+import { LanguageToggle } from "@/components/language-toggle";
+import { useLanguage } from "@/lib/i18n";
 import {
   Card,
   CardHeader,
@@ -16,6 +18,7 @@ import {
 } from "@/components/ui/card";
 
 export default function LoginPage() {
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -30,22 +33,25 @@ export default function LoginPage() {
       setToken(access_token);
       router.push("/dashboard");
     } catch (err: any) {
-      setError(err.response?.data?.detail || "Login failed");
+      setError(err.response?.data?.detail || t("auth.login.error"));
     }
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4">
+    <main className="relative flex min-h-screen items-center justify-center px-4">
+      <div className="absolute top-4 right-4">
+        <LanguageToggle />
+      </div>
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>Log in</CardTitle>
+          <CardTitle>{t("auth.login.title")}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && <p className="text-red-600 text-sm">{error}</p>}
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("auth.login.email")}</Label>
               <Input
                 id="email"
                 type="email"
@@ -56,7 +62,7 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("auth.login.password")}</Label>
               <PasswordInput
                 id="password"
                 value={password}
@@ -67,7 +73,7 @@ export default function LoginPage() {
             </div>
 
             <Button type="submit" className="w-full">
-              Log in
+              {t("auth.login.submit")}
             </Button>
           </form>
         </CardContent>

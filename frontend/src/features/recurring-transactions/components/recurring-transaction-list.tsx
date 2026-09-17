@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLanguage } from "@/lib/i18n";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +23,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export function RecurringTransactionList() {
+  const { t } = useLanguage();
   const { data: recurring, isLoading, error } = useRecurringTransactions();
   const updateRecurring = useUpdateRecurringTransaction();
   const deleteRecurring = useDeleteRecurringTransaction();
@@ -35,9 +37,9 @@ export function RecurringTransactionList() {
           ))}
         </div>
       )}
-      {error && <p className="text-red-600">Failed to load recurring transactions</p>}
+      {error && <p className="text-red-600">{t("recurring.list.failedToLoad")}</p>}
       {recurring && recurring.length === 0 && (
-        <p className="text-muted-foreground">No recurring transactions yet</p>
+        <p className="text-muted-foreground">{t("recurring.list.empty")}</p>
       )}
 
       {recurring && recurring.length > 0 && (
@@ -50,14 +52,14 @@ export function RecurringTransactionList() {
               <div>
                 <p className="font-medium">{item.description}</p>
                 <p className="text-sm text-muted-foreground">
-                  {item.amount} · day {item.day_of_month} of each month
+                  {item.amount} · {t("recurring.list.dayOfMonth", { day: item.day_of_month })}
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                {!item.is_active && <Badge variant="secondary">Paused</Badge>}
+                {!item.is_active && <Badge variant="secondary">{t("recurring.list.paused")}</Badge>}
                 <div className="flex items-center gap-2">
                   <Label htmlFor={`active-${item.id}`} className="text-sm">
-                    Active
+                    {t("recurring.list.active")}
                   </Label>
                   <Switch
                     id={`active-${item.id}`}
@@ -67,7 +69,11 @@ export function RecurringTransactionList() {
                         { id: item.id, payload: { is_active: checked } },
                         {
                           onSuccess: () =>
-                            toast.success(checked ? "Recurring transaction resumed" : "Recurring transaction paused"),
+                            toast.success(
+                              checked
+                                ? t("recurring.list.resumed")
+                                : t("recurring.list.pausedToast")
+                            ),
                         }
                       )
                     }
@@ -75,26 +81,27 @@ export function RecurringTransactionList() {
                 </div>
                 <AlertDialog>
                   <AlertDialogTrigger render={<Button variant="ghost" size="sm" />}>
-                    Delete
+                    {t("common.delete")}
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Delete "{item.description}"?</AlertDialogTitle>
+                      <AlertDialogTitle>
+                        {t("recurring.list.deleteTitle", { description: item.description })}
+                      </AlertDialogTitle>
                       <AlertDialogDescription>
-                        This stops future automatic transactions. Past transactions already
-                        created are not affected.
+                        {t("recurring.list.deleteDescription")}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={() =>
                           deleteRecurring.mutate(item.id, {
-                            onSuccess: () => toast.success("Recurring transaction deleted"),
+                            onSuccess: () => toast.success(t("recurring.list.deleted")),
                           })
                         }
                       >
-                        Delete
+                        {t("common.delete")}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>

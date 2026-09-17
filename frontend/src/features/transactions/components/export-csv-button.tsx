@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { exportTransactionsCsv } from "../services/transactions-api";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/lib/i18n";
 
 export function ExportCsvButton() {
+  const { t } = useLanguage();
   const [isExporting, setIsExporting] = useState(false);
 
   async function handleExport() {
@@ -26,7 +28,7 @@ export function ExportCsvButton() {
 
   return (
     <Button variant="outline" size="sm" onClick={handleExport} disabled={isExporting}>
-      {isExporting ? "Exporting..." : "Export CSV"}
+      {isExporting ? t("transactions.export.exporting") : t("transactions.export.button")}
     </Button>
   );
 }

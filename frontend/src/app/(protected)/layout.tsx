@@ -7,16 +7,9 @@ import { Menu, X } from "lucide-react";
 import { getToken, clearToken } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LanguageToggle } from "@/components/language-toggle";
 import { useAutoGenerateRecurring } from "@/features/recurring-transactions";
-
-const NAV_LINKS = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/transactions", label: "Transactions" },
-  { href: "/recurring", label: "Recurring" },
-  { href: "/budgets", label: "Budgets" },
-  { href: "/goals", label: "Goals" },
-  { href: "/settings", label: "Settings" },
-];
+import { useLanguage } from "@/lib/i18n";
 
 export default function ProtectedLayout({
   children,
@@ -24,8 +17,18 @@ export default function ProtectedLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const { t } = useLanguage();
   const [checked, setChecked] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const NAV_LINKS = [
+    { href: "/dashboard", label: t("nav.dashboard") },
+    { href: "/transactions", label: t("nav.transactions") },
+    { href: "/recurring", label: t("nav.recurring") },
+    { href: "/budgets", label: t("nav.budgets") },
+    { href: "/goals", label: t("nav.goals") },
+    { href: "/settings", label: t("nav.settings") },
+  ];
 
   useAutoGenerateRecurring();
 
@@ -52,7 +55,7 @@ export default function ProtectedLayout({
       <nav className="border-b px-4 py-4 sm:px-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <span className="font-bold">FinTrack</span>
+            <span className="font-bold">{t("nav.brand")}</span>
             <div className="hidden sm:flex items-center gap-6">
               {NAV_LINKS.map((link) => (
                 <Link
@@ -67,6 +70,7 @@ export default function ProtectedLayout({
           </div>
 
           <div className="flex items-center gap-2">
+            <LanguageToggle />
             <ThemeToggle />
             <Button
               variant="outline"
@@ -74,12 +78,12 @@ export default function ProtectedLayout({
               onClick={handleLogout}
               className="hidden sm:inline-flex"
             >
-              Log out
+              {t("nav.logout")}
             </Button>
             <button
               type="button"
               className="sm:hidden p-2 -mr-2"
-              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              aria-label={menuOpen ? t("nav.closeMenu") : t("nav.openMenu")}
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen((open) => !open)}
             >
@@ -101,11 +105,15 @@ export default function ProtectedLayout({
               </Link>
             ))}
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Theme</span>
+              <span className="text-sm text-muted-foreground">{t("nav.theme")}</span>
               <ThemeToggle />
             </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">{t("nav.language")}</span>
+              <LanguageToggle />
+            </div>
             <Button variant="outline" size="sm" onClick={handleLogout} className="w-full">
-              Log out
+              {t("nav.logout")}
             </Button>
           </div>
         )}

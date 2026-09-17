@@ -9,28 +9,30 @@ import {
   MonthlySpendingChart,
 } from "@/features/dashboard";
 import { OverBudgetBanner } from "@/features/budgets";
+import { useLanguage } from "@/lib/i18n";
 
 export default function DashboardPage() {
+  const { t } = useLanguage();
   const { data: categoryData, isLoading: categoryLoading, error: categoryError } = useCategorySpending();
   const { data: monthlyData, isLoading: monthlyLoading, error: monthlyError } = useMonthlySpending();
 
   return (
     <main className="p-4 space-y-8 sm:p-8">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
+      <h1 className="text-2xl font-bold">{t("dashboard.title")}</h1>
 
       <OverBudgetBanner />
 
       <div className="grid gap-8 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Spending by Category</CardTitle>
+            <CardTitle>{t("dashboard.spendingByCategory")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div aria-live="polite">
               {categoryLoading && <Skeleton className="h-[300px] w-full" />}
-              {categoryError && <p className="text-red-600">Failed to load data</p>}
+              {categoryError && <p className="text-red-600">{t("dashboard.failedToLoad")}</p>}
               {categoryData?.length === 0 && (
-                <p className="text-muted-foreground">No transactions yet</p>
+                <p className="text-muted-foreground">{t("dashboard.noTransactions")}</p>
               )}
             </div>
             {categoryData && categoryData.length > 0 && (
@@ -41,14 +43,14 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Spending Over Time</CardTitle>
+            <CardTitle>{t("dashboard.spendingOverTime")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div aria-live="polite">
               {monthlyLoading && <Skeleton className="h-[300px] w-full" />}
-              {monthlyError && <p className="text-red-600">Failed to load data</p>}
+              {monthlyError && <p className="text-red-600">{t("dashboard.failedToLoad")}</p>}
               {monthlyData?.length === 0 && (
-                <p className="text-muted-foreground">No transactions yet</p>
+                <p className="text-muted-foreground">{t("dashboard.noTransactions")}</p>
               )}
             </div>
             {monthlyData && monthlyData.length > 0 && (

@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLanguage } from "@/lib/i18n";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,26 +35,27 @@ function DeleteTransactionDialog({
   transaction,
   onDelete,
 }: Readonly<{ transaction: Transaction; onDelete: () => void }>) {
+  const { t } = useLanguage();
+
   return (
     <AlertDialog>
       <AlertDialogTrigger
         render={
           <Button variant="ghost" size="sm">
-            Delete
+            {t("common.delete")}
           </Button>
         }
       />
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete this transaction?</AlertDialogTitle>
+          <AlertDialogTitle>{t("transactions.list.deleteTitle")}</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. "{transaction.description}" will be permanently
-            removed.
+            {t("transactions.list.deleteDescription", { description: transaction.description })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onDelete}>Delete</AlertDialogAction>
+          <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+          <AlertDialogAction onClick={onDelete}>{t("common.delete")}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -61,6 +63,7 @@ function DeleteTransactionDialog({
 }
 
 export function TransactionList() {
+  const { t } = useLanguage();
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -82,14 +85,21 @@ export function TransactionList() {
 
   function handleDelete(id: number) {
     deleteTransaction.mutate(id, {
-      onSuccess: () => toast.success("Transaction deleted"),
+      onSuccess: () => toast.success(t("transactions.list.deleted")),
     });
+  }
+
+  function sourceLabel(source: string): string {
+    if (source === "manual") return t("transactions.list.sourceManual");
+    if (source === "csv_import") return t("transactions.list.sourceCsvImport");
+    if (source === "recurring") return t("transactions.list.sourceRecurring");
+    return source.replace("_", " ");
   }
 
   return (
     <div className="space-y-4">
       <Input
-        placeholder="Search by description..."
+        placeholder={t("transactions.list.searchPlaceholder")}
         value={searchInput}
         onChange={(e) => setSearchInput(e.target.value)}
         className="max-w-xs"
@@ -103,9 +113,9 @@ export function TransactionList() {
             ))}
           </div>
         )}
-        {error && <p className="text-red-600">Failed to load transactions</p>}
+        {error && <p className="text-red-600">{t("transactions.list.failedToLoad")}</p>}
         {data && data.items.length === 0 && (
-          <p className="text-muted-foreground">No transactions found</p>
+          <p className="text-muted-foreground">{t("transactions.list.empty")}</p>
         )}
       </div>
 
@@ -124,7 +134,7 @@ export function TransactionList() {
                 </div>
                 <div className="flex items-center justify-between">
                   <p className="text-xs text-muted-foreground capitalize">
-                    {transaction.source.replace("_", " ")}
+                    {sourceLabel(transaction.source)}
                   </p>
                   <DeleteTransactionDialog
                     transaction={transaction}
@@ -140,10 +150,10 @@ export function TransactionList() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead>Source</TableHead>
+                  <TableHead>{t("transactions.list.date")}</TableHead>
+                  <TableHead>{t("transactions.list.description")}</TableHead>
+                  <TableHead className="text-right">{t("transactions.list.amount")}</TableHead>
+                  <TableHead>{t("transactions.list.source")}</TableHead>
                   <TableHead className="w-[80px]"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -154,7 +164,7 @@ export function TransactionList() {
                     <TableCell>{transaction.description}</TableCell>
                     <TableCell className="text-right">{transaction.amount}</TableCell>
                     <TableCell className="capitalize">
-                      {transaction.source.replace("_", " ")}
+                      {sourceLabel(transaction.source)}
                     </TableCell>
                     <TableCell>
                       <DeleteTransactionDialog
@@ -170,7 +180,11 @@ export function TransactionList() {
 
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-sm text-muted-foreground">
-              Page {data.page} of {data.total_pages} ({data.total} total)
+              {t("transactions.list.page", {
+                page: data.page,
+                totalPages: data.total_pages,
+                total: data.total,
+              })}
             </p>
             <div className="flex gap-2">
               <Button
@@ -179,7 +193,7 @@ export function TransactionList() {
                 disabled={page <= 1}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
               >
-                Previous
+                {t("transactions.list.previous")}
               </Button>
               <Button
                 variant="outline"
@@ -187,7 +201,7 @@ export function TransactionList() {
                 disabled={page >= data.total_pages}
                 onClick={() => setPage((p) => p + 1)}
               >
-                Next
+                {t("transactions.list.next")}
               </Button>
             </div>
           </div>

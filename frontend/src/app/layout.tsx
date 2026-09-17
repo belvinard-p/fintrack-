@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { QueryProvider } from "@/lib/query-client";
 import { ThemeProvider } from "@/lib/theme-provider";
+import { LanguageProvider } from "@/lib/i18n";
 import { Toaster } from "@/components/ui/sonner";
 import "@/styles/globals.css";
 
@@ -29,10 +30,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <ThemeProvider>
-          <QueryProvider>
-            {children}
-            <Toaster />
-          </QueryProvider>
+          <LanguageProvider>
+            <QueryProvider>
+              {children}
+              <Toaster />
+            </QueryProvider>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

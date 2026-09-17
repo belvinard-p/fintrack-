@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLanguage } from "@/lib/i18n";
 import {
   Dialog,
   DialogContent,
@@ -31,6 +32,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export function CategoryManager() {
+  const { t } = useLanguage();
   const { data: categories, isLoading, error } = useCategories();
 
   const createCategory = useCreateCategory();
@@ -49,9 +51,9 @@ export function CategoryManager() {
     try {
       await createCategory.mutateAsync({ name: newName });
       setNewName("");
-      toast.success("Category created");
+      toast.success(t("categories.created"));
     } catch (err: any) {
-      setCreateError(err.response?.data?.detail || "Failed to create category");
+      setCreateError(err.response?.data?.detail || t("categories.createError"));
     }
   }
 
@@ -69,9 +71,9 @@ export function CategoryManager() {
 
       await updateCategory.mutateAsync({ id: editingId, name: editName });
       setEditingId(null);
-      toast.success("Category updated");
+      toast.success(t("categories.updated"));
     } catch (err: any) {
-      setEditError(err.response?.data?.detail || "Failed to update category");
+      setEditError(err.response?.data?.detail || t("categories.updateError"));
     }
   }
 
@@ -84,19 +86,19 @@ export function CategoryManager() {
       </div>
     );
   }
-  if (error) return <p aria-live="polite" className="text-red-600">Failed to load categories</p>;
+  if (error) return <p aria-live="polite" className="text-red-600">{t("categories.failedToLoad")}</p>;
 
   return (
     <div className="space-y-6">
       <form onSubmit={handleCreate} className="flex gap-2">
         <Input
-          placeholder="New category name"
+          placeholder={t("categories.newCategoryPlaceholder")}
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
           required
         />
         <Button type="submit" disabled={createCategory.isPending}>
-          {createCategory.isPending ? "Adding..." : "Add"}
+          {createCategory.isPending ? t("categories.adding") : t("categories.add")}
         </Button>
       </form>
       {createError && <p className="text-red-600 text-sm">{createError}</p>}
@@ -110,7 +112,7 @@ export function CategoryManager() {
             <div className="flex items-center gap-2">
 
               <span>{category.name}</span>
-              {category.is_default && <Badge variant="secondary">Default</Badge>}
+              {category.is_default && <Badge variant="secondary">{t("categories.default")}</Badge>}
             </div>
 
             {!category.is_default && (
@@ -128,11 +130,11 @@ export function CategoryManager() {
                       />
                     }
                   >
-                    Edit
+                    {t("common.edit")}
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Rename category</DialogTitle>
+                      <DialogTitle>{t("categories.renameTitle")}</DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleUpdate} className="space-y-4">
                       {editError && <p className="text-red-600 text-sm">{editError}</p>}
@@ -144,7 +146,7 @@ export function CategoryManager() {
                       <DialogFooter>
                         <Button type="submit" disabled={updateCategory.isPending}>
 
-                          {updateCategory.isPending ? "Saving..." : "Save"}
+                          {updateCategory.isPending ? t("common.saving") : t("common.save")}
                         </Button>
                       </DialogFooter>
                     </form>
@@ -155,26 +157,25 @@ export function CategoryManager() {
                   <AlertDialogTrigger
                     render={<Button variant="ghost" size="sm" />}
                   >
-                    Delete
+                    {t("common.delete")}
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Delete "{category.name}"?</AlertDialogTitle>
+                      <AlertDialogTitle>{t("categories.deleteTitle", { name: category.name })}</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Any transactions using this category will become uncategorized.
-                        This action cannot be undone.
+                        {t("categories.deleteDescription")}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={() =>
                           deleteCategory.mutate(category.id, {
-                            onSuccess: () => toast.success("Category deleted"),
+                            onSuccess: () => toast.success(t("categories.deleted")),
                           })
                         }
                       >
-                        Delete
+                        {t("common.delete")}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>

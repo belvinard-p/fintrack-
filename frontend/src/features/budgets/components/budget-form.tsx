@@ -7,6 +7,7 @@ import { useCategories } from "@/features/categories";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useLanguage } from "@/lib/i18n";
 import {
   Select,
   SelectContent,
@@ -16,6 +17,7 @@ import {
 } from "@/components/ui/select";
 
 export function BudgetForm() {
+  const { t } = useLanguage();
   const [categoryId, setCategoryId] = useState("");
   const [monthlyLimit, setMonthlyLimit] = useState("");
   const [month, setMonth] = useState("");
@@ -38,9 +40,9 @@ export function BudgetForm() {
       setCategoryId("");
       setMonthlyLimit("");
       setMonth("");
-      toast.success("Budget created");
+      toast.success(t("budgets.form.created"));
     } catch (err: any) {
-      setError(err.response?.data?.detail || "Failed to create budget");
+      setError(err.response?.data?.detail || t("budgets.form.error"));
     }
   }
 
@@ -49,7 +51,7 @@ export function BudgetForm() {
       {error && <p className="text-red-600 text-sm">{error}</p>}
 
       <div className="space-y-2">
-        <Label htmlFor="budget-category">Category</Label>
+        <Label htmlFor="budget-category">{t("budgets.form.category")}</Label>
         <Select
           value={categoryId}
           onValueChange={(value) => setCategoryId(value ?? "")}
@@ -60,7 +62,7 @@ export function BudgetForm() {
           required
         >
           <SelectTrigger id="budget-category" className="w-full">
-            <SelectValue placeholder="Select a category" />
+            <SelectValue placeholder={t("budgets.form.selectCategory")} />
           </SelectTrigger>
           <SelectContent>
             {categories?.map((category) => (
@@ -74,7 +76,7 @@ export function BudgetForm() {
 
       <div className="space-y-2">
 
-        <Label htmlFor="month">Month</Label>
+        <Label htmlFor="month">{t("budgets.form.month")}</Label>
         <Input
           id="month"
           type="month"
@@ -85,7 +87,7 @@ export function BudgetForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="monthly-limit">Monthly Limit</Label>
+        <Label htmlFor="monthly-limit">{t("budgets.form.monthlyLimit")}</Label>
         <Input
           id="monthly-limit"
           type="number"
@@ -97,7 +99,7 @@ export function BudgetForm() {
       </div>
 
       <Button type="submit" className="w-full" disabled={createBudget.isPending || !categoryId}>
-        {createBudget.isPending ? "Creating..." : "Create Budget"}
+        {createBudget.isPending ? t("budgets.form.creating") : t("budgets.form.submit")}
       </Button>
     </form>
   );

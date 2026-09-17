@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
+import { LanguageToggle } from "@/components/language-toggle";
+import { useLanguage } from "@/lib/i18n";
 import {
   Card,
   CardHeader,
@@ -15,6 +17,7 @@ import {
 } from "@/components/ui/card";
 
 export default function RegisterPage() {
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -28,23 +31,26 @@ export default function RegisterPage() {
       await register({ email, password });
       router.push("/login");
     } catch (err: any) {
-      setError(err.response?.data?.detail || "Registration failed");
+      setError(err.response?.data?.detail || t("auth.register.error"));
     }
   }
 
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4">
+    <main className="relative flex min-h-screen items-center justify-center px-4">
+      <div className="absolute top-4 right-4">
+        <LanguageToggle />
+      </div>
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>Create an account</CardTitle>
+          <CardTitle>{t("auth.register.title")}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && <p className="text-red-600 text-sm">{error}</p>}
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("auth.register.email")}</Label>
               <Input
                 id="email"
                 type="email"
@@ -55,7 +61,7 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("auth.register.password")}</Label>
               <PasswordInput
                 id="password"
                 value={password}
@@ -66,7 +72,7 @@ export default function RegisterPage() {
 
 
             <Button type="submit" className="w-full">
-              Register
+              {t("auth.register.submit")}
             </Button>
           </form>
         </CardContent>

@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLanguage } from "@/lib/i18n";
 import {
   Dialog,
   DialogContent,
@@ -32,6 +33,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export function BudgetStatusList() {
+  const { t } = useLanguage();
   const [month, setMonth] = useState(getCurrentMonth);
 
   const { data: statuses, isLoading, error } = useBudgetStatus(month);
@@ -58,16 +60,16 @@ export function BudgetStatusList() {
         payload: { monthly_limit: editLimit },
       });
       setEditingId(null);
-      toast.success("Budget updated");
+      toast.success(t("budgets.status.updated"));
     } catch (err: any) {
-      setEditError(err.response?.data?.detail || "Failed to update budget");
+      setEditError(err.response?.data?.detail || t("budgets.status.updateError"));
     }
   }
 
   return (
     <div className="space-y-4">
       <div className="space-y-2 max-w-xs">
-        <Label htmlFor="status-month">Month</Label>
+        <Label htmlFor="status-month">{t("budgets.form.month")}</Label>
         <Input
           id="status-month"
           type="month"
@@ -84,9 +86,9 @@ export function BudgetStatusList() {
             ))}
           </div>
         )}
-        {error && <p className="text-red-600">Failed to load budget status</p>}
+        {error && <p className="text-red-600">{t("budgets.status.failedToLoad")}</p>}
         {statuses && statuses.length === 0 && (
-          <p className="text-muted-foreground">No budgets set for this month</p>
+          <p className="text-muted-foreground">{t("budgets.status.empty")}</p>
         )}
       </div>
 
@@ -105,7 +107,7 @@ export function BudgetStatusList() {
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant={status.is_over_budget ? "destructive" : "secondary"}>
-                  {status.is_over_budget ? "Over budget" : "On track"}
+                  {status.is_over_budget ? t("budgets.status.overBudget") : t("budgets.status.onTrack")}
                 </Badge>
                 <Dialog
                   open={editingId === status.id}
@@ -120,16 +122,18 @@ export function BudgetStatusList() {
                       />
                     }
                   >
-                    Edit
+                    {t("common.edit")}
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Update budget for {status.category_name}</DialogTitle>
+                      <DialogTitle>
+                        {t("budgets.status.editTitle", { category: status.category_name })}
+                      </DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleUpdate} className="space-y-4">
                       {editError && <p className="text-red-600 text-sm">{editError}</p>}
                       <div className="space-y-2">
-                        <Label htmlFor="edit-monthly-limit">Monthly limit</Label>
+                        <Label htmlFor="edit-monthly-limit">{t("budgets.status.monthlyLimitLabel")}</Label>
                         <Input
                           id="edit-monthly-limit"
                           type="number"
@@ -141,7 +145,7 @@ export function BudgetStatusList() {
                       </div>
                       <DialogFooter>
                         <Button type="submit" disabled={updateBudget.isPending}>
-                          {updateBudget.isPending ? "Saving..." : "Save"}
+                          {updateBudget.isPending ? t("common.saving") : t("common.save")}
                         </Button>
                       </DialogFooter>
                     </form>
@@ -152,28 +156,27 @@ export function BudgetStatusList() {
                   <AlertDialogTrigger
                     render={<Button variant="ghost" size="sm" />}
                   >
-                    Delete
+                    {t("common.delete")}
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
                       <AlertDialogTitle>
-                        Delete budget for {status.category_name}?
+                        {t("budgets.status.deleteTitle", { category: status.category_name })}
                       </AlertDialogTitle>
                       <AlertDialogDescription>
-                        This only removes the budget limit — your transactions in this
-                        category are not affected. This action cannot be undone.
+                        {t("budgets.status.deleteDescription")}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={() =>
                           deleteBudget.mutate(status.id, {
-                            onSuccess: () => toast.success("Budget deleted"),
+                            onSuccess: () => toast.success(t("budgets.status.deleted")),
                           })
                         }
                       >
-                        Delete
+                        {t("common.delete")}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>

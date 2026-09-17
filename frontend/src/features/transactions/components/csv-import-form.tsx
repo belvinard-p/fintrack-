@@ -6,8 +6,10 @@ import { ImportResult } from "../types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useLanguage } from "@/lib/i18n";
 
 export function CsvImportForm() {
+  const { t } = useLanguage();
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ImportResult | null>(null);
@@ -21,7 +23,7 @@ export function CsvImportForm() {
     setResult(null);
 
     if (!file) {
-      setError("Please select a CSV file");
+      setError(t("transactions.csvImport.selectFile"));
       return;
     }
 
@@ -33,7 +35,7 @@ export function CsvImportForm() {
         fileInputRef.current.value = "";
       }
     } catch (err: any) {
-      setError(err.response?.data?.detail || "Failed to import CSV");
+      setError(err.response?.data?.detail || t("transactions.csvImport.error"));
     }
   }
 
@@ -43,17 +45,20 @@ export function CsvImportForm() {
 
       {result && (
         <div className="text-sm bg-green-50 border border-green-200 rounded p-3 text-green-800 space-y-1">
-          <p>Imported {result.created} new transaction(s).</p>
+          <p>{t("transactions.csvImport.imported", { count: result.created })}</p>
           {result.skipped_duplicates > 0 && (
-            <p>{result.skipped_duplicates} duplicate(s) skipped.</p>
+            <p>{t("transactions.csvImport.duplicatesSkipped", { count: result.skipped_duplicates })}</p>
           )}
           {result.invalid_rows > 0 && (
             <div className="text-amber-800">
-              <p>{result.invalid_rows} row(s) could not be read and were skipped:</p>
+              <p>{t("transactions.csvImport.invalidRows", { count: result.invalid_rows })}</p>
               <ul className="list-disc list-inside">
                 {result.invalid_row_details.map((detail) => (
                   <li key={detail.row_number}>
-                    Row {detail.row_number}: {detail.reason}
+                    {t("transactions.csvImport.rowLabel", {
+                      row: detail.row_number,
+                      reason: detail.reason,
+                    })}
                   </li>
                 ))}
               </ul>
@@ -63,7 +68,7 @@ export function CsvImportForm() {
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="csv-file">Bank statement (CSV)</Label>
+        <Label htmlFor="csv-file">{t("transactions.csvImport.label")}</Label>
         <Input
           id="csv-file"
           type="file"
@@ -71,14 +76,11 @@ export function CsvImportForm() {
           ref={fileInputRef}
           onChange={(e) => setFile(e.target.files?.[0] || null)}
         />
-        <p className="text-xs text-gray-500">
-          Needs a date, description, and amount column (common bank export names are
-          recognized automatically).
-        </p>
+        <p className="text-xs text-gray-500">{t("transactions.csvImport.hint")}</p>
       </div>
 
       <Button type="submit" disabled={importCsv.isPending || !file} className="w-full">
-        {importCsv.isPending ? "Importing..." : "Import CSV"}
+        {importCsv.isPending ? t("transactions.csvImport.importing") : t("transactions.csvImport.submit")}
       </Button>
     </form>
   );

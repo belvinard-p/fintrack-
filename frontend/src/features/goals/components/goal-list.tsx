@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
+import { useLanguage } from "@/lib/i18n";
 import {
   Dialog,
   DialogContent,
@@ -41,6 +42,7 @@ function progressPercent(goal: Goal): number {
 }
 
 function ContributeDialog({ goal }: Readonly<{ goal: Goal }>) {
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -53,25 +55,25 @@ function ContributeDialog({ goal }: Readonly<{ goal: Goal }>) {
       await contribute.mutateAsync({ id: goal.id, payload: { amount } });
       setAmount("");
       setOpen(false);
-      toast.success("Funds added");
+      toast.success(t("goals.list.fundsAdded"));
     } catch (err: any) {
-      setError(err.response?.data?.detail || "Failed to add contribution");
+      setError(err.response?.data?.detail || t("goals.list.contributeError"));
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<Button variant="outline" size="sm" />}>
-        Add funds
+        {t("goals.list.addFunds")}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add funds to {goal.name}</DialogTitle>
+          <DialogTitle>{t("goals.list.addFundsTitle", { name: goal.name })}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && <p className="text-red-600 text-sm">{error}</p>}
           <div className="space-y-2">
-            <Label htmlFor={`contribute-${goal.id}`}>Amount</Label>
+            <Label htmlFor={`contribute-${goal.id}`}>{t("goals.list.amount")}</Label>
             <Input
               id={`contribute-${goal.id}`}
               type="number"
@@ -83,7 +85,7 @@ function ContributeDialog({ goal }: Readonly<{ goal: Goal }>) {
           </div>
           <DialogFooter>
             <Button type="submit" disabled={contribute.isPending}>
-              {contribute.isPending ? "Saving..." : "Add"}
+              {contribute.isPending ? t("goals.list.saving") : t("goals.list.add")}
             </Button>
           </DialogFooter>
         </form>
@@ -93,6 +95,7 @@ function ContributeDialog({ goal }: Readonly<{ goal: Goal }>) {
 }
 
 export function GoalList() {
+  const { t } = useLanguage();
   const { data: goals, isLoading, error } = useGoals();
   const deleteGoal = useDeleteGoal();
   const { data: currentUser } = useCurrentUser();
@@ -106,9 +109,9 @@ export function GoalList() {
       </div>
     );
   }
-  if (error) return <p aria-live="polite" className="text-red-600">Failed to load goals</p>;
+  if (error) return <p aria-live="polite" className="text-red-600">{t("goals.list.failedToLoad")}</p>;
   if (!goals || goals.length === 0) {
-    return <p aria-live="polite" className="text-muted-foreground">No goals yet</p>;
+    return <p aria-live="polite" className="text-muted-foreground">{t("goals.list.empty")}</p>;
   }
 
   return (
@@ -123,7 +126,7 @@ export function GoalList() {
                 {currentUser ? ` · ${currentUser.email}` : ""}
               </p>
             </div>
-            {goal.is_completed && <Badge>Goal reached</Badge>}
+            {goal.is_completed && <Badge>{t("goals.list.goalReached")}</Badge>}
           </div>
 
           <Progress value={progressPercent(goal)} />
@@ -132,25 +135,25 @@ export function GoalList() {
             <ContributeDialog goal={goal} />
             <AlertDialog>
               <AlertDialogTrigger render={<Button variant="ghost" size="sm" />}>
-                Delete
+                {t("common.delete")}
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete "{goal.name}"?</AlertDialogTitle>
+                  <AlertDialogTitle>{t("goals.list.deleteTitle", { name: goal.name })}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone.
+                    {t("goals.list.deleteDescription")}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={() =>
                       deleteGoal.mutate(goal.id, {
-                        onSuccess: () => toast.success("Goal deleted"),
+                        onSuccess: () => toast.success(t("goals.list.deleted")),
                       })
                     }
                   >
-                    Delete
+                    {t("common.delete")}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

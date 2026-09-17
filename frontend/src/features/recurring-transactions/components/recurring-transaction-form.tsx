@@ -7,6 +7,7 @@ import { useCategories } from "@/features/categories";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useLanguage } from "@/lib/i18n";
 import {
   Select,
   SelectContent,
@@ -16,6 +17,7 @@ import {
 } from "@/components/ui/select";
 
 export function RecurringTransactionForm() {
+  const { t } = useLanguage();
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [dayOfMonth, setDayOfMonth] = useState("1");
@@ -43,9 +45,9 @@ export function RecurringTransactionForm() {
       setDayOfMonth("1");
       setStartDate("");
       setCategoryId("");
-      toast.success("Recurring transaction created");
+      toast.success(t("recurring.form.created"));
     } catch (err: any) {
-      setError(err.response?.data?.detail || "Failed to create recurring transaction");
+      setError(err.response?.data?.detail || t("recurring.form.error"));
     }
   }
 
@@ -54,31 +56,31 @@ export function RecurringTransactionForm() {
       {error && <p className="text-red-600 text-sm">{error}</p>}
 
       <div className="space-y-2">
-        <Label htmlFor="recurring-description">Description</Label>
+        <Label htmlFor="recurring-description">{t("recurring.form.description")}</Label>
         <Input
           id="recurring-description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Rent, Netflix, Salary..."
+          placeholder={t("recurring.form.descriptionPlaceholder")}
           required
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="recurring-amount">Amount</Label>
+        <Label htmlFor="recurring-amount">{t("recurring.form.amount")}</Label>
         <Input
           id="recurring-amount"
           type="number"
           step="0.01"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-          placeholder="-1200.00 for expense, 2500.00 for income"
+          placeholder={t("recurring.form.amountPlaceholder")}
           required
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="recurring-day">Day of month</Label>
+        <Label htmlFor="recurring-day">{t("recurring.form.dayOfMonth")}</Label>
         <Input
           id="recurring-day"
           type="number"
@@ -91,7 +93,7 @@ export function RecurringTransactionForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="recurring-start">Start date</Label>
+        <Label htmlFor="recurring-start">{t("recurring.form.startDate")}</Label>
         <Input
           id="recurring-start"
           type="date"
@@ -102,7 +104,7 @@ export function RecurringTransactionForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="recurring-category">Category (optional)</Label>
+        <Label htmlFor="recurring-category">{t("recurring.form.category")}</Label>
         <Select
           value={categoryId}
           onValueChange={(value) => setCategoryId(value ?? "")}
@@ -112,7 +114,7 @@ export function RecurringTransactionForm() {
           }))}
         >
           <SelectTrigger id="recurring-category" className="w-full">
-            <SelectValue placeholder="Uncategorized" />
+            <SelectValue placeholder={t("recurring.form.uncategorized")} />
           </SelectTrigger>
           <SelectContent>
             {categories?.map((category) => (
@@ -125,7 +127,7 @@ export function RecurringTransactionForm() {
       </div>
 
       <Button type="submit" className="w-full" disabled={createRecurring.isPending}>
-        {createRecurring.isPending ? "Creating..." : "Create Recurring Transaction"}
+        {createRecurring.isPending ? t("recurring.form.creating") : t("recurring.form.submit")}
       </Button>
     </form>
   );

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useDeleteAccount } from "../hooks/use-delete-account";
 import { clearToken } from "@/lib/session";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/lib/i18n";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export function DeleteAccountSection() {
+  const { t } = useLanguage();
   const router = useRouter();
   const deleteAccount = useDeleteAccount();
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +31,7 @@ export function DeleteAccountSection() {
       clearToken();
       router.push("/login");
     } catch (err: any) {
-      setError(err.response?.data?.detail || "Failed to delete account");
+      setError(err.response?.data?.detail || t("auth.deleteAccount.error"));
     }
   }
 
@@ -38,19 +40,18 @@ export function DeleteAccountSection() {
       {error && <p className="text-red-600 text-sm">{error}</p>}
       <AlertDialog>
         <AlertDialogTrigger render={<Button variant="destructive" />}>
-          Delete account
+          {t("auth.deleteAccount.trigger")}
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+            <AlertDialogTitle>{t("auth.deleteAccount.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              This permanently deletes your account and all of your transactions, budgets,
-              and categories. This action cannot be undone.
+              {t("auth.deleteAccount.description")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Delete account</AlertDialogAction>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>{t("auth.deleteAccount.confirm")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

@@ -7,6 +7,7 @@ import { useCategories } from "@/features/categories";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useLanguage } from "@/lib/i18n";
 import {
   Select,
   SelectContent,
@@ -16,6 +17,7 @@ import {
 } from "@/components/ui/select";
 
 export function TransactionForm() {
+  const { t } = useLanguage();
   const [date, setDate] = useState("");
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
@@ -41,9 +43,9 @@ export function TransactionForm() {
       setDescription("");
       setAmount("");
       setCategoryId("");
-      toast.success("Transaction added");
+      toast.success(t("transactions.form.added"));
     } catch (err: any) {
-      setError(err.response?.data?.detail || "Failed to create transaction");
+      setError(err.response?.data?.detail || t("transactions.form.error"));
     }
   }
 
@@ -52,12 +54,12 @@ export function TransactionForm() {
       {error && <p className="text-red-600 text-sm">{error}</p>}
 
       <div className="space-y-2">
-        <Label htmlFor="date">Date</Label>
+        <Label htmlFor="date">{t("transactions.form.date")}</Label>
         <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
+        <Label htmlFor="description">{t("transactions.form.description")}</Label>
         <Input
           id="description"
           type="text"
@@ -69,20 +71,20 @@ export function TransactionForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="amount">Amount</Label>
+        <Label htmlFor="amount">{t("transactions.form.amount")}</Label>
         <Input
           id="amount"
           type="number"
           step="0.01"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-          placeholder="-50.00 for expense, 100.00 for income"
+          placeholder={t("transactions.form.amountPlaceholder")}
           required
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="category">Category</Label>
+        <Label htmlFor="category">{t("transactions.form.category")}</Label>
         <Select
           value={categoryId}
           onValueChange={(value) => setCategoryId(value ?? "")}
@@ -92,7 +94,7 @@ export function TransactionForm() {
           }))}
         >
           <SelectTrigger id="category" className="w-full">
-            <SelectValue placeholder="Uncategorized" />
+            <SelectValue placeholder={t("transactions.form.uncategorized")} />
           </SelectTrigger>
           <SelectContent>
             {categories?.map((category) => (
@@ -106,7 +108,7 @@ export function TransactionForm() {
 
       <Button type="submit" className="w-full" disabled={createTransaction.isPending}>
 
-        {createTransaction.isPending ? "Adding..." : "Add Transaction"}
+        {createTransaction.isPending ? t("transactions.form.adding") : t("transactions.form.submit")}
       </Button>
     </form>
   );

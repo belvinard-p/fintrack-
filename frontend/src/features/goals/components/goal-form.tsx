@@ -6,8 +6,10 @@ import { useCreateGoal } from "../hooks/use-create-goal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useLanguage } from "@/lib/i18n";
 
 export function GoalForm() {
+  const { t } = useLanguage();
   const [name, setName] = useState("");
   const [targetAmount, setTargetAmount] = useState("");
   const [targetDate, setTargetDate] = useState("");
@@ -28,9 +30,9 @@ export function GoalForm() {
       setName("");
       setTargetAmount("");
       setTargetDate("");
-      toast.success("Goal created");
+      toast.success(t("goals.form.created"));
     } catch (err: any) {
-      setError(err.response?.data?.detail || "Failed to create goal");
+      setError(err.response?.data?.detail || t("goals.form.error"));
     }
   }
 
@@ -39,18 +41,18 @@ export function GoalForm() {
       {error && <p className="text-red-600 text-sm">{error}</p>}
 
       <div className="space-y-2">
-        <Label htmlFor="goal-name">Goal name</Label>
+        <Label htmlFor="goal-name">{t("goals.form.name")}</Label>
         <Input
           id="goal-name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Emergency fund"
+          placeholder={t("goals.form.namePlaceholder")}
           required
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="goal-target">Target amount</Label>
+        <Label htmlFor="goal-target">{t("goals.form.targetAmount")}</Label>
         <Input
           id="goal-target"
           type="number"
@@ -62,7 +64,7 @@ export function GoalForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="goal-date">Target date (optional)</Label>
+        <Label htmlFor="goal-date">{t("goals.form.targetDate")}</Label>
         <Input
           id="goal-date"
           type="date"
@@ -72,7 +74,7 @@ export function GoalForm() {
       </div>
 
       <Button type="submit" className="w-full" disabled={createGoal.isPending}>
-        {createGoal.isPending ? "Creating..." : "Create Goal"}
+        {createGoal.isPending ? t("goals.form.creating") : t("goals.form.submit")}
       </Button>
     </form>
   );

@@ -5,8 +5,10 @@ import { useChangePassword } from "../hooks/use-change-password";
 import { Button } from "@/components/ui/button";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
+import { useLanguage } from "@/lib/i18n";
 
 export function ChangePasswordForm() {
+  const { t } = useLanguage();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -28,17 +30,17 @@ export function ChangePasswordForm() {
       setNewPassword("");
       setSuccess(true);
     } catch (err: any) {
-      setError(err.response?.data?.detail || "Failed to change password");
+      setError(err.response?.data?.detail || t("auth.changePassword.error"));
     }
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && <p className="text-red-600 text-sm">{error}</p>}
-      {success && <p className="text-green-600 text-sm">Password updated.</p>}
+      {success && <p className="text-green-600 text-sm">{t("auth.changePassword.success")}</p>}
 
       <div className="space-y-2">
-        <Label htmlFor="current-password">Current password</Label>
+        <Label htmlFor="current-password">{t("auth.changePassword.currentPassword")}</Label>
         <PasswordInput
           id="current-password"
           value={currentPassword}
@@ -48,7 +50,7 @@ export function ChangePasswordForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="new-password">New password</Label>
+        <Label htmlFor="new-password">{t("auth.changePassword.newPassword")}</Label>
         <PasswordInput
           id="new-password"
           value={newPassword}
@@ -59,7 +61,7 @@ export function ChangePasswordForm() {
       </div>
 
       <Button type="submit" disabled={changePassword.isPending}>
-        {changePassword.isPending ? "Saving..." : "Update password"}
+        {changePassword.isPending ? t("auth.changePassword.saving") : t("auth.changePassword.submit")}
       </Button>
     </form>
   );
