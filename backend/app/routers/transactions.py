@@ -12,6 +12,7 @@ from app.core.deps import get_current_user
 from app.core.categorization import categorize_transaction
 from app.core.audit import log_action
 from app.services.csv_import import parse_csv, CSVParseError
+from app.services.pdf_export import generate_transactions_pdf
 from app.models.user import User
 from app.models.transaction import Transaction
 from app.models.category import Category
@@ -147,6 +148,31 @@ def export_transactions(
         buffer,
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=transactions.csv"},
+    )
+
+
+@router.get("/export/pdf")
+def export_transactions_pdf(
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+    search: Optional[str] = None,
+    category_id: Optional[int] = None,
+    date_from: Optional[date] = None,
+    date_to: Optional[date] = None,
+):
+    query = _filtered_transactions_query(db, current_user, search, category_id, date_from, date_to)
+    transactions = query.order_by(Transaction.date.desc(), Transaction.id.desc()).all()
+
+    category_names = {
+        c.id: c.name
+        for c in db.query(Category).filter(Category.user_id == current_user.id).all()
+    }
+
+    buffer = generate_transactions_pdf(transactions, category_names, current_user.email)
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": "attachment; filename=transactions.pdf"},
     )
 
 

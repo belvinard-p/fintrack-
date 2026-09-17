@@ -306,6 +306,8 @@ export const fr: typeof en = {
     export: {
       button: "Exporter en CSV",
       exporting: "Exportation...",
+      buttonPdf: "Exporter en PDF",
+      exportingPdf: "Exportation...",
     },
   },
 };

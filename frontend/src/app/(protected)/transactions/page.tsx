@@ -5,6 +5,7 @@ import {
   TransactionList,
   CsvImportForm,
   ExportCsvButton,
+  ExportPdfButton,
 } from "@/features/transactions";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useLanguage } from "@/lib/i18n";
@@ -37,9 +38,12 @@ export default function TransactionsPage() {
       </div>
 
       <Card>
-        <CardHeader className="flex items-center justify-between">
+        <CardHeader className="flex flex-wrap items-center justify-between gap-2">
           <CardTitle>{t("transactions.allTransactions")}</CardTitle>
-          <ExportCsvButton />
+          <div className="flex gap-2">
+            <ExportCsvButton />
+            <ExportPdfButton />
+          </div>
         </CardHeader>
         <CardContent>
           <TransactionList />

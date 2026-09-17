@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { getToken, clearToken } from "@/lib/session";
@@ -17,6 +17,7 @@ export default function ProtectedLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { t } = useLanguage();
   const [checked, setChecked] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -52,20 +53,28 @@ export default function ProtectedLayout({
 
   return (
     <div className="min-h-screen flex flex-col">
-      <nav className="border-b px-4 py-4 sm:px-8">
+      <nav className="sticky top-0 z-40 border-b bg-background/95 px-4 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:px-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
             <span className="font-bold">{t("nav.brand")}</span>
             <div className="hidden sm:flex items-center gap-6">
-              {NAV_LINKS.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="text-sm text-muted-foreground hover:text-foreground"
-                >
-                  {link.label}
-                </Link>
-              ))}
+              {NAV_LINKS.map((link) => {
+                const isActive = pathname === link.href;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    aria-current={isActive ? "page" : undefined}
+                    className={
+                      isActive
+                        ? "text-sm font-medium text-foreground"
+                        : "text-sm text-muted-foreground hover:text-foreground"
+                    }
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
             </div>
           </div>
 
@@ -94,16 +103,24 @@ export default function ProtectedLayout({
 
         {menuOpen && (
           <div className="sm:hidden mt-4 flex flex-col gap-4 border-t pt-4">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-sm text-muted-foreground hover:text-foreground"
-                onClick={() => setMenuOpen(false)}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {NAV_LINKS.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  aria-current={isActive ? "page" : undefined}
+                  className={
+                    isActive
+                      ? "text-sm font-medium text-foreground"
+                      : "text-sm text-muted-foreground hover:text-foreground"
+                  }
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">{t("nav.theme")}</span>
               <ThemeToggle />

@@ -36,3 +36,8 @@ export async function exportTransactionsCsv(): Promise<Blob> {
   const response = await api.get("/transactions/export", { responseType: "blob" });
   return response.data;
 }
+
+export async function exportTransactionsPdf(): Promise<Blob> {
+  const response = await api.get("/transactions/export/pdf", { responseType: "blob" });
+  return response.data;
+}

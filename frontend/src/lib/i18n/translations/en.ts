@@ -304,6 +304,8 @@ export const en = {
     export: {
       button: "Export CSV",
       exporting: "Exporting...",
+      buttonPdf: "Export PDF",
+      exportingPdf: "Exporting...",
     },
   },
 };

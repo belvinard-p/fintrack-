@@ -7,3 +7,4 @@ export type { Transaction, TransactionCreate } from "./types";
 export { useImportCsv } from "./hooks/use-import-csv";
 export { CsvImportForm } from "./components/csv-import-form";
 export { ExportCsvButton } from "./components/export-csv-button";
+export { ExportPdfButton } from "./components/export-pdf-button";

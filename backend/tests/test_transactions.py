@@ -103,6 +103,34 @@ def test_export_transactions_requires_auth(client):
     assert response.status_code == 401
 
 
+def test_export_transactions_pdf(client):
+    headers = register_and_login(client, email="exportpdfuser@example.com")
+    category = client.post(
+        "/categories/", json={"name": "PDF Category"}, headers=headers
+    ).json()
+    client.post(
+        "/transactions/",
+        json={
+            "date": "2026-08-15",
+            "description": "PDF export tx",
+            "amount": "-30.00",
+            "category_id": category["id"],
+        },
+        headers=headers,
+    )
+
+    response = client.get("/transactions/export/pdf", headers=headers)
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "application/pdf"
+    assert "attachment" in response.headers["content-disposition"]
+    assert response.content.startswith(b"%PDF")
+
+
+def test_export_transactions_pdf_requires_auth(client):
+    response = client.get("/transactions/export/pdf")
+    assert response.status_code == 401
+
+
 def test_create_transaction_requires_auth(client):
     response = client.post(
         "/transactions/",
