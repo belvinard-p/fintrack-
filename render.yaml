@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: fintrack-backend
+    runtime: image
+    plan: free
+    image:
+      url: docker.io/belvinar/fintrack:latest
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
