@@ -88,6 +88,7 @@ export const fr: typeof en = {
       email: "E-mail",
       password: "Mot de passe",
       submit: "Se connecter",
+      submitting: "Connexion...",
       error: "Échec de la connexion",
     },
     register: {
@@ -95,6 +96,7 @@ export const fr: typeof en = {
       email: "E-mail",
       password: "Mot de passe",
       submit: "S'inscrire",
+      submitting: "Création du compte...",
       error: "Échec de l'inscription",
     },
     changePassword: {

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
 import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/lib/i18n";
 import {
@@ -23,17 +24,20 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setIsSubmitting(true);
 
     try {
       await register({ email, password });
       router.push("/login");
     } catch (err: any) {
       setError(err.response?.data?.detail || t("auth.register.error"));
+      setIsSubmitting(false);
     }
   }
 
@@ -82,8 +86,9 @@ export default function RegisterPage() {
             </div>
 
 
-            <Button type="submit" className="w-full">
-              {t("auth.register.submit")}
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting && <Spinner className="size-4" />}
+              {isSubmitting ? t("auth.register.submitting") : t("auth.register.submit")}
             </Button>
           </form>
         </CardContent>

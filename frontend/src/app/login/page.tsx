@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
 import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/lib/i18n";
 import {
@@ -24,11 +25,13 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setIsSubmitting(true);
 
     try {
       const { access_token } = await login({ email, password });
@@ -36,6 +39,7 @@ export default function LoginPage() {
       router.push("/dashboard");
     } catch (err: any) {
       setError(err.response?.data?.detail || t("auth.login.error"));
+      setIsSubmitting(false);
     }
   }
 
@@ -83,8 +87,9 @@ export default function LoginPage() {
 
             </div>
 
-            <Button type="submit" className="w-full">
-              {t("auth.login.submit")}
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting && <Spinner className="size-4" />}
+              {isSubmitting ? t("auth.login.submitting") : t("auth.login.submit")}
             </Button>
           </form>
         </CardContent>

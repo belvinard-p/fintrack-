@@ -86,6 +86,7 @@ export const en = {
       email: "Email",
       password: "Password",
       submit: "Log in",
+      submitting: "Logging in...",
       error: "Login failed",
     },
     register: {
@@ -93,6 +94,7 @@ export const en = {
       email: "Email",
       password: "Password",
       submit: "Register",
+      submitting: "Creating account...",
       error: "Registration failed",
     },
     changePassword: {
