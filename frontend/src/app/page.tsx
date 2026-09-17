@@ -32,13 +32,17 @@ export default function Home() {
       </div>
       <h1 className="text-4xl font-bold">FinTrack</h1>
       <p className="text-muted-foreground">{t("home.tagline")}</p>
-      <div className="flex gap-4">
+      <div className="flex flex-wrap justify-center gap-4">
         <Link href="/login">
           <Button>{t("home.login")}</Button>
         </Link>
 
         <Link href="/register">
           <Button variant="outline">{t("home.register")}</Button>
+        </Link>
+
+        <Link href="/guide">
+          <Button variant="ghost">{t("home.howItWorks")}</Button>
         </Link>
       </div>
     </main>

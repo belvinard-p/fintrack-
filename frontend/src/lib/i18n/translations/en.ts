@@ -24,6 +24,61 @@ export const en = {
     tagline: "Track your spending. Understand your money.",
     login: "Log in",
     register: "Register",
+    howItWorks: "How it works",
+  },
+  guide: {
+    backToHome: "Back to home",
+    title: "See what FinTrack can do for you",
+    subtitle:
+      "A clear, honest picture of where your money goes — not just a list of transactions.",
+    features: {
+      transactions: {
+        title: "Add & import transactions",
+        description:
+          "Log expenses and income by hand, or import a bank statement CSV — FinTrack recognizes common column names automatically and skips duplicates.",
+      },
+      categorization: {
+        title: "Automatic categorization",
+        description:
+          "Every transaction is sorted into a category by keyword matching, so your spending is organized from the moment you add it. Rename or reassign anytime.",
+      },
+      budgets: {
+        title: "Monthly budgets",
+        description:
+          "Set a spending limit per category each month and see at a glance whether you're on track or over budget, with a dashboard alert when you slip.",
+      },
+      recurring: {
+        title: "Recurring transactions",
+        description:
+          "Set up rent, subscriptions, or salary once — FinTrack adds them automatically every month so you never forget to log them.",
+      },
+      goals: {
+        title: "Savings goals",
+        description:
+          "Set a target amount and track your progress with contributions, so a goal like an emergency fund stays visible, not just a wish.",
+      },
+      dashboard: {
+        title: "Visual dashboard",
+        description:
+          "See spending by category and month-over-month trends in charts that make patterns obvious at a glance.",
+      },
+      security: {
+        title: "Your data, protected",
+        description:
+          "Password hashing, rate-limited login, and a full audit log of sensitive actions — plus one-click account and data deletion, anytime.",
+      },
+      languages: {
+        title: "English & French",
+        description:
+          "Switch languages anytime from the navigation bar — your choice is remembered on your next visit.",
+      },
+    },
+    cta: {
+      title: "Ready to take control of your finances?",
+      subtitle: "Create a free account in under a minute.",
+      register: "Create your account",
+      login: "I already have an account",
+    },
   },
   auth: {
     login: {

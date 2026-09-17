@@ -26,6 +26,61 @@ export const fr: typeof en = {
     tagline: "Suivez vos dépenses. Comprenez votre argent.",
     login: "Se connecter",
     register: "S'inscrire",
+    howItWorks: "Comment ça marche",
+  },
+  guide: {
+    backToHome: "Retour à l'accueil",
+    title: "Découvrez ce que FinTrack peut faire pour vous",
+    subtitle:
+      "Une vision claire et honnête de l'utilisation de votre argent — pas seulement une liste de transactions.",
+    features: {
+      transactions: {
+        title: "Ajoutez et importez vos transactions",
+        description:
+          "Enregistrez vos dépenses et revenus manuellement, ou importez un relevé bancaire au format CSV — FinTrack reconnaît automatiquement les noms de colonnes courants et ignore les doublons.",
+      },
+      categorization: {
+        title: "Catégorisation automatique",
+        description:
+          "Chaque transaction est classée dans une catégorie par correspondance de mots-clés, pour que vos dépenses soient organisées dès leur ajout. Renommez ou réassignez à tout moment.",
+      },
+      budgets: {
+        title: "Budgets mensuels",
+        description:
+          "Définissez une limite de dépense par catégorie chaque mois et voyez en un coup d'œil si vous êtes dans les limites ou en dépassement, avec une alerte sur le tableau de bord en cas de dérapage.",
+      },
+      recurring: {
+        title: "Transactions récurrentes",
+        description:
+          "Configurez loyer, abonnements ou salaire une seule fois — FinTrack les ajoute automatiquement chaque mois pour que vous ne les oubliiez jamais.",
+      },
+      goals: {
+        title: "Objectifs d'épargne",
+        description:
+          "Fixez un montant cible et suivez votre progression grâce aux contributions, pour qu'un objectif comme un fonds d'urgence reste concret, pas juste un vœu.",
+      },
+      dashboard: {
+        title: "Tableau de bord visuel",
+        description:
+          "Visualisez vos dépenses par catégorie et leur évolution mois par mois grâce à des graphiques qui rendent les tendances évidentes en un coup d'œil.",
+      },
+      security: {
+        title: "Vos données, protégées",
+        description:
+          "Mots de passe hachés, connexion à taux limité, et un journal d'audit complet des actions sensibles — plus une suppression du compte et des données en un clic, à tout moment.",
+      },
+      languages: {
+        title: "Français et anglais",
+        description:
+          "Changez de langue à tout moment depuis la barre de navigation — votre choix est mémorisé pour votre prochaine visite.",
+      },
+    },
+    cta: {
+      title: "Prêt à prendre le contrôle de vos finances ?",
+      subtitle: "Créez un compte gratuit en moins d'une minute.",
+      register: "Créer votre compte",
+      login: "J'ai déjà un compte",
+    },
   },
   auth: {
     login: {
