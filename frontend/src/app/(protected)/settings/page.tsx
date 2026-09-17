@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangePasswordForm, DeleteAccountSection } from "@/features/auth";
+import { ChangePasswordForm, ChangeEmailForm, DeleteAccountSection } from "@/features/auth";
 import { AuditLogList } from "@/features/audit-logs";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useLanguage } from "@/lib/i18n";
@@ -11,6 +11,15 @@ export default function SettingsPage() {
   return (
     <main className="p-4 space-y-8 sm:p-8 max-w-2xl">
       <h1 className="text-2xl font-bold">{t("settings.title")}</h1>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("settings.changeEmail")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ChangeEmailForm />
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

@@ -107,6 +107,17 @@ export const fr: typeof en = {
       success: "Mot de passe mis à jour.",
       error: "Échec de la mise à jour du mot de passe",
     },
+    changeEmail: {
+      newEmail: "Nouvel e-mail",
+      currentPassword: "Mot de passe actuel",
+      submit: "Mettre à jour l'e-mail",
+      saving: "Enregistrement...",
+      success: "E-mail mis à jour.",
+      error: "Échec de la mise à jour de l'e-mail",
+    },
+    session: {
+      expired: "Votre session a expiré. Veuillez vous reconnecter.",
+    },
     deleteAccount: {
       trigger: "Supprimer le compte",
       title: "Supprimer votre compte ?",
@@ -119,6 +130,7 @@ export const fr: typeof en = {
   settings: {
     title: "Paramètres",
     changePassword: "Changer le mot de passe",
+    changeEmail: "Changer l'e-mail",
     recentActivity: "Activité récente",
     dangerZone: "Zone de danger",
   },

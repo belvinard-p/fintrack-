@@ -105,6 +105,17 @@ export const en = {
       success: "Password updated.",
       error: "Failed to change password",
     },
+    changeEmail: {
+      newEmail: "New email",
+      currentPassword: "Current password",
+      submit: "Update email",
+      saving: "Saving...",
+      success: "Email updated.",
+      error: "Failed to change email",
+    },
+    session: {
+      expired: "Your session has expired. Please log in again.",
+    },
     deleteAccount: {
       trigger: "Delete account",
       title: "Delete your account?",
@@ -117,6 +128,7 @@ export const en = {
   settings: {
     title: "Settings",
     changePassword: "Change password",
+    changeEmail: "Change email",
     recentActivity: "Recent activity",
     dangerZone: "Danger zone",
   },

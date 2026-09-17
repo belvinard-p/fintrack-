@@ -16,7 +16,7 @@ from app.models.category import Category
 from app.models.goal import Goal
 from app.models.audit_log import AuditLog
 from app.models.recurring_transaction import RecurringTransaction
-from app.schemas.user import UserCreate, UserLogin, UserOut, PasswordChange
+from app.schemas.user import UserCreate, UserLogin, UserOut, PasswordChange, EmailChange
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -69,6 +69,33 @@ def change_password(
 
     current_user.password_hash = hash_password(payload.new_password)
     db.commit()
+
+
+@router.patch(
+    "/me/email",
+    responses={
+        401: {"description": "Current password is incorrect"},
+        400: {"description": "Email already in use"},
+    },
+)
+def change_email(
+    payload: EmailChange,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+):
+    if not verify_password(payload.current_password, current_user.password_hash):
+        raise HTTPException(status_code=401, detail="Current password is incorrect")
+
+    current_user.email = payload.new_email
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="Email already in use")
+    db.refresh(current_user)
+
+    access_token = create_access_token(subject=current_user.email)
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
 @router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)

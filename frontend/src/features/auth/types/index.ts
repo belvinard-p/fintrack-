@@ -18,6 +18,11 @@ export interface PasswordChangePayload {
   new_password: string;
 }
 
+export interface EmailChangePayload {
+  current_password: string;
+  new_email: string;
+}
+
 export interface CurrentUser {
   id: number;
   email: string;

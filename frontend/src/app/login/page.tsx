@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { login } from "@/features/auth";
-import { setToken } from "@/lib/session";
+import { setToken, markLoginTime } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -36,6 +36,7 @@ export default function LoginPage() {
     try {
       const { access_token } = await login({ email, password });
       setToken(access_token);
+      markLoginTime();
       router.push("/dashboard");
     } catch (err: any) {
       setError(err.response?.data?.detail || t("auth.login.error"));

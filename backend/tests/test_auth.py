@@ -128,6 +128,59 @@ def test_change_password_requires_auth(client):
     assert response.status_code == 401
 
 
+def test_change_email_success(client):
+    headers = register_and_login(client, email="oldemail@example.com", password="securepass123")
+
+    response = client.patch(
+        "/auth/me/email",
+        json={"current_password": "securepass123", "new_email": "newemail@example.com"},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    assert "access_token" in response.json()
+
+    old_login = client.post(
+        "/auth/login", json={"email": "oldemail@example.com", "password": "securepass123"}
+    )
+    assert old_login.status_code == 401
+
+    new_login = client.post(
+        "/auth/login", json={"email": "newemail@example.com", "password": "securepass123"}
+    )
+    assert new_login.status_code == 200
+
+
+def test_change_email_wrong_current_password(client):
+    headers = register_and_login(client, email="wrongpwemail@example.com")
+
+    response = client.patch(
+        "/auth/me/email",
+        json={"current_password": "notmypassword", "new_email": "somenewemail@example.com"},
+        headers=headers,
+    )
+    assert response.status_code == 401
+
+
+def test_change_email_rejects_duplicate(client):
+    client.post("/auth/register", json={"email": "taken@example.com", "password": "securepass123"})
+    headers = register_and_login(client, email="wantsemail@example.com", password="securepass123")
+
+    response = client.patch(
+        "/auth/me/email",
+        json={"current_password": "securepass123", "new_email": "taken@example.com"},
+        headers=headers,
+    )
+    assert response.status_code == 400
+
+
+def test_change_email_requires_auth(client):
+    response = client.patch(
+        "/auth/me/email",
+        json={"current_password": "a", "new_email": "x@example.com"},
+    )
+    assert response.status_code == 401
+
+
 def test_delete_account_removes_user_and_data(client):
     headers = register_and_login(client, email="deleteme@example.com")
 

@@ -11,6 +11,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
 import { PageSpinner } from "@/components/page-spinner";
 import { useAutoGenerateRecurring } from "@/features/recurring-transactions";
+import { useSessionTimeout } from "@/features/auth";
 import { useLanguage } from "@/lib/i18n";
 
 export default function ProtectedLayout({
@@ -34,6 +35,7 @@ export default function ProtectedLayout({
   ];
 
   useAutoGenerateRecurring();
+  useSessionTimeout();
 
   useEffect(() => {
     const token = getToken();

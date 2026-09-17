@@ -243,6 +243,9 @@ Frontend — create `frontend/.env.local`:
 | Variable              | Description                        | Required |
 |-----------------------|-------------------------------------|----------|
 | `NEXT_PUBLIC_API_URL` | Base URL of the FastAPI backend    | Yes (defaults to `http://127.0.0.1:8000`) |
+| `NEXT_PUBLIC_SESSION_IDLE_MINUTES` | Minutes of inactivity before auto-logout | No (defaults to `15`) |
+| `NEXT_PUBLIC_SESSION_ABSOLUTE_MINUTES` | Maximum session length regardless of activity | No (defaults to `60`) |
+| `NEXT_PUBLIC_SESSION_CHECK_INTERVAL_MS` | How often (ms) the idle/absolute timers are checked | No (defaults to `5000`) |
 
 
 ---
