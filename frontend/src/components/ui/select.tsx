@@ -46,7 +46,7 @@ function SelectContent({
 }: React.ComponentProps<typeof SelectPrimitive.Popup>) {
   return (
     <SelectPrimitive.Portal>
-      <SelectPrimitive.Positioner>
+      <SelectPrimitive.Positioner alignItemWithTrigger={false} sideOffset={4}>
         <SelectPrimitive.Popup
           data-slot="select-content"
           className={cn(
