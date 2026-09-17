@@ -6,6 +6,7 @@ import Link from "next/link";
 import { getToken } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import { LanguageToggle } from "@/components/language-toggle";
+import { PageSpinner } from "@/components/page-spinner";
 import { useLanguage } from "@/lib/i18n";
 
 export default function Home() {
@@ -22,7 +23,7 @@ export default function Home() {
   }, [router]);
 
   if (!checked) {
-    return null;
+    return <PageSpinner />;
   }
 
   return (
