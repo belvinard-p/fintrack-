@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CategoryDot } from "@/components/category-dot";
 import { useLanguage } from "@/lib/i18n";
 import {
   Dialog,
@@ -110,7 +111,7 @@ export function CategoryManager() {
             className="flex flex-col gap-3 border rounded-lg p-3 sm:flex-row sm:items-center sm:justify-between"
           >
             <div className="flex items-center gap-2">
-
+              <CategoryDot categoryId={category.id} />
               <span>{category.name}</span>
               {category.is_default && <Badge variant="secondary">{t("categories.default")}</Badge>}
             </div>

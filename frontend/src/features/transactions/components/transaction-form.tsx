@@ -7,7 +7,9 @@ import { useCategories } from "@/features/categories";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { CategoryDot } from "@/components/category-dot";
 import { useLanguage } from "@/lib/i18n";
+import { getTodayIso } from "@/lib/date";
 import {
   Select,
   SelectContent,
@@ -55,7 +57,14 @@ export function TransactionForm() {
 
       <div className="space-y-2">
         <Label htmlFor="date">{t("transactions.form.date")}</Label>
-        <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
+        <Input
+          id="date"
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          max={getTodayIso()}
+          required
+        />
       </div>
 
       <div className="space-y-2">
@@ -99,7 +108,10 @@ export function TransactionForm() {
           <SelectContent>
             {categories?.map((category) => (
               <SelectItem key={category.id} value={String(category.id)}>
-                {category.name}
+                <span className="flex items-center gap-2">
+                  <CategoryDot categoryId={category.id} />
+                  {category.name}
+                </span>
               </SelectItem>
             ))}
           </SelectContent>

@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLanguage } from "@/lib/i18n";
+import { amountColorClass, formatSignedAmount } from "@/lib/amount";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -130,7 +131,9 @@ export function TransactionList() {
                     <p className="font-medium">{transaction.description}</p>
                     <p className="text-sm text-muted-foreground">{transaction.date}</p>
                   </div>
-                  <p className="font-medium whitespace-nowrap">{transaction.amount}</p>
+                  <p className={`font-medium whitespace-nowrap ${amountColorClass(transaction.amount)}`}>
+                    {formatSignedAmount(transaction.amount)}
+                  </p>
                 </div>
                 <div className="flex items-center justify-between">
                   <p className="text-xs text-muted-foreground capitalize">
@@ -162,7 +165,9 @@ export function TransactionList() {
                   <TableRow key={transaction.id}>
                     <TableCell>{transaction.date}</TableCell>
                     <TableCell>{transaction.description}</TableCell>
-                    <TableCell className="text-right">{transaction.amount}</TableCell>
+                    <TableCell className={`text-right font-medium ${amountColorClass(transaction.amount)}`}>
+                      {formatSignedAmount(transaction.amount)}
+                    </TableCell>
                     <TableCell className="capitalize">
                       {sourceLabel(transaction.source)}
                     </TableCell>

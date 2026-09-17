@@ -9,7 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CategoryDot } from "@/components/category-dot";
 import { useLanguage } from "@/lib/i18n";
+import { amountColorClass, formatSignedAmount } from "@/lib/amount";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -50,9 +52,14 @@ export function RecurringTransactionList() {
               className="flex flex-col gap-3 border rounded-lg p-4 sm:flex-row sm:items-center sm:justify-between"
             >
               <div>
-                <p className="font-medium">{item.description}</p>
+                <p className="flex items-center gap-2 font-medium">
+                  <CategoryDot categoryId={item.category_id} />
+                  {item.description}
+                </p>
                 <p className="text-sm text-muted-foreground">
-                  {item.amount} · {t("recurring.list.dayOfMonth", { day: item.day_of_month })}
+                  <span className={amountColorClass(item.amount)}>{formatSignedAmount(item.amount)}</span>
+                  {" · "}
+                  {t("recurring.list.dayOfMonth", { day: item.day_of_month })}
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">

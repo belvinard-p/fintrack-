@@ -7,6 +7,7 @@ import { useCategories } from "@/features/categories";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { CategoryDot } from "@/components/category-dot";
 import { useLanguage } from "@/lib/i18n";
 import {
   Select,
@@ -119,7 +120,10 @@ export function RecurringTransactionForm() {
           <SelectContent>
             {categories?.map((category) => (
               <SelectItem key={category.id} value={String(category.id)}>
-                {category.name}
+                <span className="flex items-center gap-2">
+                  <CategoryDot categoryId={category.id} />
+                  {category.name}
+                </span>
               </SelectItem>
             ))}
           </SelectContent>

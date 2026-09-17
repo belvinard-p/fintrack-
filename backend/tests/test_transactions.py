@@ -1,3 +1,6 @@
+from datetime import date, timedelta
+
+
 def register_and_login(client, email="txuser@example.com", password="securepass123"):
     client.post("/auth/register", json={"email": email, "password": password})
     login_response = client.post("/auth/login", json={"email": email, "password": password})
@@ -17,6 +20,34 @@ def test_create_transaction(client):
     assert data["description"] == "Groceries"
     assert data["amount"] == "45.99"
     assert data["source"] == "manual"
+
+
+def test_create_transaction_rejects_future_date(client):
+    headers = register_and_login(client, email="futuredateuser@example.com")
+    future_date = (date.today() + timedelta(days=1)).isoformat()
+    response = client.post(
+        "/transactions/",
+        json={"date": future_date, "description": "Not yet", "amount": "10.00"},
+        headers=headers,
+    )
+    assert response.status_code == 422
+
+
+def test_update_transaction_rejects_future_date(client):
+    headers = register_and_login(client, email="futureupdateuser@example.com")
+    created = client.post(
+        "/transactions/",
+        json={"date": "2026-08-15", "description": "Groceries", "amount": "45.99"},
+        headers=headers,
+    ).json()
+
+    future_date = (date.today() + timedelta(days=1)).isoformat()
+    response = client.patch(
+        f"/transactions/{created['id']}",
+        json={"date": future_date},
+        headers=headers,
+    )
+    assert response.status_code == 422
 
 
 def test_create_transaction_auto_categorizes_when_matching_category_exists(client):

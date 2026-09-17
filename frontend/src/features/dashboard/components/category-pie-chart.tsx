@@ -9,8 +9,7 @@ import {
   Legend,
 } from "recharts";
 import { CategorySpending } from "../types";
-
-const COLORS = ["#0f172a", "#334155", "#64748b", "#94a3b8", "#cbd5e1", "#f97316", "#fb923c", "#fdba74"];
+import { getCategoryColor } from "@/lib/category-color";
 
 export function CategoryPieChart({ data }: Readonly<{ data: CategorySpending[] }>) {
   return (
@@ -26,7 +25,10 @@ export function CategoryPieChart({ data }: Readonly<{ data: CategorySpending[] }
           label={(entry) => entry.name}
         >
           {data.map((entry, index) => (
-            <Cell key={entry.category_name ?? `uncategorized-${index}`} fill={COLORS[index % COLORS.length]} />
+            <Cell
+              key={entry.category_id ?? `uncategorized-${index}`}
+              fill={getCategoryColor(entry.category_id)}
+            />
           ))}
         </Pie>
         <Tooltip />

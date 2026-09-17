@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CategoryDot } from "@/components/category-dot";
 import { useLanguage } from "@/lib/i18n";
 import {
   Dialog,
@@ -100,7 +101,10 @@ export function BudgetStatusList() {
               className="flex flex-col gap-3 border rounded-lg p-4 sm:flex-row sm:items-center sm:justify-between"
             >
               <div>
-                <p className="font-medium">{status.category_name}</p>
+                <p className="flex items-center gap-2 font-medium">
+                  <CategoryDot categoryId={status.category_id} />
+                  {status.category_name}
+                </p>
                 <p className="text-sm text-muted-foreground">
                   {status.actual_spending} / {status.monthly_limit}
                 </p>
