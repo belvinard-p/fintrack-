@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { register } from "@/features/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +40,15 @@ export default function RegisterPage() {
 
   return (
     <main className="relative flex min-h-screen items-center justify-center px-4">
+      <div className="absolute top-4 left-4">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="size-4" />
+          {t("common.backToHome")}
+        </Link>
+      </div>
       <div className="absolute top-4 right-4">
         <LanguageToggle />
       </div>

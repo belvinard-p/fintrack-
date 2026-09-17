@@ -9,8 +9,8 @@ export function LanguageToggle() {
 
   return (
     <Button
-      variant="ghost"
-      size="icon-sm"
+      variant="outline"
+      size="sm"
       aria-label={language === "en" ? "Switch to French" : "Passer en anglais"}
       onClick={() => setLanguage(next)}
     >

@@ -50,7 +50,7 @@ export default function GuidePage() {
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-4" />
-          {t("guide.backToHome")}
+          {t("common.backToHome")}
         </Link>
         <LanguageToggle />
       </div>

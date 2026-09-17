@@ -7,6 +7,7 @@ export const fr: typeof en = {
     edit: "Modifier",
     save: "Enregistrer",
     saving: "Enregistrement...",
+    backToHome: "Retour à l'accueil",
   },
   nav: {
     brand: "FinTrack",
@@ -29,7 +30,6 @@ export const fr: typeof en = {
     howItWorks: "Comment ça marche",
   },
   guide: {
-    backToHome: "Retour à l'accueil",
     title: "Découvrez ce que FinTrack peut faire pour vous",
     subtitle:
       "Une vision claire et honnête de l'utilisation de votre argent — pas seulement une liste de transactions.",

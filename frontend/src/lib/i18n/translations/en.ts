@@ -5,6 +5,7 @@ export const en = {
     edit: "Edit",
     save: "Save",
     saving: "Saving...",
+    backToHome: "Back to home",
   },
   nav: {
     brand: "FinTrack",
@@ -27,7 +28,6 @@ export const en = {
     howItWorks: "How it works",
   },
   guide: {
-    backToHome: "Back to home",
     title: "See what FinTrack can do for you",
     subtitle:
       "A clear, honest picture of where your money goes — not just a list of transactions.",
