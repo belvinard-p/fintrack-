@@ -18,6 +18,7 @@ import { useLanguage } from "@/lib/i18n";
 import { extractErrorMessage } from "@/lib/error";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -86,6 +87,9 @@ function ContributeDialog({ goal }: Readonly<{ goal: Goal }>) {
             />
           </div>
           <DialogFooter>
+            <DialogClose render={<Button variant="outline" type="button" />}>
+              {t("common.cancel")}
+            </DialogClose>
             <Button type="submit" disabled={contribute.isPending}>
               {contribute.isPending ? t("goals.list.saving") : t("goals.list.add")}
             </Button>
@@ -181,6 +185,9 @@ function EditGoalDialog({ goal }: Readonly<{ goal: Goal }>) {
           </div>
 
           <DialogFooter>
+            <DialogClose render={<Button variant="outline" type="button" />}>
+              {t("common.cancel")}
+            </DialogClose>
             <Button type="submit" disabled={updateGoal.isPending}>
               {updateGoal.isPending ? t("common.saving") : t("common.save")}
             </Button>

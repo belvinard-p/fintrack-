@@ -16,6 +16,7 @@ import { useLanguage } from "@/lib/i18n";
 import { extractErrorMessage } from "@/lib/error";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -149,6 +150,9 @@ export function BudgetStatusList() {
                         />
                       </div>
                       <DialogFooter>
+                        <DialogClose render={<Button variant="outline" type="button" />}>
+                          {t("common.cancel")}
+                        </DialogClose>
                         <Button type="submit" disabled={updateBudget.isPending}>
                           {updateBudget.isPending ? t("common.saving") : t("common.save")}
                         </Button>

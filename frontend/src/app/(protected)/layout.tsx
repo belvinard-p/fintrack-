@@ -60,7 +60,7 @@ export default function ProtectedLayout({
       <nav className="sticky top-0 z-40 border-b bg-background/95 px-4 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:px-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <span className="font-bold">{t("nav.brand")}</span>
+            <Link href="/dashboard" className="font-bold hover:opacity-80 transition-opacity">{t("nav.brand")}</Link>
             <div className="hidden sm:flex items-center gap-6">
               {NAV_LINKS.map((link) => {
                 const isActive = pathname === link.href;

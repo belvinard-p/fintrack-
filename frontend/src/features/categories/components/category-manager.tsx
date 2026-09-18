@@ -15,6 +15,7 @@ import { useLanguage } from "@/lib/i18n";
 import { extractErrorMessage } from "@/lib/error";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -146,8 +147,10 @@ export function CategoryManager() {
                         required
                       />
                       <DialogFooter>
+                        <DialogClose render={<Button variant="outline" type="button" />}>
+                          {t("common.cancel")}
+                        </DialogClose>
                         <Button type="submit" disabled={updateCategory.isPending}>
-
                           {updateCategory.isPending ? t("common.saving") : t("common.save")}
                         </Button>
                       </DialogFooter>

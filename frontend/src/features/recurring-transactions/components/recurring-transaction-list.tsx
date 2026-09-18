@@ -26,6 +26,7 @@ import { amountColorClass, formatSignedAmount } from "@/lib/amount";
 import { extractErrorMessage } from "@/lib/error";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -164,6 +165,9 @@ function EditRecurringTransactionDialog({ item }: Readonly<{ item: RecurringTran
           </div>
 
           <DialogFooter>
+            <DialogClose render={<Button variant="outline" type="button" />}>
+              {t("common.cancel")}
+            </DialogClose>
             <Button type="submit" disabled={updateRecurring.isPending}>
               {updateRecurring.isPending ? t("common.saving") : t("common.save")}
             </Button>

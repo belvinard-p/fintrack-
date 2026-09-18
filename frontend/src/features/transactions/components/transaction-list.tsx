@@ -33,6 +33,7 @@ import { extractErrorMessage } from "@/lib/error";
 import { getTodayIso } from "@/lib/date";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -205,6 +206,9 @@ function EditTransactionDialog({ transaction }: Readonly<{ transaction: Transact
           </div>
 
           <DialogFooter>
+            <DialogClose render={<Button variant="outline" type="button" />}>
+              {t("common.cancel")}
+            </DialogClose>
             <Button type="submit" disabled={updateTransaction.isPending}>
               {updateTransaction.isPending ? t("common.saving") : t("common.save")}
             </Button>
