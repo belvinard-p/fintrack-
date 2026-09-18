@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/lib/i18n";
+import { extractErrorMessage } from "@/lib/error";
 
 export function ChangeEmailForm() {
   const { t } = useLanguage();
@@ -31,7 +32,7 @@ export function ChangeEmailForm() {
       setNewEmail("");
       setSuccess(true);
     } catch (err: any) {
-      setError(err.response?.data?.detail || t("auth.changeEmail.error"));
+      setError(extractErrorMessage(err, t("auth.changeEmail.error")));
     }
   }
 

@@ -16,6 +16,13 @@ export interface TransactionCreate {
   category_id?: number | null;
 }
 
+export interface TransactionUpdate {
+  date?: string;
+  description?: string;
+  amount?: string;
+  category_id?: number | null;
+}
+
 export interface InvalidRowDetail {
   row_number: number;
   reason: string;

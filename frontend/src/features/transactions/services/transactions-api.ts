@@ -1,6 +1,7 @@
 import { api } from "@/services/http-client";
 import {
   TransactionCreate,
+  TransactionUpdate,
   ImportResult,
   TransactionListParams,
   TransactionListResponse,
@@ -15,6 +16,11 @@ export async function fetchTransactions(
 
 export async function createTransaction(payload: TransactionCreate) {
   const response = await api.post("/transactions/", payload);
+  return response.data;
+}
+
+export async function updateTransaction(id: number, payload: TransactionUpdate) {
+  const response = await api.patch(`/transactions/${id}`, payload);
   return response.data;
 }
 

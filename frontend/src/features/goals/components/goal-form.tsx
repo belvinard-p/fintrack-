@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/lib/i18n";
+import { extractErrorMessage } from "@/lib/error";
 
 export function GoalForm() {
   const { t } = useLanguage();
@@ -32,7 +33,7 @@ export function GoalForm() {
       setTargetDate("");
       toast.success(t("goals.form.created"));
     } catch (err: any) {
-      setError(err.response?.data?.detail || t("goals.form.error"));
+      setError(extractErrorMessage(err, t("goals.form.error")));
     }
   }
 

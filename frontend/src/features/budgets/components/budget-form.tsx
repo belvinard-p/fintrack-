@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CategoryDot } from "@/components/category-dot";
 import { useLanguage } from "@/lib/i18n";
+import { extractErrorMessage } from "@/lib/error";
 import {
   Select,
   SelectContent,
@@ -43,7 +44,7 @@ export function BudgetForm() {
       setMonth("");
       toast.success(t("budgets.form.created"));
     } catch (err: any) {
-      setError(err.response?.data?.detail || t("budgets.form.error"));
+      setError(extractErrorMessage(err, t("budgets.form.error")));
     }
   }
 

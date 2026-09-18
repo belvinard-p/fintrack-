@@ -6,6 +6,7 @@ import { useDeleteAccount } from "../hooks/use-delete-account";
 import { clearToken } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/lib/i18n";
+import { extractErrorMessage } from "@/lib/error";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,7 +32,7 @@ export function DeleteAccountSection() {
       clearToken();
       router.push("/login");
     } catch (err: any) {
-      setError(err.response?.data?.detail || t("auth.deleteAccount.error"));
+      setError(extractErrorMessage(err, t("auth.deleteAccount.error")));
     }
   }
 

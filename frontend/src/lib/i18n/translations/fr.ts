@@ -298,6 +298,9 @@ export const fr: typeof en = {
       deleteDescription:
         '"{description}" sera définitivement supprimée. Cette action est irréversible.',
       deleted: "Transaction supprimée",
+      editTitle: "Modifier la transaction",
+      updated: "Transaction mise à jour",
+      updateError: "Échec de la mise à jour de la transaction",
       page: "Page {page} sur {totalPages} ({total} au total)",
       previous: "Précédent",
       next: "Suivant",

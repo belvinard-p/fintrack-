@@ -296,6 +296,9 @@ export const en = {
       deleteDescription:
         '"{description}" will be permanently removed. This action cannot be undone.',
       deleted: "Transaction deleted",
+      editTitle: "Edit transaction",
+      updated: "Transaction updated",
+      updateError: "Failed to update transaction",
       page: "Page {page} of {totalPages} ({total} total)",
       previous: "Previous",
       next: "Next",

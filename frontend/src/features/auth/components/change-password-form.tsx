@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/lib/i18n";
+import { extractErrorMessage } from "@/lib/error";
 
 export function ChangePasswordForm() {
   const { t } = useLanguage();
@@ -30,7 +31,7 @@ export function ChangePasswordForm() {
       setNewPassword("");
       setSuccess(true);
     } catch (err: any) {
-      setError(err.response?.data?.detail || t("auth.changePassword.error"));
+      setError(extractErrorMessage(err, t("auth.changePassword.error")));
     }
   }
 

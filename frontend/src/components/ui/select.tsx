@@ -46,11 +46,11 @@ function SelectContent({
 }: React.ComponentProps<typeof SelectPrimitive.Popup>) {
   return (
     <SelectPrimitive.Portal>
-      <SelectPrimitive.Positioner alignItemWithTrigger={false} sideOffset={4}>
+      <SelectPrimitive.Positioner alignItemWithTrigger={false} sideOffset={4} className="z-[100]">
         <SelectPrimitive.Popup
           data-slot="select-content"
           className={cn(
-            "relative z-50 max-h-(--available-height) min-w-32 origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-lg border border-border bg-popover text-popover-foreground shadow-md",
+            "relative z-[100] max-h-(--available-height) min-w-32 origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-lg border border-border bg-popover text-popover-foreground shadow-md",
             className
           )}
           {...props}

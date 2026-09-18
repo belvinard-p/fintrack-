@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/lib/i18n";
+import { extractErrorMessage } from "@/lib/error";
 
 export function CsvImportForm() {
   const { t } = useLanguage();
@@ -35,7 +36,7 @@ export function CsvImportForm() {
         fileInputRef.current.value = "";
       }
     } catch (err: any) {
-      setError(err.response?.data?.detail || t("transactions.csvImport.error"));
+      setError(extractErrorMessage(err, t("transactions.csvImport.error")));
     }
   }
 

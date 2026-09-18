@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CategoryDot } from "@/components/category-dot";
 import { useLanguage } from "@/lib/i18n";
+import { extractErrorMessage } from "@/lib/error";
 import {
   Dialog,
   DialogContent,
@@ -63,7 +64,7 @@ export function BudgetStatusList() {
       setEditingId(null);
       toast.success(t("budgets.status.updated"));
     } catch (err: any) {
-      setEditError(err.response?.data?.detail || t("budgets.status.updateError"));
+      setEditError(extractErrorMessage(err, t("budgets.status.updateError")));
     }
   }
 

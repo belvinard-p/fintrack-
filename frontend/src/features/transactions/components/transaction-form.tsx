@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CategoryDot } from "@/components/category-dot";
 import { useLanguage } from "@/lib/i18n";
+import { extractErrorMessage } from "@/lib/error";
 import { getTodayIso } from "@/lib/date";
 import {
   Select,
@@ -47,7 +48,7 @@ export function TransactionForm() {
       setCategoryId("");
       toast.success(t("transactions.form.added"));
     } catch (err: any) {
-      setError(err.response?.data?.detail || t("transactions.form.error"));
+      setError(extractErrorMessage(err, t("transactions.form.error")));
     }
   }
 

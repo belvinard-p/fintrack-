@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { useLanguage } from "@/lib/i18n";
+import { extractErrorMessage } from "@/lib/error";
 import {
   Dialog,
   DialogContent,
@@ -57,7 +58,7 @@ function ContributeDialog({ goal }: Readonly<{ goal: Goal }>) {
       setOpen(false);
       toast.success(t("goals.list.fundsAdded"));
     } catch (err: any) {
-      setError(err.response?.data?.detail || t("goals.list.contributeError"));
+      setError(extractErrorMessage(err, t("goals.list.contributeError")));
     }
   }
 

@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/lib/i18n";
+import { extractErrorMessage } from "@/lib/error";
 import {
   Card,
   CardHeader,
@@ -36,7 +37,7 @@ export default function RegisterPage() {
       await register({ email, password });
       router.push("/login");
     } catch (err: any) {
-      setError(err.response?.data?.detail || t("auth.register.error"));
+      setError(extractErrorMessage(err, t("auth.register.error")));
       setIsSubmitting(false);
     }
   }
