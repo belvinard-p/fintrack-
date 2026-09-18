@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CategoryDot } from "@/components/category-dot";
+import { CategoryPieChart } from "./category-pie-chart";
 import { MonthlyIncomeDialog, useMonthlyIncome } from "@/features/income";
 import { useLanguage } from "@/lib/i18n";
 import { amountColorClass, formatSignedAmount } from "@/lib/amount";
@@ -179,32 +180,37 @@ export function MonthlySummaryCard({ month }: Readonly<{ month: string }>) {
             {categories.length > 0 && (
               <div className="space-y-3">
                 <h3 className="text-sm font-medium">{t("dashboard.summary.expensesByCategory")}</h3>
-                <ul className="space-y-2">
-                  {visibleCategories.map((category) => (
-                    <CategoryRow
-                      key={category.category_id ?? "none"}
-                      label={category.category_name}
-                      dot={<CategoryDot categoryId={category.category_id} />}
-                      total={Number(category.total)}
-                      share={shareOf(Number(category.total))}
-                    />
-                  ))}
-                  {groupedCategories.length > 0 && (
-                    <CategoryRow
-                      label={t("dashboard.summary.others", { count: groupedCategories.length })}
-                      dot={<span aria-hidden="true" className="inline-block size-2.5 shrink-0 rounded-full bg-muted-foreground/40" />}
-                      total={othersTotal}
-                      share={shareOf(othersTotal)}
-                    />
-                  )}
-                </ul>
-                {hasOthers && (
-                  <Button variant="ghost" size="sm" onClick={() => setShowAllCategories((v) => !v)}>
-                    {showAllCategories
-                      ? t("dashboard.summary.showLess")
-                      : t("dashboard.summary.showAll", { count: categories.length })}
-                  </Button>
-                )}
+                <div className="grid items-center gap-6 md:grid-cols-2">
+                  <CategoryPieChart data={categories} />
+                  <div className="space-y-3">
+                    <ul className="space-y-2">
+                      {visibleCategories.map((category) => (
+                        <CategoryRow
+                          key={category.category_id ?? "none"}
+                          label={category.category_name}
+                          dot={<CategoryDot categoryId={category.category_id} />}
+                          total={Number(category.total)}
+                          share={shareOf(Number(category.total))}
+                        />
+                      ))}
+                      {groupedCategories.length > 0 && (
+                        <CategoryRow
+                          label={t("dashboard.summary.others", { count: groupedCategories.length })}
+                          dot={<span aria-hidden="true" className="inline-block size-2.5 shrink-0 rounded-full bg-muted-foreground/40" />}
+                          total={othersTotal}
+                          share={shareOf(othersTotal)}
+                        />
+                      )}
+                    </ul>
+                    {hasOthers && (
+                      <Button variant="ghost" size="sm" onClick={() => setShowAllCategories((v) => !v)}>
+                        {showAllCategories
+                          ? t("dashboard.summary.showLess")
+                          : t("dashboard.summary.showAll", { count: categories.length })}
+                      </Button>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
           </>
