@@ -148,10 +148,10 @@ export const en = {
   },
   dashboard: {
     title: "Dashboard",
-    spendingByCategory: "Spending by category",
     spendingOverTime: "Spending over time",
     failedToLoad: "Failed to load data",
     noTransactions: "No transactions yet",
+    allMonths: "All months",
     summary: {
       title: "Monthly cash flow",
       month: "Month",
@@ -168,6 +168,9 @@ export const en = {
       others: "Others ({count})",
       showAll: "Show all {count} categories",
       showLess: "Show less",
+      onboardingTitle: "Start with this month's income",
+      onboardingBody: "Set your income for {month} to see your net balance, your savings rate and how much is left to budget.",
+      budgetedOf: "{budgeted} budgeted of {income}",
       failedToLoad: "Failed to load monthly summary",
     },
   },

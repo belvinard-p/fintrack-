@@ -1,67 +1,52 @@
 "use client";
 
+import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  useCategorySpending,
   useMonthlySpending,
-  CategoryPieChart,
+  DashboardMonthPicker,
   MonthlySpendingChart,
   MonthlySummaryCard,
 } from "@/features/dashboard";
+import { getCurrentMonth } from "@/features/dashboard/utils";
 import { OverBudgetBanner } from "@/features/budgets";
 import { useLanguage } from "@/lib/i18n";
 
 export default function DashboardPage() {
   const { t } = useLanguage();
-  const { data: categoryData, isLoading: categoryLoading, error: categoryError } = useCategorySpending();
+  const [month, setMonth] = useState(getCurrentMonth);
   const { data: monthlyData, isLoading: monthlyLoading, error: monthlyError } = useMonthlySpending();
 
   return (
     <main className="p-4 space-y-8 sm:p-8">
-      <h1 className="text-2xl font-bold">{t("dashboard.title")}</h1>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-2xl font-bold">{t("dashboard.title")}</h1>
+        <DashboardMonthPicker month={month} onChange={setMonth} />
+      </div>
 
       <OverBudgetBanner />
 
-      <MonthlySummaryCard />
+      <MonthlySummaryCard month={month} />
 
-      <div className="grid gap-8 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("dashboard.spendingByCategory")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div aria-live="polite">
-              {categoryLoading && <Skeleton className="h-[300px] w-full" />}
-              {categoryError && <p className="text-red-600">{t("dashboard.failedToLoad")}</p>}
-              {categoryData?.length === 0 && (
-                <p className="text-muted-foreground">{t("dashboard.noTransactions")}</p>
-              )}
-            </div>
-            {categoryData && categoryData.length > 0 && (
-              <CategoryPieChart data={categoryData} />
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("dashboard.spendingOverTime")}</CardTitle>
+          <p className="text-xs text-muted-foreground">{t("dashboard.allMonths")}</p>
+        </CardHeader>
+        <CardContent>
+          <div aria-live="polite">
+            {monthlyLoading && <Skeleton className="h-[300px] w-full" />}
+            {monthlyError && <p className="text-red-600">{t("dashboard.failedToLoad")}</p>}
+            {monthlyData?.length === 0 && (
+              <p className="text-muted-foreground">{t("dashboard.noTransactions")}</p>
             )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("dashboard.spendingOverTime")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div aria-live="polite">
-              {monthlyLoading && <Skeleton className="h-[300px] w-full" />}
-              {monthlyError && <p className="text-red-600">{t("dashboard.failedToLoad")}</p>}
-              {monthlyData?.length === 0 && (
-                <p className="text-muted-foreground">{t("dashboard.noTransactions")}</p>
-              )}
-            </div>
-            {monthlyData && monthlyData.length > 0 && (
-              <MonthlySpendingChart data={monthlyData} />
-            )}
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+          {monthlyData && monthlyData.length > 0 && (
+            <MonthlySpendingChart data={monthlyData} />
+          )}
+        </CardContent>
+      </Card>
     </main>
   );
 }

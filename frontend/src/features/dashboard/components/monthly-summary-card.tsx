@@ -1,28 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMonthlySummary } from "../hooks/use-monthly-summary";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CategoryDot } from "@/components/category-dot";
-import { MonthlyIncomeDialog } from "@/features/income";
+import { MonthlyIncomeDialog, useMonthlyIncome } from "@/features/income";
 import { useLanguage } from "@/lib/i18n";
 import { amountColorClass, formatSignedAmount } from "@/lib/amount";
-
-function getCurrentMonth(): string {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-}
-
-function shiftMonth(month: string, delta: number): string {
-  const [year, m] = month.split("-").map(Number);
-  const date = new Date(year, m - 1 + delta, 1);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-}
 
 const TOP_CATEGORIES = 5;
 
@@ -79,13 +65,10 @@ function Delta({
   );
 }
 
-export function MonthlySummaryCard() {
+export function MonthlySummaryCard({ month }: Readonly<{ month: string }>) {
   const { t } = useLanguage();
-  const [month, setMonth] = useState(getCurrentMonth);
-  const currentMonth = getCurrentMonth();
-
   const { data: summary, isLoading, error } = useMonthlySummary(month);
-
+  const { data: income } = useMonthlyIncome(month);
   const [showAllCategories, setShowAllCategories] = useState(false);
 
   const totalExpenses = Number(summary?.total_expenses ?? 0);
@@ -96,42 +79,14 @@ export function MonthlySummaryCard() {
   const othersTotal = groupedCategories.reduce((sum, c) => sum + Number(c.total), 0);
   const shareOf = (value: number) => (totalExpenses > 0 ? (value / totalExpenses) * 100 : 0);
 
+  const remaining = income?.is_set ? Number(income.remaining) : null;
+
   return (
     <Card>
-      <CardHeader className="gap-4">
+      <CardHeader>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <CardTitle>{t("dashboard.summary.title")}</CardTitle>
-          <MonthlyIncomeDialog month={month} />
-        </div>
-        <div className="flex items-end gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            aria-label={t("dashboard.summary.previousMonth")}
-            onClick={() => setMonth(shiftMonth(month, -1))}
-          >
-            <ChevronLeft />
-          </Button>
-          <div className="space-y-1">
-            <Label htmlFor="summary-month" className="sr-only">
-              {t("dashboard.summary.month")}
-            </Label>
-            <Input
-              id="summary-month"
-              type="month"
-              value={month}
-              onChange={(e) => e.target.value && setMonth(e.target.value)}
-            />
-          </div>
-          <Button
-            variant="outline"
-            size="icon"
-            aria-label={t("dashboard.summary.nextMonth")}
-            disabled={month >= currentMonth}
-            onClick={() => setMonth(shiftMonth(month, 1))}
-          >
-            <ChevronRight />
-          </Button>
+          {summary?.income_set && <MonthlyIncomeDialog month={month} />}
         </div>
       </CardHeader>
 
@@ -141,26 +96,34 @@ export function MonthlySummaryCard() {
           {error && <p className="text-red-600">{t("dashboard.summary.failedToLoad")}</p>}
         </div>
 
+        {summary && !summary.income_set && (
+          <div className="flex flex-col items-start gap-3 rounded-lg border border-dashed p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1">
+              <p className="text-sm font-medium">{t("dashboard.summary.onboardingTitle")}</p>
+              <p className="text-sm text-muted-foreground">
+                {t("dashboard.summary.onboardingBody", { month })}
+              </p>
+            </div>
+            <MonthlyIncomeDialog month={month} />
+          </div>
+        )}
+
         {summary && (
           <>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="space-y-1 rounded-lg border p-4">
-                <p className="text-sm text-muted-foreground">{t("dashboard.summary.income")}</p>
-                {summary.income_set ? (
-                  <>
-                    <p className="text-2xl font-semibold text-emerald-600 dark:text-emerald-400">
-                      {Number(summary.total_income).toFixed(2)}
-                    </p>
-                    <Delta
-                      current={summary.total_income}
-                      previous={summary.previous.total_income}
-                      goodWhenUp
-                    />
-                  </>
-                ) : (
-                  <p className="text-sm text-muted-foreground">{t("income.notSet")}</p>
-                )}
-              </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+              {summary.income_set && (
+                <div className="space-y-1 rounded-lg border p-4">
+                  <p className="text-sm text-muted-foreground">{t("dashboard.summary.income")}</p>
+                  <p className="text-2xl font-semibold text-emerald-600 dark:text-emerald-400">
+                    {Number(summary.total_income).toFixed(2)}
+                  </p>
+                  <Delta
+                    current={summary.total_income}
+                    previous={summary.previous.total_income}
+                    goodWhenUp
+                  />
+                </div>
+              )}
 
               <div className="space-y-1 rounded-lg border p-4">
                 <p className="text-sm text-muted-foreground">{t("dashboard.summary.expenses")}</p>
@@ -174,27 +137,46 @@ export function MonthlySummaryCard() {
                 />
               </div>
 
-              <div className="space-y-1 rounded-lg border p-4">
-                <p className="text-sm text-muted-foreground">{t("dashboard.summary.net")}</p>
-                <p className={`text-2xl font-semibold ${amountColorClass(summary.net)}`}>
-                  {formatSignedAmount(Number(summary.net).toFixed(2))}
-                </p>
-                <Delta current={summary.net} previous={summary.previous.net} goodWhenUp />
-              </div>
+              {summary.income_set && (
+                <>
+                  <div className="space-y-1 rounded-lg border p-4">
+                    <p className="text-sm text-muted-foreground">{t("dashboard.summary.net")}</p>
+                    <p className={`text-2xl font-semibold ${amountColorClass(summary.net)}`}>
+                      {formatSignedAmount(Number(summary.net).toFixed(2))}
+                    </p>
+                    <Delta current={summary.net} previous={summary.previous.net} goodWhenUp />
+                  </div>
 
-              <div className="space-y-1 rounded-lg border p-4">
-                <p className="text-sm text-muted-foreground">{t("dashboard.summary.savingsRate")}</p>
-                {summary.savings_rate === null ? (
-                  <p className="text-sm text-muted-foreground">{t("dashboard.summary.savingsRateNA")}</p>
-                ) : (
-                  <p className={`text-2xl font-semibold ${amountColorClass(summary.savings_rate)}`}>
-                    {summary.savings_rate}%
-                  </p>
-                )}
-              </div>
+                  <div className="space-y-1 rounded-lg border p-4">
+                    <p className="text-sm text-muted-foreground">{t("dashboard.summary.savingsRate")}</p>
+                    {summary.savings_rate === null ? (
+                      <p className="text-sm text-muted-foreground">{t("dashboard.summary.savingsRateNA")}</p>
+                    ) : (
+                      <p className={`text-2xl font-semibold ${amountColorClass(summary.savings_rate)}`}>
+                        {summary.savings_rate}%
+                      </p>
+                    )}
+                  </div>
+
+                  {remaining !== null && (
+                    <div className="space-y-1 rounded-lg border p-4">
+                      <p className="text-sm text-muted-foreground">{t("income.remaining")}</p>
+                      <p className={`text-2xl font-semibold ${amountColorClass(remaining)}`}>
+                        {remaining.toFixed(2)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {t("dashboard.summary.budgetedOf", {
+                          budgeted: Number(income?.total_budgeted ?? 0).toFixed(2),
+                          income: Number(income?.amount ?? 0).toFixed(2),
+                        })}
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
 
-            {summary.expenses_by_category.length > 0 && (
+            {categories.length > 0 && (
               <div className="space-y-3">
                 <h3 className="text-sm font-medium">{t("dashboard.summary.expensesByCategory")}</h3>
                 <ul className="space-y-2">

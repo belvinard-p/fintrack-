@@ -1,12 +1,5 @@
 import { api } from "@/services/http-client";
-import { CategorySpending, MonthlySpending, MonthlySummary } from "../types";
-
-export async function fetchCategorySpending(): Promise<CategorySpending[]> {
-  const response = await api.get<CategorySpending[]>(
-    "/transactions/dashboard/by-category"
-  );
-  return response.data;
-}
+import { MonthlySpending, MonthlySummary } from "../types";
 
 export async function fetchMonthlySpending(): Promise<MonthlySpending[]> {
   const response = await api.get<MonthlySpending[]>(

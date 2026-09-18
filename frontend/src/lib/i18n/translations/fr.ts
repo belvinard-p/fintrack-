@@ -150,10 +150,10 @@ export const fr: typeof en = {
   },
   dashboard: {
     title: "Tableau de bord",
-    spendingByCategory: "Dépenses par catégorie",
     spendingOverTime: "Évolution des dépenses",
     failedToLoad: "Échec du chargement des données",
     noTransactions: "Aucune transaction pour le moment",
+    allMonths: "Tous les mois",
     summary: {
       title: "Flux du mois",
       month: "Mois",
@@ -170,6 +170,9 @@ export const fr: typeof en = {
       others: "Autres ({count})",
       showAll: "Voir les {count} catégories",
       showLess: "Réduire",
+      onboardingTitle: "Commencez par le revenu du mois",
+      onboardingBody: "Définissez votre revenu de {month} pour voir votre solde net, votre taux d'épargne et ce qu'il reste à budgétiser.",
+      budgetedOf: "{budgeted} budgétisés sur {income}",
       failedToLoad: "Échec du chargement du résumé mensuel",
     },
   },
