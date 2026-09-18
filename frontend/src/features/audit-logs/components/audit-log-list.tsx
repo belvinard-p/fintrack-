@@ -23,7 +23,7 @@ export function AuditLogList() {
         </div>
       )}
       {error && <p className="text-red-600">{t("auditLogs.failed")}</p>}
-      {logs && logs.length === 0 && (
+      {logs?.length === 0 && (
         <p className="text-muted-foreground">{t("auditLogs.empty")}</p>
       )}
       {logs && logs.length > 0 && (

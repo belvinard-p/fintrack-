@@ -146,15 +146,15 @@ export const en = {
   },
   dashboard: {
     title: "Dashboard",
-    spendingByCategory: "Spending by Category",
-    spendingOverTime: "Spending Over Time",
+    spendingByCategory: "Spending by category",
+    spendingOverTime: "Spending over time",
     failedToLoad: "Failed to load data",
     noTransactions: "No transactions yet",
   },
   budgets: {
     title: "Budgets",
     setABudget: "Set a Budget",
-    budgetStatus: "Budget Status",
+    budgetStatus: "Budget status",
     manageCategories: "Manage Categories",
     form: {
       category: "Category",
@@ -237,7 +237,7 @@ export const en = {
     },
   },
   recurring: {
-    title: "Recurring Transactions",
+    title: "Recurring transactions",
     description:
       "Rent, subscriptions, salary — set them up once and they'll be added automatically each month.",
     newRecurring: "New Recurring Transaction",
@@ -251,7 +251,7 @@ export const en = {
       startDate: "Start date",
       category: "Category (optional)",
       uncategorized: "Uncategorized",
-      submit: "Create Recurring Transaction",
+      submit: "Create recurring transaction",
       creating: "Creating...",
       error: "Failed to create recurring transaction",
       created: "Recurring transaction created",
@@ -275,9 +275,9 @@ export const en = {
   },
   transactions: {
     title: "Transactions",
-    addTransaction: "Add Transaction",
+    addTransaction: "Add transaction",
     importFromCsv: "Import from CSV",
-    allTransactions: "All Transactions",
+    allTransactions: "All transactions",
     form: {
       date: "Date",
       description: "Description",
@@ -285,7 +285,7 @@ export const en = {
       amountPlaceholder: "-50.00 for expense, 100.00 for income",
       category: "Category",
       uncategorized: "Uncategorized",
-      submit: "Add Transaction",
+      submit: "Add transaction",
       adding: "Adding...",
       error: "Failed to create transaction",
       added: "Transaction added",

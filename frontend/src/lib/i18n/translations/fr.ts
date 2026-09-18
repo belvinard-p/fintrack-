@@ -248,7 +248,7 @@ export const fr: typeof en = {
       description: "Description",
       descriptionPlaceholder: "Loyer, Netflix, Salaire...",
       amount: "Montant",
-      amountPlaceholder: "-1200.00 pour une dépense, 2500.00 pour un revenu",
+      amountPlaceholder: "-200.00 pour une dépense, 500.00 pour un revenu",
       dayOfMonth: "Jour du mois",
       startDate: "Date de début",
       category: "Catégorie (optionnel)",

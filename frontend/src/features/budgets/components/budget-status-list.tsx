@@ -90,7 +90,7 @@ export function BudgetStatusList() {
           </div>
         )}
         {error && <p className="text-red-600">{t("budgets.status.failedToLoad")}</p>}
-        {statuses && statuses.length === 0 && (
+        {statuses?.length === 0 && (
           <p className="text-muted-foreground">{t("budgets.status.empty")}</p>
         )}
       </div>

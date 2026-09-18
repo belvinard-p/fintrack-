@@ -48,7 +48,7 @@ export function CategoryManager() {
   const [editName, setEditName] = useState("");
   const [editError, setEditError] = useState<string | null>(null);
 
-  async function handleCreate(e: React.FormEvent) {
+  async function handleCreate(e: React.BaseSyntheticEvent) {
     e.preventDefault();
     setCreateError(null);
     try {
@@ -66,7 +66,7 @@ export function CategoryManager() {
     setEditError(null);
   }
 
-  async function handleUpdate(e: React.FormEvent) {
+  async function handleUpdate(e: React.BaseSyntheticEvent) {
     e.preventDefault();
     if (editingId === null) return;
     setEditError(null);
