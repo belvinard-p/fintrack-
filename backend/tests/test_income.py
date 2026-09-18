@@ -48,12 +48,13 @@ def test_income_remaining_deducts_budgets(client):
 def test_income_over_allocated_flag(client):
     headers = register_and_login(client, email="incomeover@example.com")
     category = client.post("/categories/", json={"name": "Over"}, headers=headers).json()
-    client.put("/income/2026-09", json={"amount": "1000.00"}, headers=headers)
+    client.put("/income/2026-09", json={"amount": "2000.00"}, headers=headers)
     client.post(
         "/budgets/",
         json={"category_id": category["id"], "monthly_limit": "1500.00", "month": "2026-09"},
         headers=headers,
     )
+    client.put("/income/2026-09", json={"amount": "1000.00"}, headers=headers)
     data = client.get("/income/2026-09", headers=headers).json()
     assert data["remaining"] == "-500.00"
     assert data["is_over_allocated"] is True

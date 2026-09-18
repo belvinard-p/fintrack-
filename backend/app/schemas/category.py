@@ -1,3 +1,6 @@
+from datetime import datetime
+from typing import Optional
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -15,3 +18,4 @@ class CategoryOut(BaseModel):
     id: int
     name: str
     is_default: bool
+    created_at: Optional[datetime] = None

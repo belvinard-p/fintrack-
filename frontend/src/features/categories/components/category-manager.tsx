@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export function CategoryManager() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { data: categories, isLoading, error } = useCategories();
 
   const createCategory = useCreateCategory();
@@ -114,7 +114,19 @@ export function CategoryManager() {
           >
             <div className="flex items-center gap-2">
               <CategoryDot categoryId={category.id} />
-              <span>{category.name}</span>
+              <div className="flex flex-col">
+                <span>{category.name}</span>
+                {!category.is_default && category.created_at && (
+                  <span className="text-xs text-muted-foreground">
+                    {t("categories.createdAt", {
+                      date: new Date(category.created_at).toLocaleString(
+                        language === "fr" ? "fr-FR" : "en-US",
+                        { dateStyle: "medium", timeStyle: "short" }
+                      ),
+                    })}
+                  </span>
+                )}
+              </div>
               {category.is_default && <Badge variant="secondary">{t("categories.default")}</Badge>}
             </div>
 

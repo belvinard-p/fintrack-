@@ -202,6 +202,8 @@ export const fr: typeof en = {
       creating: "Création...",
       error: "Échec de la création du budget",
       created: "Budget créé",
+      fullyBudgeted: "Le revenu de ce mois est déjà entièrement budgétisé.",
+      remainingHint: "Il reste {amount} à budgétiser ce mois-ci.",
     },
     status: {
       failedToLoad: "Échec du chargement de l'état des budgets",
@@ -239,6 +241,7 @@ export const fr: typeof en = {
     deleteDescription:
       "Les transactions utilisant cette catégorie deviendront non catégorisées et ses budgets seront supprimés. Cette action est irréversible.",
     deleted: "Catégorie supprimée",
+    createdAt: "Créée le {date}",
   },
   goals: {
     title: "Objectifs",

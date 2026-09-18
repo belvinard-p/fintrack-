@@ -332,3 +332,51 @@ def test_create_budget_requires_auth(client):
         json={"category_id": 1, "monthly_limit": "100.00", "month": "2026-08"},
     )
     assert response.status_code == 401
+
+def test_create_budget_rejected_when_income_fully_budgeted(client):
+    headers = register_and_login(client, email="capuser@example.com")
+    first = get_category_id(client, headers, "Groceries")
+    second = get_category_id(client, headers, "Dining Out")
+    client.put("/income/2026-09", json={"amount": "1000.00"}, headers=headers)
+
+    ok = client.post(
+        "/budgets/",
+        json={"category_id": first, "monthly_limit": "1000.00", "month": "2026-09"},
+        headers=headers,
+    )
+    assert ok.status_code == 201
+
+    blocked = client.post(
+        "/budgets/",
+        json={"category_id": second, "monthly_limit": "1.00", "month": "2026-09"},
+        headers=headers,
+    )
+    assert blocked.status_code == 400
+    assert "0.00 left" in blocked.json()["detail"]
+
+
+def test_update_budget_cannot_exceed_income_but_can_shrink(client):
+    headers = register_and_login(client, email="capupdate@example.com")
+    first = get_category_id(client, headers, "Groceries")
+    second = get_category_id(client, headers, "Dining Out")
+    client.put("/income/2026-09", json={"amount": "1000.00"}, headers=headers)
+    a = client.post("/budgets/", json={"category_id": first, "monthly_limit": "600.00", "month": "2026-09"}, headers=headers).json()
+    client.post("/budgets/", json={"category_id": second, "monthly_limit": "300.00", "month": "2026-09"}, headers=headers)
+
+    too_much = client.patch(f"/budgets/{a['id']}", json={"monthly_limit": "701.00"}, headers=headers)
+    assert too_much.status_code == 400
+    exact = client.patch(f"/budgets/{a['id']}", json={"monthly_limit": "700.00"}, headers=headers)
+    assert exact.status_code == 200
+    shrink = client.patch(f"/budgets/{a['id']}", json={"monthly_limit": "100.00"}, headers=headers)
+    assert shrink.status_code == 200
+
+
+def test_budget_not_capped_when_income_not_set(client):
+    headers = register_and_login(client, email="nocap@example.com")
+    category = get_category_id(client, headers, "Groceries")
+    response = client.post(
+        "/budgets/",
+        json={"category_id": category, "monthly_limit": "999999.00", "month": "2026-09"},
+        headers=headers,
+    )
+    assert response.status_code == 201

@@ -107,3 +107,9 @@ def test_delete_category_removes_budgets_and_detaches_recurring(client):
     assert client.get("/budgets/status?month=2026-09", headers=headers).json() == []
     items = client.get("/recurring-transactions/", headers=headers).json()
     assert next(r for r in items if r["id"] == recurring["id"])["category_id"] is None
+
+
+def test_created_category_has_creation_timestamp(client):
+    headers = register_and_login(client, email="catcreated@example.com")
+    category = client.post("/categories/", json={"name": "Timestamped"}, headers=headers).json()
+    assert category["created_at"] is not None

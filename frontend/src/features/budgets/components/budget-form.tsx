@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { useCreateBudget } from "../hooks/use-create-budget";
+import { useMonthlyIncome } from "@/features/income";
 import { useCategories } from "@/features/categories";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +28,13 @@ export function BudgetForm() {
 
   const createBudget = useCreateBudget();
   const { data: categories } = useCategories();
+  const { data: income } = useMonthlyIncome(month);
+
+  const hasIncome = Boolean(month) && income?.is_set === true;
+  const remaining = hasIncome ? Number(income?.remaining ?? 0) : null;
+  const isFullyBudgeted = remaining !== null && remaining <= 0;
+  const exceedsRemaining =
+    remaining !== null && monthlyLimit !== "" && Number(monthlyLimit) > remaining;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -99,11 +107,22 @@ export function BudgetForm() {
           step="0.01"
           value={monthlyLimit}
           onChange={(e) => setMonthlyLimit(e.target.value)}
+          disabled={isFullyBudgeted}
           required
         />
+        {isFullyBudgeted && (
+          <p role="alert" className="text-sm text-red-600 dark:text-red-400">
+            {t("budgets.form.fullyBudgeted")}
+          </p>
+        )}
+        {!isFullyBudgeted && remaining !== null && (
+          <p className={`text-xs ${exceedsRemaining ? "text-red-600 dark:text-red-400" : "text-muted-foreground"}`}>
+            {t("budgets.form.remainingHint", { amount: remaining.toFixed(2) })}
+          </p>
+        )}
       </div>
 
-      <Button type="submit" className="w-full" disabled={createBudget.isPending || !categoryId}>
+      <Button type="submit" className="w-full" disabled={createBudget.isPending || !categoryId || isFullyBudgeted || exceedsRemaining}>
         {createBudget.isPending ? t("budgets.form.creating") : t("budgets.form.submit")}
       </Button>
     </form>

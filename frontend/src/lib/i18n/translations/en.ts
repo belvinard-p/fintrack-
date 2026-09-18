@@ -200,6 +200,8 @@ export const en = {
       creating: "Creating...",
       error: "Failed to create budget",
       created: "Budget created",
+      fullyBudgeted: "This month's income is already fully budgeted.",
+      remainingHint: "{amount} left to budget this month.",
     },
     status: {
       failedToLoad: "Failed to load budget status",
@@ -237,6 +239,7 @@ export const en = {
     deleteDescription:
       "Transactions using this category will become uncategorized and its budgets will be deleted. This action cannot be undone.",
     deleted: "Category deleted",
+    createdAt: "Created {date}",
   },
   goals: {
     title: "Goals",

@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -10,10 +11,40 @@ from app.core.audit import log_action
 from app.models.user import User
 from app.models.budget import Budget
 from app.models.category import Category
+from app.models.monthly_income import MonthlyIncome
 from app.models.transaction import Transaction
 from app.schemas.budget import BudgetCreate, BudgetOut, BudgetStatus, BudgetUpdate
 
 router = APIRouter(prefix="/budgets", tags=["budgets"])
+
+
+def _ensure_within_income(
+    db: Session,
+    user_id: int,
+    month: str,
+    new_limit: Decimal,
+    exclude_budget_id: int | None = None,
+) -> None:
+    income = (
+        db.query(MonthlyIncome)
+        .filter(MonthlyIncome.user_id == user_id, MonthlyIncome.month == month)
+        .first()
+    )
+    if income is None:
+        return
+
+    others_query = db.query(func.coalesce(func.sum(Budget.monthly_limit), 0)).filter(
+        Budget.user_id == user_id, Budget.month == month
+    )
+    if exclude_budget_id is not None:
+        others_query = others_query.filter(Budget.id != exclude_budget_id)
+
+    remaining = Decimal(income.amount) - Decimal(others_query.scalar())
+    if new_limit > remaining:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Budget exceeds the income left to budget for {month} ({max(remaining, Decimal('0')):.2f} left)",
+        )
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=BudgetOut, responses={404: {"description": "Category not found"}, 400: {"description": "A budget for this category and month already exists"}})
@@ -25,6 +56,8 @@ def create_budget(
     category = db.query(Category).filter(Category.id == budget_in.category_id).first()
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
+
+    _ensure_within_income(db, current_user.id, budget_in.month, budget_in.monthly_limit)
 
     new_budget = Budget(
         user_id=current_user.id,
@@ -81,6 +114,15 @@ def update_budget(
         category = db.query(Category).filter(Category.id == update_data["category_id"]).first()
         if not category:
             raise HTTPException(status_code=404, detail="Category not found")
+
+    if "monthly_limit" in update_data or "month" in update_data:
+        _ensure_within_income(
+            db,
+            current_user.id,
+            update_data.get("month", budget.month),
+            update_data.get("monthly_limit", budget.monthly_limit),
+            exclude_budget_id=budget.id,
+        )
 
     for field, value in update_data.items():
         setattr(budget, field, value)

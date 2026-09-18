@@ -5,5 +5,6 @@ export function useMonthlyIncome(month: string) {
   return useQuery({
     queryKey: ["budgets", "income", month],
     queryFn: () => fetchMonthlyIncome(month),
+    enabled: Boolean(month),
   });
 }
