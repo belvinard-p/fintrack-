@@ -20,7 +20,30 @@ INCOME_COLOR = colors.HexColor("#059669")
 EXPENSE_COLOR = colors.HexColor("#dc2626")
 
 
-def generate_transactions_pdf(transactions, category_names: dict, user_email: str) -> BytesIO:
+def build_month_rows(transactions, monthly_incomes: dict) -> list[tuple[str, Decimal | None, Decimal]]:
+    months = sorted({t.date.strftime("%Y-%m") for t in transactions})
+    rows = []
+    for month in months:
+        expenses = sum(
+            (abs(t.amount) for t in transactions if t.date.strftime("%Y-%m") == month and t.amount < 0),
+            Decimal("0"),
+        )
+        rows.append((month, monthly_incomes.get(month), expenses))
+    return rows
+
+
+def compute_totals(month_rows) -> tuple[Decimal, Decimal, Decimal]:
+    total_income = sum((income for _, income, _ in month_rows if income is not None), Decimal("0"))
+    total_expenses = sum((expenses for _, _, expenses in month_rows), Decimal("0"))
+    return total_income, total_expenses, total_income - total_expenses
+
+
+def generate_transactions_pdf(
+    transactions,
+    category_names: dict,
+    user_email: str,
+    monthly_incomes: dict | None = None,
+) -> BytesIO:
     buffer = BytesIO()
     doc = SimpleDocTemplate(
         buffer,
@@ -39,13 +62,12 @@ def generate_transactions_pdf(transactions, category_names: dict, user_email: st
     elements.append(Paragraph(f"Generated: {generated_at}", styles["Normal"]))
     elements.append(Spacer(1, 0.5 * cm))
 
-    total_income = sum((t.amount for t in transactions if t.amount > 0), Decimal("0"))
-    total_expenses = sum((t.amount for t in transactions if t.amount < 0), Decimal("0"))
-    net = total_income + total_expenses
+    month_rows = build_month_rows(transactions, monthly_incomes or {})
+    total_income, total_expenses, net = compute_totals(month_rows)
 
     summary_data = [
         ["Total income", f"{total_income:.2f}"],
-        ["Total expenses", f"{total_expenses:.2f}"],
+        ["Total expenses", f"{-total_expenses:.2f}"],
         ["Net", f"{net:.2f}"],
     ]
     summary_table = Table(summary_data, colWidths=[8 * cm, 4 * cm])
@@ -62,8 +84,27 @@ def generate_transactions_pdf(transactions, category_names: dict, user_email: st
     elements.append(summary_table)
     elements.append(Spacer(1, 0.8 * cm))
 
+    if month_rows:
+        elements.append(Paragraph("Monthly summary", styles["Heading2"]))
+        monthly_table_rows = [["Month", "Income", "Expenses", "Net"]]
+        for month, income, expenses in month_rows:
+            monthly_table_rows.append(
+                [
+                    month,
+                    f"{income:.2f}" if income is not None else "-",
+                    f"{-expenses:.2f}",
+                    f"{income - expenses:.2f}" if income is not None else "-",
+                ]
+            )
+        monthly_table = Table(monthly_table_rows, colWidths=[4 * cm, 4 * cm, 4 * cm, 4 * cm])
+        monthly_table.setStyle(_table_style())
+        elements.append(monthly_table)
+        elements.append(Spacer(1, 0.8 * cm))
+
     category_totals: dict[str, Decimal] = {}
     for t in transactions:
+        if t.amount >= 0:
+            continue
         name = category_names.get(t.category_id, "Uncategorized")
         category_totals[name] = category_totals.get(name, Decimal("0")) + t.amount
 

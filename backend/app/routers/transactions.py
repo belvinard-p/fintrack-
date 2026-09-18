@@ -170,7 +170,17 @@ def export_transactions_pdf(
         for c in db.query(Category).filter(Category.user_id == current_user.id).all()
     }
 
-    buffer = generate_transactions_pdf(transactions, category_names, current_user.email)
+    months = {t.date.strftime("%Y-%m") for t in transactions}
+    monthly_incomes = {
+        income.month: Decimal(income.amount)
+        for income in db.query(MonthlyIncome)
+        .filter(MonthlyIncome.user_id == current_user.id, MonthlyIncome.month.in_(months))
+        .all()
+    }
+
+    buffer = generate_transactions_pdf(
+        transactions, category_names, current_user.email, monthly_incomes
+    )
     return StreamingResponse(
         buffer,
         media_type="application/pdf",

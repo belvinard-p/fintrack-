@@ -420,3 +420,41 @@ def test_monthly_summary_rejects_bad_month(client):
     headers = register_and_login(client, email="badmonth@example.com")
     response = client.get("/transactions/dashboard/monthly-summary?month=2026-13", headers=headers)
     assert response.status_code == 422
+
+
+def test_pdf_report_totals_use_declared_monthly_income():
+    from datetime import date
+    from decimal import Decimal
+    from types import SimpleNamespace
+
+    from app.services.pdf_export import build_month_rows, compute_totals
+
+    transactions = [
+        SimpleNamespace(date=date(2026, 9, 5), amount=Decimal("-250.00")),
+        SimpleNamespace(date=date(2026, 9, 6), amount=Decimal("-50.00")),
+        SimpleNamespace(date=date(2026, 8, 1), amount=Decimal("-100.00")),
+        SimpleNamespace(date=date(2026, 8, 2), amount=Decimal("40.00")),
+    ]
+    rows = build_month_rows(transactions, {"2026-09": Decimal("3000.00")})
+    assert rows == [
+        ("2026-08", None, Decimal("100.00")),
+        ("2026-09", Decimal("3000.00"), Decimal("300.00")),
+    ]
+    income, expenses, net = compute_totals(rows)
+    assert income == Decimal("3000.00")
+    assert expenses == Decimal("400.00")
+    assert net == Decimal("2600.00")
+
+
+def test_pdf_export_endpoint_with_monthly_income(client):
+    headers = register_and_login(client, email="pdfincome@example.com")
+    client.put("/income/2026-09", json={"amount": "3000.00"}, headers=headers)
+    client.post(
+        "/transactions/",
+        json={"date": "2026-09-05", "description": "Groceries", "amount": "-250.00"},
+        headers=headers,
+    )
+    response = client.get("/transactions/export/pdf", headers=headers)
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "application/pdf"
+    assert response.content.startswith(b"%PDF")
