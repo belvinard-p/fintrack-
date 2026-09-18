@@ -152,6 +152,7 @@ def get_budget_status(
             .filter(
                 Transaction.user_id == current_user.id,
                 Transaction.category_id == budget.category_id,
+                Transaction.amount < 0,
                 func.to_char(Transaction.date, "YYYY-MM") == month,
             )
             .scalar()

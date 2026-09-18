@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CategoryDot } from "@/components/category-dot";
+import { TransactionTypeToggle } from "@/components/transaction-type-toggle";
 import {
   Select,
   SelectContent,
@@ -19,6 +20,12 @@ import {
 import { useLanguage } from "@/lib/i18n";
 import { extractErrorMessage } from "@/lib/error";
 import { getTodayIso } from "@/lib/date";
+import {
+  getTransactionType,
+  toAbsoluteAmount,
+  toSignedAmount,
+  type TransactionType,
+} from "@/lib/amount";
 import {
   Dialog,
   DialogClose,
@@ -34,7 +41,8 @@ export function EditTransactionDialog({ transaction }: Readonly<{ transaction: T
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState(transaction.date);
   const [description, setDescription] = useState(transaction.description);
-  const [amount, setAmount] = useState(transaction.amount);
+  const [type, setType] = useState<TransactionType>(getTransactionType(transaction.amount));
+  const [amount, setAmount] = useState(toAbsoluteAmount(transaction.amount));
   const [categoryId, setCategoryId] = useState(
     transaction.category_id ? String(transaction.category_id) : ""
   );
@@ -48,7 +56,8 @@ export function EditTransactionDialog({ transaction }: Readonly<{ transaction: T
     if (next) {
       setDate(transaction.date);
       setDescription(transaction.description);
-      setAmount(transaction.amount);
+      setType(getTransactionType(transaction.amount));
+      setAmount(toAbsoluteAmount(transaction.amount));
       setCategoryId(transaction.category_id ? String(transaction.category_id) : "");
       setError(null);
     }
@@ -64,7 +73,7 @@ export function EditTransactionDialog({ transaction }: Readonly<{ transaction: T
         payload: {
           date,
           description,
-          amount,
+          amount: toSignedAmount(amount, type),
           category_id: categoryId ? Number.parseInt(categoryId, 10) : null,
         },
       });
@@ -112,10 +121,18 @@ export function EditTransactionDialog({ transaction }: Readonly<{ transaction: T
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor={`edit-amount-${transaction.id}`}>{t("transactions.form.amount")}</Label>
+            <Label>{t("transactions.form.amount")}</Label>
+            <TransactionTypeToggle
+              value={type}
+              onChange={setType}
+              expenseLabel={t("common.expense")}
+              incomeLabel={t("common.income")}
+              idPrefix={`edit-transaction-type-${transaction.id}`}
+            />
             <Input
               id={`edit-amount-${transaction.id}`}
               type="number"
+              min="0.01"
               step="0.01"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}

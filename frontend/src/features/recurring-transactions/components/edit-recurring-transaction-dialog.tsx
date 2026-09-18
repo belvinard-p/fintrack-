@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CategoryDot } from "@/components/category-dot";
+import { TransactionTypeToggle } from "@/components/transaction-type-toggle";
 import {
   Select,
   SelectContent,
@@ -18,6 +19,12 @@ import {
 } from "@/components/ui/select";
 import { useLanguage } from "@/lib/i18n";
 import { extractErrorMessage } from "@/lib/error";
+import {
+  getTransactionType,
+  toAbsoluteAmount,
+  toSignedAmount,
+  type TransactionType,
+} from "@/lib/amount";
 import {
   Dialog,
   DialogClose,
@@ -32,7 +39,8 @@ export function EditRecurringTransactionDialog({ item }: Readonly<{ item: Recurr
   const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const [description, setDescription] = useState(item.description);
-  const [amount, setAmount] = useState(item.amount);
+  const [type, setType] = useState<TransactionType>(getTransactionType(item.amount));
+  const [amount, setAmount] = useState(toAbsoluteAmount(item.amount));
   const [dayOfMonth, setDayOfMonth] = useState(String(item.day_of_month));
   const [categoryId, setCategoryId] = useState(item.category_id ? String(item.category_id) : "");
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +52,8 @@ export function EditRecurringTransactionDialog({ item }: Readonly<{ item: Recurr
     setOpen(next);
     if (next) {
       setDescription(item.description);
-      setAmount(item.amount);
+      setType(getTransactionType(item.amount));
+      setAmount(toAbsoluteAmount(item.amount));
       setDayOfMonth(String(item.day_of_month));
       setCategoryId(item.category_id ? String(item.category_id) : "");
       setError(null);
@@ -60,7 +69,7 @@ export function EditRecurringTransactionDialog({ item }: Readonly<{ item: Recurr
         id: item.id,
         payload: {
           description,
-          amount,
+          amount: toSignedAmount(amount, type),
           day_of_month: Number.parseInt(dayOfMonth, 10),
           category_id: categoryId ? Number.parseInt(categoryId, 10) : null,
         },
@@ -97,10 +106,18 @@ export function EditRecurringTransactionDialog({ item }: Readonly<{ item: Recurr
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor={`edit-recurring-amount-${item.id}`}>{t("recurring.form.amount")}</Label>
+            <Label>{t("recurring.form.amount")}</Label>
+            <TransactionTypeToggle
+              value={type}
+              onChange={setType}
+              expenseLabel={t("common.expense")}
+              incomeLabel={t("common.income")}
+              idPrefix={`edit-recurring-type-${item.id}`}
+            />
             <Input
               id={`edit-recurring-amount-${item.id}`}
               type="number"
+              min="0.01"
               step="0.01"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}

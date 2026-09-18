@@ -8,9 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CategoryDot } from "@/components/category-dot";
+import { TransactionTypeToggle } from "@/components/transaction-type-toggle";
 import { useLanguage } from "@/lib/i18n";
 import { extractErrorMessage } from "@/lib/error";
 import { getTodayIso } from "@/lib/date";
+import { toSignedAmount, type TransactionType } from "@/lib/amount";
 import {
   Select,
   SelectContent,
@@ -23,6 +25,7 @@ export function TransactionForm() {
   const { t } = useLanguage();
   const [date, setDate] = useState("");
   const [description, setDescription] = useState("");
+  const [type, setType] = useState<TransactionType>("expense");
   const [amount, setAmount] = useState("");
   const [categoryId, setCategoryId] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
@@ -39,11 +42,12 @@ export function TransactionForm() {
 
         date,
         description,
-        amount,
+        amount: toSignedAmount(amount, type),
         category_id: categoryId ? parseInt(categoryId, 10) : null,
       });
       setDate("");
       setDescription("");
+      setType("expense");
       setAmount("");
       setCategoryId("");
       toast.success(t("transactions.form.added"));
@@ -81,10 +85,18 @@ export function TransactionForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="amount">{t("transactions.form.amount")}</Label>
+        <Label>{t("transactions.form.amount")}</Label>
+        <TransactionTypeToggle
+          value={type}
+          onChange={setType}
+          expenseLabel={t("common.expense")}
+          incomeLabel={t("common.income")}
+          idPrefix="transaction-type"
+        />
         <Input
           id="amount"
           type="number"
+          min="0.01"
           step="0.01"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}

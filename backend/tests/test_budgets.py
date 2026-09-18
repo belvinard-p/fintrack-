@@ -271,6 +271,28 @@ def test_budget_status_over_budget(client):
     assert entry["is_over_budget"] is True
 
 
+def test_budget_status_ignores_income(client):
+    headers = register_and_login(client)
+    category_id = get_category_id(client, headers, "Transport")
+
+    client.post(
+        "/budgets/",
+        json={"category_id": category_id, "monthly_limit": "10000.00", "month": "2026-08"},
+        headers=headers,
+    )
+    client.post(
+        "/transactions/",
+        json={"date": "2026-08-05", "description": "Refund", "amount": "500.00", "category_id": category_id},
+        headers=headers,
+    )
+
+    response = client.get("/budgets/status?month=2026-08", headers=headers)
+    data = response.json()
+    entry = next(d for d in data if d["category_id"] == category_id)
+    assert entry["actual_spending"] == "0"
+    assert entry["is_over_budget"] is False
+
+
 def test_budget_status_with_no_transactions(client):
     headers = register_and_login(client)
     category_id = get_category_id(client, headers, "Rent")
