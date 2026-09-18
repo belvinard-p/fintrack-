@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CategoryDot } from "@/components/category-dot";
 import { useLanguage } from "@/lib/i18n";
+import { stripDigits } from "@/lib/text";
 import { extractErrorMessage } from "@/lib/error";
 import { getTodayIso } from "@/lib/date";
 import { toSignedAmount } from "@/lib/amount";
@@ -75,7 +76,7 @@ export function TransactionForm() {
           id="description"
           type="text"
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={(e) => setDescription(stripDigits(e.target.value))}
           required
         />
 

@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CategoryDot } from "@/components/category-dot";
 import { useLanguage } from "@/lib/i18n";
+import { stripDigits } from "@/lib/text";
 import { extractErrorMessage } from "@/lib/error";
 import {
   Dialog,
@@ -97,7 +98,7 @@ export function CategoryManager() {
         <Input
           placeholder={t("categories.newCategoryPlaceholder")}
           value={newName}
-          onChange={(e) => setNewName(e.target.value)}
+          onChange={(e) => setNewName(stripDigits(e.target.value))}
           required
         />
         <Button type="submit" disabled={createCategory.isPending}>
@@ -155,7 +156,7 @@ export function CategoryManager() {
                       {editError && <p className="text-red-600 text-sm">{editError}</p>}
                       <Input
                         value={editName}
-                        onChange={(e) => setEditName(e.target.value)}
+                        onChange={(e) => setEditName(stripDigits(e.target.value))}
                         required
                       />
                       <DialogFooter>

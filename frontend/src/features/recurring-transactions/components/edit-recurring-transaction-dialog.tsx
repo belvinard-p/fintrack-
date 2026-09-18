@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useLanguage } from "@/lib/i18n";
+import { stripDigits } from "@/lib/text";
 import { extractErrorMessage } from "@/lib/error";
 import {
   getTransactionType,
@@ -100,7 +101,7 @@ export function EditRecurringTransactionDialog({ item }: Readonly<{ item: Recurr
             <Input
               id={`edit-recurring-description-${item.id}`}
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => setDescription(stripDigits(e.target.value))}
               required
             />
           </div>

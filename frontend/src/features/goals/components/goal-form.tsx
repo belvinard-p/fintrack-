@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/lib/i18n";
+import { stripDigits } from "@/lib/text";
 import { extractErrorMessage } from "@/lib/error";
 
 export function GoalForm() {
@@ -46,7 +47,7 @@ export function GoalForm() {
         <Input
           id="goal-name"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => setName(stripDigits(e.target.value))}
           placeholder={t("goals.form.namePlaceholder")}
           required
         />

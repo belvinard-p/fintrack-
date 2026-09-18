@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useLanguage } from "@/lib/i18n";
+import { stripDigits } from "@/lib/text";
 import { extractErrorMessage } from "@/lib/error";
 import { getTodayIso } from "@/lib/date";
 import {
@@ -115,7 +116,7 @@ export function EditTransactionDialog({ transaction }: Readonly<{ transaction: T
             <Input
               id={`edit-description-${transaction.id}`}
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => setDescription(stripDigits(e.target.value))}
               required
             />
           </div>
