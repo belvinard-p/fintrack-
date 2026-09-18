@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMonthlySummary } from "../hooks/use-monthly-summary";
-import { useTransactions } from "@/features/transactions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,12 +22,6 @@ function shiftMonth(month: string, delta: number): string {
   const [year, m] = month.split("-").map(Number);
   const date = new Date(year, m - 1 + delta, 1);
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-}
-
-function monthRange(month: string): { date_from: string; date_to: string } {
-  const [year, m] = month.split("-").map(Number);
-  const lastDay = new Date(year, m, 0).getDate();
-  return { date_from: `${month}-01`, date_to: `${month}-${String(lastDay).padStart(2, "0")}` };
 }
 
 function percentChange(current: string, previous: string): number | null {
@@ -66,7 +59,6 @@ export function MonthlySummaryCard() {
   const currentMonth = getCurrentMonth();
 
   const { data: summary, isLoading, error } = useMonthlySummary(month);
-  const { data: movements } = useTransactions({ ...monthRange(month), page_size: 100 });
 
   const totalExpenses = Number(summary?.total_expenses ?? 0);
 
@@ -197,31 +189,6 @@ export function MonthlySummaryCard() {
                 </ul>
               </div>
             )}
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-medium">{t("dashboard.summary.movements")}</h3>
-                <span className="text-xs text-muted-foreground">
-                  {t("dashboard.summary.movementsCount", { count: summary.transaction_count })}
-                </span>
-              </div>
-              {movements && movements.items.length === 0 && (
-                <p className="text-sm text-muted-foreground">{t("dashboard.summary.empty")}</p>
-              )}
-              <ul className="divide-y rounded-lg border">
-                {movements?.items.map((movement) => (
-                  <li key={movement.id} className="flex items-center justify-between gap-4 px-4 py-2 text-sm">
-                    <div className="min-w-0">
-                      <p className="truncate">{movement.description}</p>
-                      <p className="text-xs text-muted-foreground">{movement.date}</p>
-                    </div>
-                    <span className={`shrink-0 font-medium ${amountColorClass(movement.amount)}`}>
-                      {formatSignedAmount(movement.amount)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
           </>
         )}
       </CardContent>
