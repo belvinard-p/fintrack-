@@ -345,6 +345,7 @@ export const en = {
       searchPlaceholder: "Search by description...",
       failedToLoad: "Failed to load transactions",
       empty: "No transactions found",
+      time: "Time",
       date: "Date",
       description: "Description",
       amount: "Amount",

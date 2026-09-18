@@ -4,6 +4,8 @@ import { Transaction } from "../types";
 import { EditTransactionDialog } from "./edit-transaction-dialog";
 import { DeleteTransactionDialog } from "./delete-transaction-dialog";
 import { amountColorClass, formatSignedAmount } from "@/lib/amount";
+import { formatCreatedTime } from "@/lib/date";
+import { useLanguage } from "@/lib/i18n";
 
 interface TransactionCardListProps {
   transactions: Transaction[];
@@ -16,6 +18,8 @@ export function TransactionCardList({
   onDelete,
   sourceLabel,
 }: Readonly<TransactionCardListProps>) {
+  const { language } = useLanguage();
+
   return (
     <div className="space-y-3 sm:hidden">
       {transactions.map((transaction) => (
@@ -23,7 +27,11 @@ export function TransactionCardList({
           <div className="flex items-start justify-between gap-2">
             <div>
               <p className="font-medium">{transaction.description}</p>
-              <p className="text-sm text-muted-foreground">{transaction.date}</p>
+              <p className="text-sm text-muted-foreground">
+                {transaction.date}
+                {formatCreatedTime(transaction.created_at, language) &&
+                  ` · ${formatCreatedTime(transaction.created_at, language)}`}
+              </p>
             </div>
             <p className={`font-medium whitespace-nowrap ${amountColorClass(transaction.amount)}`}>
               {formatSignedAmount(transaction.amount)}

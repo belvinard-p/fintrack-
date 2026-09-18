@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useLanguage } from "@/lib/i18n";
+import { formatCreatedTime } from "@/lib/date";
 import { amountColorClass, formatSignedAmount } from "@/lib/amount";
 
 interface TransactionTableProps {
@@ -25,7 +26,7 @@ export function TransactionTable({
   onDelete,
   sourceLabel,
 }: Readonly<TransactionTableProps>) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   return (
     <div className="hidden sm:block">
@@ -33,6 +34,7 @@ export function TransactionTable({
         <TableHeader>
           <TableRow>
             <TableHead>{t("transactions.list.date")}</TableHead>
+            <TableHead>{t("transactions.list.time")}</TableHead>
             <TableHead>{t("transactions.list.description")}</TableHead>
             <TableHead className="text-right">{t("transactions.list.amount")}</TableHead>
             <TableHead>{t("transactions.list.source")}</TableHead>
@@ -43,6 +45,9 @@ export function TransactionTable({
           {transactions.map((transaction) => (
             <TableRow key={transaction.id}>
               <TableCell>{transaction.date}</TableCell>
+              <TableCell className="text-muted-foreground">
+                {formatCreatedTime(transaction.created_at, language) ?? "-"}
+              </TableCell>
               <TableCell>{transaction.description}</TableCell>
               <TableCell className={`text-right font-medium ${amountColorClass(transaction.amount)}`}>
                 {formatSignedAmount(transaction.amount)}

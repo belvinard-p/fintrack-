@@ -347,6 +347,7 @@ export const fr: typeof en = {
       searchPlaceholder: "Rechercher par description...",
       failedToLoad: "Échec du chargement des transactions",
       empty: "Aucune transaction trouvée",
+      time: "Heure",
       date: "Date",
       description: "Description",
       amount: "Montant",
