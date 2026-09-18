@@ -127,3 +127,32 @@
     @apply font-sans;
   }
 }
+
+@layer components {
+  input[type="date"] {
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+
+  input[type="date"]:hover:not(:disabled) {
+    border-color: var(--ring);
+  }
+
+  input[type="date"]:focus,
+  input[type="date"]:focus-visible {
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 30%, transparent);
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 2px;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    opacity: 0.6;
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}

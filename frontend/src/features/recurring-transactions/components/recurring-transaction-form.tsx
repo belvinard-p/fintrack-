@@ -131,7 +131,7 @@ export function RecurringTransactionForm() {
         </Select>
       </div>
 
-      <Button type="submit" className="w-full" disabled={createRecurring.isPending}>
+      <Button type="submit" className="w-full" disabled={createRecurring.isPending || !description || !amount || !startDate}>
         {createRecurring.isPending ? t("recurring.form.creating") : t("recurring.form.submit")}
       </Button>
     </form>

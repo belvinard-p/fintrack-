@@ -119,7 +119,7 @@ export function TransactionForm() {
         </Select>
       </div>
 
-      <Button type="submit" className="w-full" disabled={createTransaction.isPending}>
+      <Button type="submit" className="w-full" disabled={createTransaction.isPending || !date || !description || !amount}>
 
         {createTransaction.isPending ? t("transactions.form.adding") : t("transactions.form.submit")}
       </Button>
