@@ -50,6 +50,34 @@ def test_update_transaction_rejects_future_date(client):
     assert response.status_code == 422
 
 
+def test_update_transaction_accepts_valid_date(client):
+    headers = register_and_login(client, email="validupdateuser@example.com")
+    category = client.post(
+        "/categories/", json={"name": "Valid Update Category"}, headers=headers
+    ).json()
+    created = client.post(
+        "/transactions/",
+        json={"date": "2026-08-15", "description": "Groceries", "amount": "45.99"},
+        headers=headers,
+    ).json()
+
+    response = client.patch(
+        f"/transactions/{created['id']}",
+        json={
+            "date": date.today().isoformat(),
+            "description": "Updated groceries",
+            "amount": "50.00",
+            "category_id": category["id"],
+        },
+        headers=headers,
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["date"] == date.today().isoformat()
+    assert data["description"] == "Updated groceries"
+    assert data["category_id"] == category["id"]
+
+
 def test_create_transaction_auto_categorizes_when_matching_category_exists(client):
     headers = register_and_login(client, email="autocatuser@example.com")
     category = client.post(

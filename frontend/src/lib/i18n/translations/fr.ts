@@ -263,6 +263,9 @@ export const fr: typeof en = {
       dayOfMonth: "jour {day} de chaque mois",
       resumed: "Transaction récurrente reprise",
       pausedToast: "Transaction récurrente mise en pause",
+      editTitle: "Modifier la transaction récurrente",
+      updated: "Transaction récurrente mise à jour",
+      updateError: "Échec de la mise à jour de la transaction récurrente",
       deleteTitle: 'Supprimer "{description}" ?',
       deleteDescription:
         "Cela arrête les transactions automatiques futures. Les transactions déjà créées ne sont pas affectées.",

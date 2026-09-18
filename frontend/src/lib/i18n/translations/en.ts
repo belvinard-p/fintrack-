@@ -261,6 +261,9 @@ export const en = {
       dayOfMonth: "day {day} of each month",
       resumed: "Recurring transaction resumed",
       pausedToast: "Recurring transaction paused",
+      editTitle: "Edit recurring transaction",
+      updated: "Recurring transaction updated",
+      updateError: "Failed to update recurring transaction",
       deleteTitle: 'Delete "{description}"?',
       deleteDescription:
         "This stops future automatic transactions. Past transactions already created are not affected.",
