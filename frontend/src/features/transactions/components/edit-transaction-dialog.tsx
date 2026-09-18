@@ -80,7 +80,7 @@ export function EditTransactionDialog({ transaction }: Readonly<{ transaction: T
       });
       setOpen(false);
       toast.success(t("transactions.list.updated"));
-    } catch (err: any) {
+    } catch (err) {
       setError(extractErrorMessage(err, t("transactions.list.updateError")));
     }
   }

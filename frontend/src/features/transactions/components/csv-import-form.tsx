@@ -35,7 +35,7 @@ export function CsvImportForm() {
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
-    } catch (err: any) {
+    } catch (err) {
       setError(extractErrorMessage(err, t("transactions.csvImport.error")));
     }
   }

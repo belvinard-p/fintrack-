@@ -51,7 +51,7 @@ export function BudgetForm() {
       setMonthlyLimit("");
       setMonth("");
       toast.success(t("budgets.form.created"));
-    } catch (err: any) {
+    } catch (err) {
       setError(extractErrorMessage(err, t("budgets.form.error")));
     }
   }

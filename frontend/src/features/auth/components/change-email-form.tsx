@@ -31,7 +31,7 @@ export function ChangeEmailForm() {
       setCurrentPassword("");
       setNewEmail("");
       setSuccess(true);
-    } catch (err: any) {
+    } catch (err) {
       setError(extractErrorMessage(err, t("auth.changeEmail.error")));
     }
   }

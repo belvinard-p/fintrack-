@@ -36,7 +36,7 @@ export default function RegisterPage() {
     try {
       await register({ email, password });
       router.push("/login");
-    } catch (err: any) {
+    } catch (err) {
       setError(extractErrorMessage(err, t("auth.register.error")));
       setIsSubmitting(false);
     }

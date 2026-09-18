@@ -31,7 +31,7 @@ export function DeleteAccountSection() {
       await deleteAccount.mutateAsync();
       clearToken();
       router.push("/login");
-    } catch (err: any) {
+    } catch (err) {
       setError(extractErrorMessage(err, t("auth.deleteAccount.error")));
     }
   }

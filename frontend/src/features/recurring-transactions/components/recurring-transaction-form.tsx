@@ -50,7 +50,7 @@ export function RecurringTransactionForm() {
       setStartDate("");
       setCategoryId("");
       toast.success(t("recurring.form.created"));
-    } catch (err: any) {
+    } catch (err) {
       setError(extractErrorMessage(err, t("recurring.form.error")));
     }
   }

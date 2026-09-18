@@ -34,7 +34,7 @@ export function ContributeGoalDialog({ goal }: Readonly<{ goal: Goal }>) {
       setAmount("");
       setOpen(false);
       toast.success(t("goals.list.fundsAdded"));
-    } catch (err: any) {
+    } catch (err) {
       setError(extractErrorMessage(err, t("goals.list.contributeError")));
     }
   }

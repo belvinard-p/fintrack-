@@ -49,7 +49,7 @@ export function TransactionForm() {
       setAmount("");
       setCategoryId("");
       toast.success(t("transactions.form.added"));
-    } catch (err: any) {
+    } catch (err) {
       setError(extractErrorMessage(err, t("transactions.form.error")));
     }
   }

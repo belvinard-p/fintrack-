@@ -49,7 +49,7 @@ export function EditGoalDialog({ goal }: Readonly<{ goal: Goal }>) {
       });
       setOpen(false);
       toast.success(t("goals.list.updated"));
-    } catch (err: any) {
+    } catch (err) {
       setError(extractErrorMessage(err, t("goals.list.updateError")));
     }
   }

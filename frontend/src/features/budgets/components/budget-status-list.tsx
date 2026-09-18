@@ -65,7 +65,7 @@ export function BudgetStatusList() {
       });
       setEditingId(null);
       toast.success(t("budgets.status.updated"));
-    } catch (err: any) {
+    } catch (err) {
       setEditError(extractErrorMessage(err, t("budgets.status.updateError")));
     }
   }

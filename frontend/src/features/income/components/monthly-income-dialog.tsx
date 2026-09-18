@@ -42,7 +42,7 @@ export function MonthlyIncomeDialog({ month }: Readonly<{ month: string }>) {
       await setIncome.mutateAsync({ month, amount });
       setOpen(false);
       toast.success(t("income.saved"));
-    } catch (err: any) {
+    } catch (err) {
       setError(extractErrorMessage(err, t("income.error")));
     }
   }

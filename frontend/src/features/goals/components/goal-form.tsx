@@ -33,7 +33,7 @@ export function GoalForm() {
       setTargetAmount("");
       setTargetDate("");
       toast.success(t("goals.form.created"));
-    } catch (err: any) {
+    } catch (err) {
       setError(extractErrorMessage(err, t("goals.form.error")));
     }
   }

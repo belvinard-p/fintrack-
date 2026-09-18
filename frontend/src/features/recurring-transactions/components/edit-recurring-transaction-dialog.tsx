@@ -77,7 +77,7 @@ export function EditRecurringTransactionDialog({ item }: Readonly<{ item: Recurr
       });
       setOpen(false);
       toast.success(t("recurring.list.updated"));
-    } catch (err: any) {
+    } catch (err) {
       setError(extractErrorMessage(err, t("recurring.list.updateError")));
     }
   }

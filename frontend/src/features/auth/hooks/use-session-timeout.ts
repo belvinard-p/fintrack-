@@ -17,9 +17,10 @@ const ACTIVITY_EVENTS = ["mousemove", "keydown", "click", "scroll", "touchstart"
 export function useSessionTimeout() {
   const router = useRouter();
   const { t } = useLanguage();
-  const lastActivityRef = useRef(Date.now());
+  const lastActivityRef = useRef(0);
 
   useEffect(() => {
+    lastActivityRef.current = Date.now();
     if (!getLoginTime()) {
       markLoginTime();
     }

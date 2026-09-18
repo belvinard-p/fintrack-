@@ -39,7 +39,7 @@ export default function LoginPage() {
       setToken(access_token);
       markLoginTime();
       router.push("/dashboard");
-    } catch (err: any) {
+    } catch (err) {
       setError(extractErrorMessage(err, t("auth.login.error")));
       setIsSubmitting(false);
     }

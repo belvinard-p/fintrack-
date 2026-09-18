@@ -44,7 +44,7 @@ export function EditBudgetDialog({
       onOpenChange(false);
       const { toast } = await import("sonner");
       toast.success(t("budgets.status.updated"));
-    } catch (err: any) {
+    } catch (err) {
       const { extractErrorMessage: extract } = await import("@/lib/error");
       const { toast } = await import("sonner");
       toast.error(extract(err, t("budgets.status.updateError")));

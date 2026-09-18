@@ -56,7 +56,7 @@ export function CategoryManager() {
       await createCategory.mutateAsync({ name: newName });
       setNewName("");
       toast.success(t("categories.created"));
-    } catch (err: any) {
+    } catch (err) {
       setCreateError(extractErrorMessage(err, t("categories.createError")));
     }
   }
@@ -76,7 +76,7 @@ export function CategoryManager() {
       await updateCategory.mutateAsync({ id: editingId, name: editName });
       setEditingId(null);
       toast.success(t("categories.updated"));
-    } catch (err: any) {
+    } catch (err) {
       setEditError(extractErrorMessage(err, t("categories.updateError")));
     }
   }

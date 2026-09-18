@@ -30,7 +30,7 @@ export function ChangePasswordForm() {
       setCurrentPassword("");
       setNewPassword("");
       setSuccess(true);
-    } catch (err: any) {
+    } catch (err) {
       setError(extractErrorMessage(err, t("auth.changePassword.error")));
     }
   }
