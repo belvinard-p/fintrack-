@@ -4,7 +4,8 @@ from io import StringIO
 from typing import Annotated, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status, UploadFile, File
 from fastapi.responses import StreamingResponse
-from sqlalchemy import extract, func
+from decimal import Decimal
+from sqlalchemy import case, extract, func
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -16,7 +17,7 @@ from app.services.pdf_export import generate_transactions_pdf
 from app.models.user import User
 from app.models.transaction import Transaction
 from app.models.category import Category
-from app.schemas.dashboard import CategorySpending, MonthlySpending
+from app.schemas.dashboard import CategorySpending, MonthlySpending, MonthlySummary, PeriodTotals
 from app.schemas.transaction import (
     TransactionCreate,
     TransactionUpdate,
@@ -227,6 +228,79 @@ def spending_by_month(
         )
         for r in results
     ]
+
+
+def _month_totals(db: Session, user_id: int, year: int, month: int) -> tuple[Decimal, Decimal, int]:
+    row = (
+        db.query(
+            func.coalesce(func.sum(case((Transaction.amount > 0, Transaction.amount), else_=0)), 0),
+            func.coalesce(func.sum(case((Transaction.amount < 0, Transaction.amount), else_=0)), 0),
+            func.count(Transaction.id),
+        )
+        .filter(
+            Transaction.user_id == user_id,
+            extract("year", Transaction.date) == year,
+            extract("month", Transaction.date) == month,
+        )
+        .one()
+    )
+    return Decimal(row[0]), abs(Decimal(row[1])), row[2]
+
+
+@router.get("/dashboard/monthly-summary", response_model=MonthlySummary)
+def monthly_summary(
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+    month: Annotated[str, Query(pattern=r"^\d{4}-(0[1-9]|1[0-2])$")],
+):
+    year, month_number = int(month[:4]), int(month[5:])
+    prev_year, prev_month = (year - 1, 12) if month_number == 1 else (year, month_number - 1)
+
+    income, expenses, count = _month_totals(db, current_user.id, year, month_number)
+    prev_income, prev_expenses, _ = _month_totals(db, current_user.id, prev_year, prev_month)
+
+    by_category = (
+        db.query(
+            Transaction.category_id,
+            Category.name.label("category_name"),
+            func.sum(Transaction.amount).label("total"),
+        )
+        .outerjoin(Category, Transaction.category_id == Category.id)
+        .filter(
+            Transaction.user_id == current_user.id,
+            Transaction.amount < 0,
+            extract("year", Transaction.date) == year,
+            extract("month", Transaction.date) == month_number,
+        )
+        .group_by(Transaction.category_id, Category.name)
+        .all()
+    )
+
+    return MonthlySummary(
+        month=month,
+        total_income=income,
+        total_expenses=expenses,
+        net=income - expenses,
+        savings_rate=((income - expenses) / income * 100).quantize(Decimal("0.1")) if income > 0 else None,
+        transaction_count=count,
+        previous=PeriodTotals(
+            total_income=prev_income,
+            total_expenses=prev_expenses,
+            net=prev_income - prev_expenses,
+        ),
+        expenses_by_category=sorted(
+            [
+                CategorySpending(
+                    category_id=r.category_id,
+                    category_name=r.category_name or "Uncategorized",
+                    total=abs(r.total),
+                )
+                for r in by_category
+            ],
+            key=lambda c: c.total,
+            reverse=True,
+        ),
+    )
 
 
 @router.get("/{transaction_id}", response_model=TransactionOut, responses={404: {"description": TRANSACTION_NOT_FOUND}})

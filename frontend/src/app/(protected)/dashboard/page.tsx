@@ -7,6 +7,7 @@ import {
   useMonthlySpending,
   CategoryPieChart,
   MonthlySpendingChart,
+  MonthlySummaryCard,
 } from "@/features/dashboard";
 import { OverBudgetBanner } from "@/features/budgets";
 import { useLanguage } from "@/lib/i18n";
@@ -21,6 +22,8 @@ export default function DashboardPage() {
       <h1 className="text-2xl font-bold">{t("dashboard.title")}</h1>
 
       <OverBudgetBanner />
+
+      <MonthlySummaryCard />
 
       <div className="grid gap-8 md:grid-cols-2">
         <Card>

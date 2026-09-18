@@ -16,6 +16,8 @@ from reportlab.platypus import (
 
 HEADER_COLOR = colors.HexColor("#0f172a")
 ROW_ALT_COLOR = colors.HexColor("#f1f5f9")
+INCOME_COLOR = colors.HexColor("#059669")
+EXPENSE_COLOR = colors.HexColor("#dc2626")
 
 
 def generate_transactions_pdf(transactions, category_names: dict, user_email: str) -> BytesIO:
@@ -77,21 +79,27 @@ def generate_transactions_pdf(transactions, category_names: dict, user_email: st
         elements.append(Spacer(1, 0.8 * cm))
 
     elements.append(Paragraph("Transactions", styles["Heading2"]))
-    transaction_rows = [["Date", "Description", "Category", "Amount"]] + [
+    transaction_rows = [["Date", "Description", "Category", "Type", "Amount"]] + [
         [
             t.date.isoformat(),
             t.description,
             category_names.get(t.category_id, "Uncategorized"),
+            "Income" if t.amount >= 0 else "Expense",
             f"{t.amount:.2f}",
         ]
         for t in transactions
     ]
     transaction_table = Table(
         transaction_rows,
-        colWidths=[2.5 * cm, 6.5 * cm, 4 * cm, 3 * cm],
+        colWidths=[2.3 * cm, 5.2 * cm, 3.5 * cm, 2.5 * cm, 2.5 * cm],
         repeatRows=1,
     )
-    transaction_table.setStyle(_table_style())
+    style = _table_style()
+    for row_index, t in enumerate(transactions, start=1):
+        color = INCOME_COLOR if t.amount >= 0 else EXPENSE_COLOR
+        style.add("TEXTCOLOR", (3, row_index), (4, row_index), color)
+        style.add("FONTNAME", (3, row_index), (4, row_index), "Helvetica-Bold")
+    transaction_table.setStyle(style)
     elements.append(transaction_table)
 
     doc.build(elements)

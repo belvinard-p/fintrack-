@@ -379,3 +379,42 @@ def test_delete_transaction(client):
 
     get_response = client.get(f"/transactions/{tx_id}", headers=headers)
     assert get_response.status_code == 404
+
+def test_monthly_summary_totals_and_previous_month(client):
+    headers = register_and_login(client, email="summaryuser@example.com")
+    for d, desc, amount in [
+        ("2026-08-10", "Old salary", "1000.00"),
+        ("2026-08-12", "Old rent", "-400.00"),
+        ("2026-09-01", "Salary", "3000.00"),
+        ("2026-09-05", "Groceries", "-250.00"),
+        ("2026-09-06", "Bus", "-50.00"),
+    ]:
+        client.post("/transactions/", json={"date": d, "description": desc, "amount": amount}, headers=headers)
+
+    response = client.get("/transactions/dashboard/monthly-summary?month=2026-09", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total_income"] == "3000.00"
+    assert data["total_expenses"] == "300.00"
+    assert data["net"] == "2700.00"
+    assert data["savings_rate"] == "90.0"
+    assert data["transaction_count"] == 3
+    assert data["previous"]["total_income"] == "1000.00"
+    assert data["previous"]["total_expenses"] == "400.00"
+    assert data["previous"]["net"] == "600.00"
+
+
+def test_monthly_summary_empty_month(client):
+    headers = register_and_login(client, email="emptysummary@example.com")
+    response = client.get("/transactions/dashboard/monthly-summary?month=2026-01", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["transaction_count"] == 0
+    assert data["savings_rate"] is None
+    assert data["expenses_by_category"] == []
+
+
+def test_monthly_summary_rejects_bad_month(client):
+    headers = register_and_login(client, email="badmonth@example.com")
+    response = client.get("/transactions/dashboard/monthly-summary?month=2026-13", headers=headers)
+    assert response.status_code == 422
