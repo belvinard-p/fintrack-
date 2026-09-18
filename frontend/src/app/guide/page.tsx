@@ -3,6 +3,8 @@
 import Link from "next/link";
 import {
   Receipt,
+  Banknote,
+  FileText,
   Tag,
   Wallet,
   Repeat,
@@ -19,22 +21,26 @@ import { useLanguage } from "@/lib/i18n";
 
 const FEATURE_ICONS = [
   Receipt,
+  Banknote,
   Tag,
   Wallet,
   Repeat,
   Target,
   BarChart3,
+  FileText,
   ShieldCheck,
   Globe,
 ] as const;
 
 const FEATURE_KEYS = [
   "transactions",
+  "income",
   "categorization",
   "budgets",
   "recurring",
   "goals",
   "dashboard",
+  "reports",
   "security",
   "languages",
 ] as const;

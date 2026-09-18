@@ -37,9 +37,14 @@ export const fr: typeof en = {
       "Une vision claire et honnête de l'utilisation de votre argent — pas seulement une liste de transactions.",
     features: {
       transactions: {
-        title: "Ajoutez et importez vos transactions",
+        title: "Ajoutez et importez vos dépenses",
         description:
-          "Enregistrez vos dépenses et revenus manuellement, ou importez un relevé bancaire au format CSV — FinTrack reconnaît automatiquement les noms de colonnes courants et ignore les doublons.",
+          "Enregistrez vos dépenses manuellement, ou importez un relevé bancaire au format CSV — FinTrack reconnaît automatiquement les noms de colonnes courants et ignore les doublons.",
+      },
+      income: {
+        title: "Fixez votre revenu du mois",
+        description:
+          "Indiquez ce que vous gagnez chaque mois. Chaque budget créé s'en déduit : vous voyez toujours ce qu'il reste à budgétiser, et vous ne pouvez pas budgétiser plus que ce que vous avez.",
       },
       categorization: {
         title: "Catégorisation automatique",
@@ -54,7 +59,7 @@ export const fr: typeof en = {
       recurring: {
         title: "Transactions récurrentes",
         description:
-          "Configurez loyer, abonnements ou salaire une seule fois — FinTrack les ajoute automatiquement chaque mois pour que vous ne les oubliiez jamais.",
+          "Configurez loyer ou abonnements une seule fois — FinTrack les ajoute automatiquement chaque mois pour que vous ne les oubliiez jamais.",
       },
       goals: {
         title: "Objectifs d'épargne",
@@ -62,9 +67,14 @@ export const fr: typeof en = {
           "Fixez un montant cible et suivez votre progression grâce aux contributions, pour qu'un objectif comme un fonds d'urgence reste concret, pas juste un vœu.",
       },
       dashboard: {
-        title: "Tableau de bord visuel",
+        title: "Tableau de bord mensuel",
         description:
-          "Visualisez vos dépenses par catégorie et leur évolution mois par mois grâce à des graphiques qui rendent les tendances évidentes en un coup d'œil.",
+          "Choisissez un mois pour voir vos revenus, dépenses, solde net, taux d'épargne et ce qu'il reste à budgétiser — comparés au mois précédent, avec l'évolution de vos dépenses dans le temps.",
+      },
+      reports: {
+        title: "Exportez vos données",
+        description:
+          "Téléchargez vos transactions en CSV, ou en rapport PDF avec un résumé mensuel des revenus, dépenses et solde net.",
       },
       security: {
         title: "Vos données, protégées",

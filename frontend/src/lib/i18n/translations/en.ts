@@ -35,9 +35,14 @@ export const en = {
       "A clear, honest picture of where your money goes — not just a list of transactions.",
     features: {
       transactions: {
-        title: "Add & import transactions",
+        title: "Log & import expenses",
         description:
-          "Log expenses and income by hand, or import a bank statement CSV — FinTrack recognizes common column names automatically and skips duplicates.",
+          "Record your expenses by hand, or import a bank statement CSV — FinTrack recognizes common column names automatically and skips duplicates.",
+      },
+      income: {
+        title: "Set your monthly income",
+        description:
+          "Tell FinTrack what you earn each month. Every budget you create is deducted from it, so you always see what is left to budget — and you can't budget more than you have.",
       },
       categorization: {
         title: "Automatic categorization",
@@ -52,7 +57,7 @@ export const en = {
       recurring: {
         title: "Recurring transactions",
         description:
-          "Set up rent, subscriptions, or salary once — FinTrack adds them automatically every month so you never forget to log them.",
+          "Set up rent or subscriptions once — FinTrack adds them automatically every month so you never forget to log them.",
       },
       goals: {
         title: "Savings goals",
@@ -60,9 +65,14 @@ export const en = {
           "Set a target amount and track your progress with contributions, so a goal like an emergency fund stays visible, not just a wish.",
       },
       dashboard: {
-        title: "Visual dashboard",
+        title: "Monthly dashboard",
         description:
-          "See spending by category and month-over-month trends in charts that make patterns obvious at a glance.",
+          "Pick a month to see your income, expenses, net balance, savings rate and what is left to budget — compared with the previous month, plus your spending trend over time.",
+      },
+      reports: {
+        title: "Export your data",
+        description:
+          "Download your transactions as a CSV file, or as a PDF report with a monthly summary of income, expenses and net balance.",
       },
       security: {
         title: "Your data, protected",
