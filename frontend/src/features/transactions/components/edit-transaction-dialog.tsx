@@ -121,7 +121,8 @@ export function EditTransactionDialog({ transaction }: Readonly<{ transaction: T
           </div>
 
           <div className="space-y-2">
-            <Label>{t("transactions.form.amount")}</Label>
+            <Label htmlFor={`edit-amount-${transaction.id}`}>{t("transactions.form.amount")}</Label>
+            {getTransactionType(transaction.amount) === "income" && (
             <TransactionTypeToggle
               value={type}
               onChange={setType}
@@ -129,6 +130,7 @@ export function EditTransactionDialog({ transaction }: Readonly<{ transaction: T
               incomeLabel={t("common.income")}
               idPrefix={`edit-transaction-type-${transaction.id}`}
             />
+            )}
             <Input
               id={`edit-amount-${transaction.id}`}
               type="number"

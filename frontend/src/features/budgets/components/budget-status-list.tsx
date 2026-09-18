@@ -6,6 +6,7 @@ import { useBudgetStatus } from "../hooks/use-budget-status";
 import { useUpdateBudget } from "../hooks/use-update-budget";
 import { useDeleteBudget } from "../hooks/use-delete-budget";
 import { getCurrentMonth } from "../utils";
+import { BudgetAllocationSummary } from "@/features/income";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -71,6 +72,8 @@ export function BudgetStatusList() {
 
   return (
     <div className="space-y-4">
+      <BudgetAllocationSummary month={month} />
+
       <div className="space-y-2 max-w-xs">
         <Label htmlFor="status-month">{t("budgets.form.month")}</Label>
         <Input

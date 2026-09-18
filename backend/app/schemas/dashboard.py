@@ -20,6 +20,7 @@ class PeriodTotals(BaseModel):
 
 class MonthlySummary(BaseModel):
     month: str  # "YYYY-MM"
+    income_set: bool
     total_income: Decimal
     total_expenses: Decimal
     net: Decimal

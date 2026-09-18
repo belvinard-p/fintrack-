@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CategoryDot } from "@/components/category-dot";
+import { MonthlyIncomeDialog } from "@/features/income";
 import { useLanguage } from "@/lib/i18n";
 import { amountColorClass, formatSignedAmount } from "@/lib/amount";
 
@@ -72,7 +73,10 @@ export function MonthlySummaryCard() {
   return (
     <Card>
       <CardHeader className="gap-4">
-        <CardTitle>{t("dashboard.summary.title")}</CardTitle>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <CardTitle>{t("dashboard.summary.title")}</CardTitle>
+          <MonthlyIncomeDialog month={month} />
+        </div>
         <div className="flex items-end gap-2">
           <Button
             variant="outline"
@@ -116,14 +120,20 @@ export function MonthlySummaryCard() {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="space-y-1 rounded-lg border p-4">
                 <p className="text-sm text-muted-foreground">{t("dashboard.summary.income")}</p>
-                <p className="text-2xl font-semibold text-emerald-600 dark:text-emerald-400">
-                  {Number(summary.total_income).toFixed(2)}
-                </p>
-                <Delta
-                  current={summary.total_income}
-                  previous={summary.previous.total_income}
-                  goodWhenUp
-                />
+                {summary.income_set ? (
+                  <>
+                    <p className="text-2xl font-semibold text-emerald-600 dark:text-emerald-400">
+                      {Number(summary.total_income).toFixed(2)}
+                    </p>
+                    <Delta
+                      current={summary.total_income}
+                      previous={summary.previous.total_income}
+                      goodWhenUp
+                    />
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">{t("income.notSet")}</p>
+                )}
               </div>
 
               <div className="space-y-1 rounded-lg border p-4">

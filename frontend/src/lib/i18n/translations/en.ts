@@ -171,6 +171,21 @@ export const en = {
       failedToLoad: "Failed to load monthly summary",
     },
   },
+  income: {
+    title: "Monthly income & allocation",
+    set: "Set this month's income",
+    edit: "Edit income",
+    dialogTitle: "Income for {month}",
+    amountLabel: "Income of the month",
+    hint: "Your budgets for this month are deducted from this amount.",
+    saved: "Income saved",
+    error: "Failed to save income",
+    monthIncome: "Income",
+    budgeted: "Budgeted",
+    remaining: "Left to budget",
+    notSet: "Set your income for this month to see how much is left to budget.",
+    overAllocated: "Your budgets exceed your income by {amount}.",
+  },
   budgets: {
     title: "Budgets",
     setABudget: "Set a Budget",
@@ -220,7 +235,7 @@ export const en = {
     updateError: "Failed to update category",
     deleteTitle: 'Delete "{name}"?',
     deleteDescription:
-      "Any transactions using this category will become uncategorized. This action cannot be undone.",
+      "Transactions using this category will become uncategorized and its budgets will be deleted. This action cannot be undone.",
     deleted: "Category deleted",
   },
   goals: {

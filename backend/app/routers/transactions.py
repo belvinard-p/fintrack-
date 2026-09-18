@@ -5,7 +5,7 @@ from typing import Annotated, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status, UploadFile, File
 from fastapi.responses import StreamingResponse
 from decimal import Decimal
-from sqlalchemy import case, extract, func
+from sqlalchemy import extract, func
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -17,6 +17,7 @@ from app.services.pdf_export import generate_transactions_pdf
 from app.models.user import User
 from app.models.transaction import Transaction
 from app.models.category import Category
+from app.models.monthly_income import MonthlyIncome
 from app.schemas.dashboard import CategorySpending, MonthlySpending, MonthlySummary, PeriodTotals
 from app.schemas.transaction import (
     TransactionCreate,
@@ -230,21 +231,30 @@ def spending_by_month(
     ]
 
 
-def _month_totals(db: Session, user_id: int, year: int, month: int) -> tuple[Decimal, Decimal, int]:
+def _month_expenses(db: Session, user_id: int, year: int, month: int) -> tuple[Decimal, int]:
     row = (
         db.query(
-            func.coalesce(func.sum(case((Transaction.amount > 0, Transaction.amount), else_=0)), 0),
-            func.coalesce(func.sum(case((Transaction.amount < 0, Transaction.amount), else_=0)), 0),
+            func.coalesce(func.sum(Transaction.amount), 0),
             func.count(Transaction.id),
         )
         .filter(
             Transaction.user_id == user_id,
+            Transaction.amount < 0,
             extract("year", Transaction.date) == year,
             extract("month", Transaction.date) == month,
         )
         .one()
     )
-    return Decimal(row[0]), abs(Decimal(row[1])), row[2]
+    return abs(Decimal(row[0])), row[1]
+
+
+def _declared_income(db: Session, user_id: int, year: int, month: int) -> Decimal | None:
+    income = (
+        db.query(MonthlyIncome)
+        .filter(MonthlyIncome.user_id == user_id, MonthlyIncome.month == f"{year}-{month:02d}")
+        .first()
+    )
+    return Decimal(income.amount) if income else None
 
 
 @router.get("/dashboard/monthly-summary", response_model=MonthlySummary)
@@ -256,8 +266,11 @@ def monthly_summary(
     year, month_number = int(month[:4]), int(month[5:])
     prev_year, prev_month = (year - 1, 12) if month_number == 1 else (year, month_number - 1)
 
-    income, expenses, count = _month_totals(db, current_user.id, year, month_number)
-    prev_income, prev_expenses, _ = _month_totals(db, current_user.id, prev_year, prev_month)
+    declared = _declared_income(db, current_user.id, year, month_number)
+    income = declared or Decimal("0")
+    expenses, count = _month_expenses(db, current_user.id, year, month_number)
+    prev_income = _declared_income(db, current_user.id, prev_year, prev_month) or Decimal("0")
+    prev_expenses, _ = _month_expenses(db, current_user.id, prev_year, prev_month)
 
     by_category = (
         db.query(
@@ -278,6 +291,7 @@ def monthly_summary(
 
     return MonthlySummary(
         month=month,
+        income_set=declared is not None,
         total_income=income,
         total_expenses=expenses,
         net=income - expenses,

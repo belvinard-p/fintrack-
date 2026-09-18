@@ -14,3 +14,4 @@ from app.models import (  # noqa: F401
     AuditLog,
     RecurringTransaction,
 )
+from app.models.monthly_income import MonthlyIncome  # noqa: F401

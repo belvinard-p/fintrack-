@@ -173,6 +173,21 @@ export const fr: typeof en = {
       failedToLoad: "Échec du chargement du résumé mensuel",
     },
   },
+  income: {
+    title: "Revenu du mois et allocation",
+    set: "Définir le revenu du mois",
+    edit: "Modifier le revenu",
+    dialogTitle: "Revenu de {month}",
+    amountLabel: "Revenu du mois",
+    hint: "Vos budgets de ce mois sont déduits de ce montant.",
+    saved: "Revenu enregistré",
+    error: "Échec de l'enregistrement du revenu",
+    monthIncome: "Revenu",
+    budgeted: "Budgétisé",
+    remaining: "Reste à budgétiser",
+    notSet: "Définissez votre revenu du mois pour voir ce qu'il reste à budgétiser.",
+    overAllocated: "Vos budgets dépassent votre revenu de {amount}.",
+  },
   budgets: {
     title: "Budgets",
     setABudget: "Définir un budget",
@@ -222,7 +237,7 @@ export const fr: typeof en = {
     updateError: "Échec de la mise à jour de la catégorie",
     deleteTitle: 'Supprimer "{name}" ?',
     deleteDescription:
-      "Les transactions utilisant cette catégorie deviendront non catégorisées. Cette action est irréversible.",
+      "Les transactions utilisant cette catégorie deviendront non catégorisées et ses budgets seront supprimés. Cette action est irréversible.",
     deleted: "Catégorie supprimée",
   },
   goals: {

@@ -106,7 +106,8 @@ export function EditRecurringTransactionDialog({ item }: Readonly<{ item: Recurr
           </div>
 
           <div className="space-y-2">
-            <Label>{t("recurring.form.amount")}</Label>
+            <Label htmlFor={`edit-recurring-amount-${item.id}`}>{t("recurring.form.amount")}</Label>
+            {getTransactionType(item.amount) === "income" && (
             <TransactionTypeToggle
               value={type}
               onChange={setType}
@@ -114,6 +115,7 @@ export function EditRecurringTransactionDialog({ item }: Readonly<{ item: Recurr
               incomeLabel={t("common.income")}
               idPrefix={`edit-recurring-type-${item.id}`}
             />
+            )}
             <Input
               id={`edit-recurring-amount-${item.id}`}
               type="number"

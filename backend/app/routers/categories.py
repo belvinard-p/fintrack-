@@ -9,6 +9,8 @@ from app.core.audit import log_action
 from app.models.user import User
 from app.models.category import Category
 from app.models.transaction import Transaction
+from app.models.budget import Budget
+from app.models.recurring_transaction import RecurringTransaction
 from app.schemas.category import CategoryOut, CategoryCreate, CategoryUpdate
 
 router = APIRouter(prefix="/categories", tags=["categories"])
@@ -88,12 +90,18 @@ def delete_category(
         .filter(Transaction.category_id == category_id)
         .update({"category_id": None})
     )
+    db.query(RecurringTransaction).filter(
+        RecurringTransaction.category_id == category_id
+    ).update({"category_id": None})
+    removed_budgets = (
+        db.query(Budget).filter(Budget.category_id == category_id).delete()
+    )
 
     log_action(
         db,
         current_user.id,
         "delete_category",
-        f"'{category.name}' — {affected} transaction(s) became uncategorized",
+        f"'{category.name}' — {affected} transaction(s) became uncategorized, {removed_budgets} budget(s) removed",
     )
     db.delete(category)
     db.commit()

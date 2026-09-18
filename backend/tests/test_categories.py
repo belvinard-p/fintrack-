@@ -80,3 +80,30 @@ def test_delete_category_nullifies_transactions(client):
 def test_category_endpoints_require_auth(client):
     response = client.get("/categories/")
     assert response.status_code == 401
+
+def test_delete_category_removes_budgets_and_detaches_recurring(client):
+    headers = register_and_login(client, email="delcatrefs@example.com")
+    category = client.post("/categories/", json={"name": "Referenced"}, headers=headers).json()
+    client.post(
+        "/budgets/",
+        json={"category_id": category["id"], "monthly_limit": "100.00", "month": "2026-09"},
+        headers=headers,
+    )
+    recurring = client.post(
+        "/recurring-transactions/",
+        json={
+            "description": "Bus pass",
+            "amount": "-30.00",
+            "day_of_month": 5,
+            "start_date": "2026-09-01",
+            "category_id": category["id"],
+        },
+        headers=headers,
+    ).json()
+
+    response = client.delete(f"/categories/{category['id']}", headers=headers)
+    assert response.status_code == 204
+
+    assert client.get("/budgets/status?month=2026-09", headers=headers).json() == []
+    items = client.get("/recurring-transactions/", headers=headers).json()
+    assert next(r for r in items if r["id"] == recurring["id"])["category_id"] is None

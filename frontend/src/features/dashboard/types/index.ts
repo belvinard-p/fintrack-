@@ -18,6 +18,7 @@ export interface PeriodTotals {
 
 export interface MonthlySummary {
   month: string;
+  income_set: boolean;
   total_income: string;
   total_expenses: string;
   net: string;

@@ -8,10 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CategoryDot } from "@/components/category-dot";
-import { TransactionTypeToggle } from "@/components/transaction-type-toggle";
 import { useLanguage } from "@/lib/i18n";
 import { extractErrorMessage } from "@/lib/error";
-import { toSignedAmount, type TransactionType } from "@/lib/amount";
+import { toSignedAmount } from "@/lib/amount";
 import {
   Select,
   SelectContent,
@@ -23,7 +22,6 @@ import {
 export function RecurringTransactionForm() {
   const { t } = useLanguage();
   const [description, setDescription] = useState("");
-  const [type, setType] = useState<TransactionType>("expense");
   const [amount, setAmount] = useState("");
   const [dayOfMonth, setDayOfMonth] = useState("1");
   const [startDate, setStartDate] = useState("");
@@ -40,13 +38,12 @@ export function RecurringTransactionForm() {
     try {
       await createRecurring.mutateAsync({
         description,
-        amount: toSignedAmount(amount, type),
+        amount: toSignedAmount(amount, "expense"),
         day_of_month: parseInt(dayOfMonth, 10),
         start_date: startDate,
         category_id: categoryId ? parseInt(categoryId, 10) : null,
       });
       setDescription("");
-      setType("expense");
       setAmount("");
       setDayOfMonth("1");
       setStartDate("");
@@ -73,14 +70,7 @@ export function RecurringTransactionForm() {
       </div>
 
       <div className="space-y-2">
-        <Label>{t("recurring.form.amount")}</Label>
-        <TransactionTypeToggle
-          value={type}
-          onChange={setType}
-          expenseLabel={t("common.expense")}
-          incomeLabel={t("common.income")}
-          idPrefix="recurring-type"
-        />
+        <Label htmlFor="recurring-amount">{t("recurring.form.amount")}</Label>
         <Input
           id="recurring-amount"
           type="number"
