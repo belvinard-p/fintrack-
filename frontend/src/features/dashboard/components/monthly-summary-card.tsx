@@ -24,6 +24,32 @@ function shiftMonth(month: string, delta: number): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
 
+const TOP_CATEGORIES = 5;
+
+function CategoryRow({
+  label,
+  dot,
+  total,
+  share,
+}: Readonly<{ label: string; dot: React.ReactNode; total: number; share: number }>) {
+  return (
+    <li className="space-y-1">
+      <div className="flex items-center justify-between text-sm">
+        <span className="flex items-center gap-2">
+          {dot}
+          {label}
+        </span>
+        <span className="text-muted-foreground">
+          {total.toFixed(2)} · {share.toFixed(0)}%
+        </span>
+      </div>
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+        <div className="h-full rounded-full bg-foreground/70" style={{ width: `${share}%` }} />
+      </div>
+    </li>
+  );
+}
+
 function percentChange(current: string, previous: string): number | null {
   const prev = Number(previous);
   if (prev === 0) return null;
@@ -60,7 +86,15 @@ export function MonthlySummaryCard() {
 
   const { data: summary, isLoading, error } = useMonthlySummary(month);
 
+  const [showAllCategories, setShowAllCategories] = useState(false);
+
   const totalExpenses = Number(summary?.total_expenses ?? 0);
+  const categories = summary?.expenses_by_category ?? [];
+  const hasOthers = categories.length > TOP_CATEGORIES;
+  const visibleCategories = hasOthers && !showAllCategories ? categories.slice(0, TOP_CATEGORIES) : categories;
+  const groupedCategories = hasOthers && !showAllCategories ? categories.slice(TOP_CATEGORIES) : [];
+  const othersTotal = groupedCategories.reduce((sum, c) => sum + Number(c.total), 0);
+  const shareOf = (value: number) => (totalExpenses > 0 ? (value / totalExpenses) * 100 : 0);
 
   return (
     <Card>
@@ -164,29 +198,31 @@ export function MonthlySummaryCard() {
               <div className="space-y-3">
                 <h3 className="text-sm font-medium">{t("dashboard.summary.expensesByCategory")}</h3>
                 <ul className="space-y-2">
-                  {summary.expenses_by_category.map((category) => {
-                    const share = totalExpenses > 0 ? (Number(category.total) / totalExpenses) * 100 : 0;
-                    return (
-                      <li key={category.category_id ?? "none"} className="space-y-1">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="flex items-center gap-2">
-                            <CategoryDot categoryId={category.category_id} />
-                            {category.category_name}
-                          </span>
-                          <span className="text-muted-foreground">
-                            {Number(category.total).toFixed(2)} · {share.toFixed(0)}%
-                          </span>
-                        </div>
-                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                          <div
-                            className="h-full rounded-full bg-foreground/70"
-                            style={{ width: `${share}%` }}
-                          />
-                        </div>
-                      </li>
-                    );
-                  })}
+                  {visibleCategories.map((category) => (
+                    <CategoryRow
+                      key={category.category_id ?? "none"}
+                      label={category.category_name}
+                      dot={<CategoryDot categoryId={category.category_id} />}
+                      total={Number(category.total)}
+                      share={shareOf(Number(category.total))}
+                    />
+                  ))}
+                  {groupedCategories.length > 0 && (
+                    <CategoryRow
+                      label={t("dashboard.summary.others", { count: groupedCategories.length })}
+                      dot={<span aria-hidden="true" className="inline-block size-2.5 shrink-0 rounded-full bg-muted-foreground/40" />}
+                      total={othersTotal}
+                      share={shareOf(othersTotal)}
+                    />
+                  )}
                 </ul>
+                {hasOthers && (
+                  <Button variant="ghost" size="sm" onClick={() => setShowAllCategories((v) => !v)}>
+                    {showAllCategories
+                      ? t("dashboard.summary.showLess")
+                      : t("dashboard.summary.showAll", { count: categories.length })}
+                  </Button>
+                )}
               </div>
             )}
           </>
