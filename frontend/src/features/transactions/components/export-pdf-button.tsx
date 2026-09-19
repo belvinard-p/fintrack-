@@ -27,7 +27,7 @@ export function ExportPdfButton() {
   }
 
   return (
-    <Button variant="outline" size="sm" onClick={handleExport} disabled={isExporting}>
+    <Button variant="outline" size="sm" onClick={handleExport} disabled={isExporting} aria-label={t("transactions.export.buttonPdf")}>
       {isExporting ? t("transactions.export.exportingPdf") : t("transactions.export.buttonPdf")}
     </Button>
   );

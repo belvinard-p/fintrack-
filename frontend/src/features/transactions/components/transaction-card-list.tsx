@@ -23,7 +23,12 @@ export function TransactionCardList({
   return (
     <div className="space-y-3 sm:hidden">
       {transactions.map((transaction) => (
-        <div key={transaction.id} className="border rounded-lg p-4 space-y-2">
+        <div
+          key={transaction.id}
+          className="border rounded-lg p-4 space-y-2"
+          role="article"
+          aria-label={transaction.description}
+        >
           <div className="flex items-start justify-between gap-2">
             <div>
               <p className="font-medium">{transaction.description}</p>
@@ -41,7 +46,7 @@ export function TransactionCardList({
             <p className="text-xs text-muted-foreground capitalize">
               {sourceLabel(transaction.source)}
             </p>
-            <div className="flex gap-2">
+            <div className="flex gap-2" aria-label="Transaction actions">
               <EditTransactionDialog transaction={transaction} />
               <DeleteTransactionDialog
                 transaction={transaction}

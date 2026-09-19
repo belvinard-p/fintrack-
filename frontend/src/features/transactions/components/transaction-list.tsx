@@ -45,6 +45,7 @@ export function TransactionList() {
   return (
     <div className="space-y-4">
       <Input
+        aria-label={t("transactions.list.searchPlaceholder")}
         placeholder={t("transactions.list.searchPlaceholder")}
         value={searchInput}
         onChange={(e) => setSearchInput(e.target.value)}

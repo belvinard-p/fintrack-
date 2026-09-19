@@ -35,8 +35,14 @@ export function GoalItem({ goal, userEmail }: Readonly<GoalItemProps>) {
         </div>
         {goal.is_completed && <Badge>{t("goals.list.goalReached")}</Badge>}
       </div>
-      <Progress value={progressPercent(goal)} />
-      <div className="flex flex-wrap gap-2">
+      <Progress
+        value={progressPercent(goal)}
+        aria-label={`${goal.name} progress`}
+        aria-valuenow={progressPercent(goal)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+      />
+      <div className="flex flex-wrap gap-2" aria-label="Goal actions">
         <ContributeGoalDialog goal={goal} />
         <EditGoalDialog goal={goal} />
         <DeleteGoalDialog goal={goal} />

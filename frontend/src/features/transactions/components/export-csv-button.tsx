@@ -27,7 +27,7 @@ export function ExportCsvButton() {
   }
 
   return (
-    <Button variant="outline" size="sm" onClick={handleExport} disabled={isExporting}>
+    <Button variant="outline" size="sm" onClick={handleExport} disabled={isExporting} aria-label={t("transactions.export.button")}>
       {isExporting ? t("transactions.export.exporting") : t("transactions.export.button")}
     </Button>
   );
