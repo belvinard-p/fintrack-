@@ -3,15 +3,17 @@ const LOGIN_TIME_KEY = "login_time";
 
 export function getToken(): string | null {
   if (typeof window === "undefined") return null;
-  return sessionStorage.getItem(TOKEN_KEY);
+  const match = document.cookie.match(new RegExp(`(?:^|; )${TOKEN_KEY}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : null;
 }
 
 export function setToken(token: string): void {
-  sessionStorage.setItem(TOKEN_KEY, token);
+  const secure = location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `${TOKEN_KEY}=${encodeURIComponent(token)}; path=/; SameSite=Strict${secure}`;
 }
 
 export function clearToken(): void {
-  sessionStorage.removeItem(TOKEN_KEY);
+  document.cookie = `${TOKEN_KEY}=; path=/; max-age=0; SameSite=Strict`;
   sessionStorage.removeItem(LOGIN_TIME_KEY);
 }
 
@@ -23,4 +25,8 @@ export function getLoginTime(): number | null {
 
 export function markLoginTime(): void {
   sessionStorage.setItem(LOGIN_TIME_KEY, String(Date.now()));
+}
+
+export function clearLoginTime(): void {
+  sessionStorage.removeItem(LOGIN_TIME_KEY);
 }
