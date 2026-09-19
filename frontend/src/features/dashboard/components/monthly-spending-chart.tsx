@@ -19,7 +19,7 @@ export function MonthlySpendingChart({ data }: Readonly<{ data: MonthlySpending[
         <XAxis dataKey="month" />
         <YAxis />
         <Tooltip />
-        <Bar dataKey="total" fill="#0f172a" />
+        <Bar dataKey="total" fill="var(--chart-1)" />
       </BarChart>
     </ResponsiveContainer>
   );

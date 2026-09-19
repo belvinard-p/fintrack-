@@ -55,7 +55,7 @@ function Delta({
   }
   const isUp = change >= 0;
   const isGood = isUp === goodWhenUp;
-  const color = isGood ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400";
+  const color = isGood ? "text-[var(--color-income)]" : "text-[var(--color-expense)]";
   return (
     <p className="text-xs text-muted-foreground">
       <span className={`font-medium ${color}`}>
@@ -115,7 +115,7 @@ export function MonthlySummaryCard({ month }: Readonly<{ month: string }>) {
               {summary.income_set && (
                 <div className="space-y-1 rounded-lg border p-4">
                   <p className="text-sm text-muted-foreground">{t("dashboard.summary.income")}</p>
-                  <p className="text-2xl font-semibold text-emerald-600 dark:text-emerald-400">
+                  <p className="text-2xl font-semibold text-[var(--color-income)]">
                     {Number(summary.total_income).toFixed(2)}
                   </p>
                   <Delta
@@ -128,7 +128,7 @@ export function MonthlySummaryCard({ month }: Readonly<{ month: string }>) {
 
               <div className="space-y-1 rounded-lg border p-4">
                 <p className="text-sm text-muted-foreground">{t("dashboard.summary.expenses")}</p>
-                <p className="text-2xl font-semibold text-red-600 dark:text-red-400">
+                <p className="text-2xl font-semibold text-[var(--color-expense)]">
                   {Number(summary.total_expenses).toFixed(2)}
                 </p>
                 <Delta
