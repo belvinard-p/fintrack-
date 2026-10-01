@@ -135,6 +135,7 @@ export const fr: typeof en = {
       title: "Supprimer votre compte ?",
       description:
         "Cela supprime définitivement votre compte ainsi que toutes vos transactions, budgets et catégories. Cette action est irréversible.",
+      currentPassword: "Mot de passe actuel",
       confirm: "Supprimer le compte",
       error: "Échec de la suppression du compte",
     },
@@ -383,6 +384,7 @@ export const fr: typeof en = {
       exporting: "Exportation...",
       buttonPdf: "Exporter en PDF",
       exportingPdf: "Exportation...",
+      error: "Échec de l'export des transactions",
     },
   },
 };

@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import { useTransactions } from "../hooks/use-transactions";
-import { useDeleteTransaction } from "../hooks/use-delete-transaction";
 import { useSourceLabel } from "../hooks/use-source-label";
 import { TransactionCardList } from "./transaction-card-list";
 import { TransactionTable } from "./transaction-table";
@@ -34,14 +32,6 @@ export function TransactionList() {
     page_size: PAGE_SIZE,
     search: search || undefined,
   });
-  const deleteTransaction = useDeleteTransaction();
-
-  function handleDelete(id: number) {
-    deleteTransaction.mutate(id, {
-      onSuccess: () => toast.success(t("transactions.list.deleted")),
-    });
-  }
-
   return (
     <div className="space-y-4">
       <Input
@@ -67,16 +57,8 @@ export function TransactionList() {
 
       {data && data.items.length > 0 && (
         <>
-          <TransactionCardList
-            transactions={data.items}
-            onDelete={handleDelete}
-            sourceLabel={sourceLabel}
-          />
-          <TransactionTable
-            transactions={data.items}
-            onDelete={handleDelete}
-            sourceLabel={sourceLabel}
-          />
+          <TransactionCardList transactions={data.items} sourceLabel={sourceLabel} />
+          <TransactionTable transactions={data.items} sourceLabel={sourceLabel} />
 
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-sm text-muted-foreground">

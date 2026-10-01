@@ -210,7 +210,9 @@ def test_delete_account_removes_user_and_data(client):
     # Delete the transaction first so an audit log entry exists for this account too.
     client.delete(f"/transactions/{transaction['id']}", headers=headers)
 
-    response = client.delete("/auth/me", headers=headers)
+    response = client.request(
+        "DELETE", "/auth/me", headers=headers, json={"current_password": "securepass123"}
+    )
     assert response.status_code == 204
 
     login_response = client.post(
@@ -225,5 +227,20 @@ def test_delete_account_removes_user_and_data(client):
 
 
 def test_delete_account_requires_auth(client):
-    response = client.delete("/auth/me")
+    response = client.request("DELETE", "/auth/me", json={"current_password": "whatever"})
     assert response.status_code == 401
+
+
+def test_delete_account_rejects_wrong_password(client):
+    headers = register_and_login(client, email="deletewrongpw@example.com")
+
+    response = client.request(
+        "DELETE", "/auth/me", headers=headers, json={"current_password": "wrongpassword"}
+    )
+    assert response.status_code == 401
+
+    login_response = client.post(
+        "/auth/login",
+        json={"email": "deletewrongpw@example.com", "password": "securepass123"},
+    )
+    assert login_response.status_code == 200

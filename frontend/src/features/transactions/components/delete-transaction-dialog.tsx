@@ -1,5 +1,7 @@
 "use client";
 
+import { toast } from "sonner";
+import { useDeleteTransaction } from "../hooks/use-delete-transaction";
 import { Transaction } from "../types";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/lib/i18n";
@@ -15,11 +17,9 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-export function DeleteTransactionDialog({
-  transaction,
-  onDelete,
-}: Readonly<{ transaction: Transaction; onDelete: () => void }>) {
+export function DeleteTransactionDialog({ transaction }: Readonly<{ transaction: Transaction }>) {
   const { t } = useLanguage();
+  const deleteTransaction = useDeleteTransaction();
 
   return (
     <AlertDialog>
@@ -39,7 +39,16 @@ export function DeleteTransactionDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-          <AlertDialogAction onClick={onDelete}>{t("common.delete")}</AlertDialogAction>
+          <AlertDialogAction
+            disabled={deleteTransaction.isPending}
+            onClick={() =>
+              deleteTransaction.mutate(transaction.id, {
+                onSuccess: () => toast.success(t("transactions.list.deleted")),
+              })
+            }
+          >
+            {t("common.delete")}
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

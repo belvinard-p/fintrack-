@@ -133,6 +133,7 @@ export const en = {
       title: "Delete your account?",
       description:
         "This permanently deletes your account and all of your transactions, budgets, and categories. This action cannot be undone.",
+      currentPassword: "Current password",
       confirm: "Delete account",
       error: "Failed to delete account",
     },
@@ -381,6 +382,7 @@ export const en = {
       exporting: "Exporting...",
       buttonPdf: "Export PDF",
       exportingPdf: "Exporting...",
+      error: "Failed to export transactions",
     },
   },
 };

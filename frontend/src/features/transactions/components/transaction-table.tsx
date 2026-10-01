@@ -17,13 +17,11 @@ import { amountColorClass, formatSignedAmount } from "@/lib/amount";
 
 interface TransactionTableProps {
   transactions: Transaction[];
-  onDelete: (id: number) => void;
   sourceLabel: (source: string) => string;
 }
 
 export function TransactionTable({
   transactions,
-  onDelete,
   sourceLabel,
 }: Readonly<TransactionTableProps>) {
   const { t, language } = useLanguage();
@@ -58,10 +56,7 @@ export function TransactionTable({
               <TableCell>
                 <div className="flex gap-2">
                   <EditTransactionDialog transaction={transaction} />
-                  <DeleteTransactionDialog
-                    transaction={transaction}
-                    onDelete={() => onDelete(transaction.id)}
-                  />
+                  <DeleteTransactionDialog transaction={transaction} />
                 </div>
               </TableCell>
             </TableRow>

@@ -28,3 +28,7 @@ class PasswordChange(BaseModel):
 class EmailChange(BaseModel):
     current_password: str
     new_email: EmailStr
+
+
+class AccountDelete(BaseModel):
+    current_password: str

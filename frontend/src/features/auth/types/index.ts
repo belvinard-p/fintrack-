@@ -23,6 +23,10 @@ export interface EmailChangePayload {
   new_email: string;
 }
 
+export interface AccountDeletePayload {
+  current_password: string;
+}
+
 export interface CurrentUser {
   id: number;
   email: string;

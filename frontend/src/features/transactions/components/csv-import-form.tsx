@@ -42,16 +42,16 @@ export function CsvImportForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {error && <p className="text-red-600 text-sm">{error}</p>}
+      {error && <p className="text-red-600 text-sm dark:text-red-400">{error}</p>}
 
       {result && (
-        <div className="text-sm bg-green-50 border border-green-200 rounded p-3 text-green-800 space-y-1">
+        <div className="text-sm bg-green-50 border border-green-200 rounded p-3 text-green-800 space-y-1 dark:bg-green-950/40 dark:border-green-900 dark:text-green-400">
           <p>{t("transactions.csvImport.imported", { count: result.created })}</p>
           {result.skipped_duplicates > 0 && (
             <p>{t("transactions.csvImport.duplicatesSkipped", { count: result.skipped_duplicates })}</p>
           )}
           {result.invalid_rows > 0 && (
-            <div className="text-amber-800">
+            <div className="text-amber-800 dark:text-amber-400">
               <p>{t("transactions.csvImport.invalidRows", { count: result.invalid_rows })}</p>
               <ul className="list-disc list-inside">
                 {result.invalid_row_details.map((detail) => (
@@ -77,7 +77,7 @@ export function CsvImportForm() {
           ref={fileInputRef}
           onChange={(e) => setFile(e.target.files?.[0] || null)}
         />
-        <p className="text-xs text-gray-500">{t("transactions.csvImport.hint")}</p>
+        <p className="text-xs text-muted-foreground">{t("transactions.csvImport.hint")}</p>
       </div>
 
       <Button type="submit" disabled={importCsv.isPending || !file} className="w-full">

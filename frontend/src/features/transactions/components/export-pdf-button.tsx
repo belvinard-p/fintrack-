@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { exportTransactionsPdf } from "../services/transactions-api";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/lib/i18n";
+import { extractErrorMessage } from "@/lib/error";
 
 export function ExportPdfButton() {
   const { t } = useLanguage();
@@ -21,6 +23,8 @@ export function ExportPdfButton() {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
+    } catch (err) {
+      toast.error(extractErrorMessage(err, t("transactions.export.error")));
     } finally {
       setIsExporting(false);
     }

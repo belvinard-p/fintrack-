@@ -38,6 +38,7 @@ export function DeleteRecurringTransactionDialog({ item }: Readonly<{ item: Recu
         <AlertDialogFooter>
           <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
           <AlertDialogAction
+            disabled={deleteRecurring.isPending}
             onClick={() =>
               deleteRecurring.mutate(item.id, {
                 onSuccess: () => toast.success(t("recurring.list.deleted")),

@@ -9,13 +9,11 @@ import { useLanguage } from "@/lib/i18n";
 
 interface TransactionCardListProps {
   transactions: Transaction[];
-  onDelete: (id: number) => void;
   sourceLabel: (source: string) => string;
 }
 
 export function TransactionCardList({
   transactions,
-  onDelete,
   sourceLabel,
 }: Readonly<TransactionCardListProps>) {
   const { language } = useLanguage();
@@ -43,10 +41,7 @@ export function TransactionCardList({
             </p>
             <div className="flex gap-2">
               <EditTransactionDialog transaction={transaction} />
-              <DeleteTransactionDialog
-                transaction={transaction}
-                onDelete={() => onDelete(transaction.id)}
-              />
+              <DeleteTransactionDialog transaction={transaction} />
             </div>
           </div>
         </div>

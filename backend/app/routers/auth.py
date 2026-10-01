@@ -16,7 +16,7 @@ from app.models.category import Category
 from app.models.goal import Goal
 from app.models.audit_log import AuditLog
 from app.models.recurring_transaction import RecurringTransaction
-from app.schemas.user import UserCreate, UserLogin, UserOut, PasswordChange, EmailChange
+from app.schemas.user import UserCreate, UserLogin, UserOut, PasswordChange, EmailChange, AccountDelete
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -98,11 +98,15 @@ def change_email(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/me", status_code=status.HTTP_204_NO_CONTENT, responses={401: {"description": "Incorrect password"}})
 def delete_account(
+    payload: AccountDelete,
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
 ):
+    if not verify_password(payload.current_password, current_user.password_hash):
+        raise HTTPException(status_code=401, detail="Incorrect password")
+
     db.query(Transaction).filter(Transaction.user_id == current_user.id).delete()
     db.query(RecurringTransaction).filter(RecurringTransaction.user_id == current_user.id).delete()
     db.query(Budget).filter(Budget.user_id == current_user.id).delete()

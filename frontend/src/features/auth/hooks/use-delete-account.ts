@@ -1,8 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
 import { deleteAccount } from "../services/auth-api";
+import { AccountDeletePayload } from "../types";
 
 export function useDeleteAccount() {
   return useMutation({
-    mutationFn: deleteAccount,
+    mutationFn: (payload: AccountDeletePayload) => deleteAccount(payload),
   });
 }

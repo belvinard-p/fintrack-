@@ -34,6 +34,7 @@ export function DeleteGoalDialog({ goal }: Readonly<{ goal: Goal }>) {
         <AlertDialogFooter>
           <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
           <AlertDialogAction
+            disabled={deleteGoal.isPending}
             onClick={() =>
               deleteGoal.mutate(goal.id, {
                 onSuccess: () => toast.success(t("goals.list.deleted")),

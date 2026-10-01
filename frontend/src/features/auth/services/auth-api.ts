@@ -5,6 +5,7 @@ import {
   AuthResponse,
   PasswordChangePayload,
   EmailChangePayload,
+  AccountDeletePayload,
   CurrentUser,
 } from "../types";
 
@@ -31,6 +32,6 @@ export async function changeEmail(payload: EmailChangePayload): Promise<AuthResp
   return response.data;
 }
 
-export async function deleteAccount(): Promise<void> {
-  await api.delete("/auth/me");
+export async function deleteAccount(payload: AccountDeletePayload): Promise<void> {
+  await api.delete("/auth/me", { data: payload });
 }

@@ -1,0 +1,332 @@
+fintrack/
+|-- .github/
+|   \-- workflows/
+|       \-- backend-tests.yml
+|-- backend/
+|   |-- alembic/
+|   |   |-- versions/
+|   |   |   |-- 2bd9a9080a49_create_recurring_transactions_table.py
+|   |   |   |-- 3d78b49ed01b_create_categories_and_transactions_.py
+|   |   |   |-- 531321bca683_create_budgets_table.py
+|   |   |   |-- 89e99e61d0a5_create_users_table.py
+|   |   |   |-- 993cda0e8337_add_unique_constraint_on_category_user_.py
+|   |   |   |-- a1b2c3d4e5f6_create_monthly_incomes_table.py
+|   |   |   |-- b7c8d9e0f1a2_add_created_at_to_categories.py
+|   |   |   |-- c8f6ea602e4f_add_recurring_value_to_.py
+|   |   |   |-- db6f62507803_create_audit_logs_table.py
+|   |   |   \-- f0eaf75da664_create_goals_table.py
+|   |   |-- README
+|   |   |-- env.py
+|   |   \-- script.py.mako
+|   |-- app/
+|   |   |-- core/
+|   |   |   |-- audit.py
+|   |   |   |-- categorization.py
+|   |   |   |-- config.py
+|   |   |   |-- database.py
+|   |   |   |-- deps.py
+|   |   |   |-- jwt.py
+|   |   |   |-- limiter.py
+|   |   |   \-- security.py
+|   |   |-- models/
+|   |   |   |-- __init__.py
+|   |   |   |-- audit_log.py
+|   |   |   |-- budget.py
+|   |   |   |-- category.py
+|   |   |   |-- goal.py
+|   |   |   |-- monthly_income.py
+|   |   |   |-- recurring_transaction.py
+|   |   |   |-- transaction.py
+|   |   |   \-- user.py
+|   |   |-- routers/
+|   |   |   |-- audit_logs.py
+|   |   |   |-- auth.py
+|   |   |   |-- budgets.py
+|   |   |   |-- categories.py
+|   |   |   |-- goals.py
+|   |   |   |-- income.py
+|   |   |   |-- recurring_transactions.py
+|   |   |   \-- transactions.py
+|   |   |-- schemas/
+|   |   |   |-- audit_log.py
+|   |   |   |-- budget.py
+|   |   |   |-- category.py
+|   |   |   |-- dashboard.py
+|   |   |   |-- goal.py
+|   |   |   |-- income.py
+|   |   |   |-- recurring_transaction.py
+|   |   |   |-- transaction.py
+|   |   |   \-- user.py
+|   |   |-- services/
+|   |   |   |-- __init__.py
+|   |   |   |-- csv_import.py
+|   |   |   \-- pdf_export.py
+|   |   |-- __init__.py
+|   |   \-- main.py
+|   |-- tests/
+|   |   |-- fixtures/
+|   |   |   \-- sample_statement.csv
+|   |   |-- conftest.py
+|   |   |-- test_audit_logs.py
+|   |   |-- test_auth.py
+|   |   |-- test_budgets.py
+|   |   |-- test_categories.py
+|   |   |-- test_csv_import.py
+|   |   |-- test_dashboard.py
+|   |   |-- test_goals.py
+|   |   |-- test_income.py
+|   |   |-- test_rate_limiting.py
+|   |   |-- test_recurring_transactions.py
+|   |   \-- test_transactions.py
+|   |-- .dockerignore
+|   |-- .env
+|   |-- .env.production
+|   |-- .gitignore
+|   |-- Dockerfile
+|   |-- alembic.ini
+|   |-- file.txt
+|   |-- requirements.txt
+|   \-- test_connection.py
+|-- frontend/
+|   |-- public/
+|   |   |-- file.svg
+|   |   |-- globe.svg
+|   |   |-- next.svg
+|   |   |-- vercel.svg
+|   |   \-- window.svg
+|   |-- src/
+|   |   |-- app/
+|   |   |   |-- (protected)/
+|   |   |   |   |-- budgets/
+|   |   |   |   |   \-- page.tsx
+|   |   |   |   |-- dashboard/
+|   |   |   |   |   \-- page.tsx
+|   |   |   |   |-- goals/
+|   |   |   |   |   \-- page.tsx
+|   |   |   |   |-- recurring/
+|   |   |   |   |   \-- page.tsx
+|   |   |   |   |-- settings/
+|   |   |   |   |   \-- page.tsx
+|   |   |   |   |-- transactions/
+|   |   |   |   |   \-- page.tsx
+|   |   |   |   \-- layout.tsx
+|   |   |   |-- guide/
+|   |   |   |   \-- page.tsx
+|   |   |   |-- login/
+|   |   |   |   \-- page.tsx
+|   |   |   |-- register/
+|   |   |   |   \-- page.tsx
+|   |   |   |-- icon.tsx
+|   |   |   |-- layout.tsx
+|   |   |   \-- page.tsx
+|   |   |-- components/
+|   |   |   |-- ui/
+|   |   |   |   |-- alert-dialog.tsx
+|   |   |   |   |-- badge.tsx
+|   |   |   |   |-- button.tsx
+|   |   |   |   |-- card.tsx
+|   |   |   |   |-- dialog.tsx
+|   |   |   |   |-- input.tsx
+|   |   |   |   |-- label.tsx
+|   |   |   |   |-- password-input.tsx
+|   |   |   |   |-- progress.tsx
+|   |   |   |   |-- select.tsx
+|   |   |   |   |-- skeleton.tsx
+|   |   |   |   |-- sonner.tsx
+|   |   |   |   |-- spinner.tsx
+|   |   |   |   |-- switch.tsx
+|   |   |   |   \-- table.tsx
+|   |   |   |-- category-dot.tsx
+|   |   |   |-- language-toggle.tsx
+|   |   |   |-- page-spinner.tsx
+|   |   |   |-- theme-toggle.tsx
+|   |   |   \-- transaction-type-toggle.tsx
+|   |   |-- features/
+|   |   |   |-- audit-logs/
+|   |   |   |   |-- components/
+|   |   |   |   |   \-- audit-log-list.tsx
+|   |   |   |   |-- hooks/
+|   |   |   |   |   \-- use-audit-logs.ts
+|   |   |   |   |-- services/
+|   |   |   |   |   \-- audit-logs-api.ts
+|   |   |   |   |-- types/
+|   |   |   |   |   \-- index.ts
+|   |   |   |   \-- index.ts
+|   |   |   |-- auth/
+|   |   |   |   |-- components/
+|   |   |   |   |   |-- change-email-form.tsx
+|   |   |   |   |   |-- change-password-form.tsx
+|   |   |   |   |   \-- delete-account-section.tsx
+|   |   |   |   |-- hooks/
+|   |   |   |   |   |-- use-change-email.ts
+|   |   |   |   |   |-- use-change-password.ts
+|   |   |   |   |   |-- use-current-user.ts
+|   |   |   |   |   |-- use-delete-account.ts
+|   |   |   |   |   \-- use-session-timeout.ts
+|   |   |   |   |-- services/
+|   |   |   |   |   \-- auth-api.ts
+|   |   |   |   |-- types/
+|   |   |   |   |   \-- index.ts
+|   |   |   |   \-- index.ts
+|   |   |   |-- budgets/
+|   |   |   |   |-- components/
+|   |   |   |   |   |-- budget-form.tsx
+|   |   |   |   |   |-- budget-item.tsx
+|   |   |   |   |   |-- budget-status-list.tsx
+|   |   |   |   |   |-- delete-budget-dialog.tsx
+|   |   |   |   |   |-- edit-budget-dialog.tsx
+|   |   |   |   |   \-- over-budget-banner.tsx
+|   |   |   |   |-- hooks/
+|   |   |   |   |   |-- use-budget-status.ts
+|   |   |   |   |   |-- use-create-budget.ts
+|   |   |   |   |   |-- use-delete-budget.ts
+|   |   |   |   |   \-- use-update-budget.ts
+|   |   |   |   |-- services/
+|   |   |   |   |   \-- budgets-api.ts
+|   |   |   |   |-- types/
+|   |   |   |   |   \-- index.ts
+|   |   |   |   |-- index.ts
+|   |   |   |   \-- utils.ts
+|   |   |   |-- categories/
+|   |   |   |   |-- components/
+|   |   |   |   |   \-- category-manager.tsx
+|   |   |   |   |-- hooks/
+|   |   |   |   |   |-- use-categories.ts
+|   |   |   |   |   |-- use-create-category.ts
+|   |   |   |   |   |-- use-delete-category.ts
+|   |   |   |   |   \-- use-update-category.ts
+|   |   |   |   |-- services/
+|   |   |   |   |   \-- categories-api.ts
+|   |   |   |   |-- types/
+|   |   |   |   |   \-- index.ts
+|   |   |   |   \-- index.ts
+|   |   |   |-- dashboard/
+|   |   |   |   |-- components/
+|   |   |   |   |   |-- category-pie-chart.tsx
+|   |   |   |   |   |-- dashboard-month-picker.tsx
+|   |   |   |   |   |-- monthly-spending-chart.tsx
+|   |   |   |   |   \-- monthly-summary-card.tsx
+|   |   |   |   |-- hooks/
+|   |   |   |   |   |-- use-monthly-spending.ts
+|   |   |   |   |   \-- use-monthly-summary.ts
+|   |   |   |   |-- services/
+|   |   |   |   |   \-- dashboard-api.ts
+|   |   |   |   |-- types/
+|   |   |   |   |   \-- index.ts
+|   |   |   |   |-- index.ts
+|   |   |   |   \-- utils.ts
+|   |   |   |-- goals/
+|   |   |   |   |-- components/
+|   |   |   |   |   |-- contribute-goal-dialog.tsx
+|   |   |   |   |   |-- delete-goal-dialog.tsx
+|   |   |   |   |   |-- edit-goal-dialog.tsx
+|   |   |   |   |   |-- goal-form.tsx
+|   |   |   |   |   |-- goal-item.tsx
+|   |   |   |   |   \-- goal-list.tsx
+|   |   |   |   |-- hooks/
+|   |   |   |   |   |-- use-contribute-to-goal.ts
+|   |   |   |   |   |-- use-create-goal.ts
+|   |   |   |   |   |-- use-delete-goal.ts
+|   |   |   |   |   |-- use-goals.ts
+|   |   |   |   |   \-- use-update-goal.ts
+|   |   |   |   |-- services/
+|   |   |   |   |   \-- goals-api.ts
+|   |   |   |   |-- types/
+|   |   |   |   |   \-- index.ts
+|   |   |   |   \-- index.ts
+|   |   |   |-- income/
+|   |   |   |   |-- components/
+|   |   |   |   |   |-- budget-allocation-summary.tsx
+|   |   |   |   |   \-- monthly-income-dialog.tsx
+|   |   |   |   |-- hooks/
+|   |   |   |   |   |-- use-monthly-income.ts
+|   |   |   |   |   \-- use-set-monthly-income.ts
+|   |   |   |   |-- services/
+|   |   |   |   |   \-- income-api.ts
+|   |   |   |   |-- types/
+|   |   |   |   |   \-- index.ts
+|   |   |   |   \-- index.ts
+|   |   |   |-- recurring-transactions/
+|   |   |   |   |-- components/
+|   |   |   |   |   |-- delete-recurring-transaction-dialog.tsx
+|   |   |   |   |   |-- edit-recurring-transaction-dialog.tsx
+|   |   |   |   |   |-- recurring-transaction-form.tsx
+|   |   |   |   |   |-- recurring-transaction-item.tsx
+|   |   |   |   |   \-- recurring-transaction-list.tsx
+|   |   |   |   |-- hooks/
+|   |   |   |   |   |-- use-auto-generate-recurring.ts
+|   |   |   |   |   |-- use-create-recurring-transaction.ts
+|   |   |   |   |   |-- use-delete-recurring-transaction.ts
+|   |   |   |   |   |-- use-recurring-transactions.ts
+|   |   |   |   |   \-- use-update-recurring-transaction.ts
+|   |   |   |   |-- services/
+|   |   |   |   |   \-- recurring-transactions-api.ts
+|   |   |   |   |-- types/
+|   |   |   |   |   \-- index.ts
+|   |   |   |   \-- index.ts
+|   |   |   \-- transactions/
+|   |   |       |-- components/
+|   |   |       |   |-- csv-import-form.tsx
+|   |   |       |   |-- delete-transaction-dialog.tsx
+|   |   |       |   |-- edit-transaction-dialog.tsx
+|   |   |       |   |-- export-csv-button.tsx
+|   |   |       |   |-- export-pdf-button.tsx
+|   |   |       |   |-- transaction-card-list.tsx
+|   |   |       |   |-- transaction-form.tsx
+|   |   |       |   |-- transaction-list.tsx
+|   |   |       |   \-- transaction-table.tsx
+|   |   |       |-- hooks/
+|   |   |       |   |-- use-create-transaction.ts
+|   |   |       |   |-- use-delete-transaction.ts
+|   |   |       |   |-- use-import-csv.ts
+|   |   |       |   |-- use-source-label.ts
+|   |   |       |   |-- use-transactions.ts
+|   |   |       |   \-- use-update-transaction.ts
+|   |   |       |-- services/
+|   |   |       |   \-- transactions-api.ts
+|   |   |       |-- types/
+|   |   |       |   \-- index.ts
+|   |   |       \-- index.ts
+|   |   |-- lib/
+|   |   |   |-- i18n/
+|   |   |   |   |-- translations/
+|   |   |   |   |   |-- en.ts
+|   |   |   |   |   |-- fr.ts
+|   |   |   |   |   \-- index.ts
+|   |   |   |   |-- index.ts
+|   |   |   |   \-- language-provider.tsx
+|   |   |   |-- amount.ts
+|   |   |   |-- category-color.ts
+|   |   |   |-- date.ts
+|   |   |   |-- error.ts
+|   |   |   |-- query-client.tsx
+|   |   |   |-- session.ts
+|   |   |   |-- text.ts
+|   |   |   |-- theme-provider.tsx
+|   |   |   \-- utils.ts
+|   |   |-- services/
+|   |   |   \-- http-client.ts
+|   |   \-- styles/
+|   |       \-- globals.css
+|   |-- .env.local
+|   |-- .gitignore
+|   |-- README.md
+|   |-- components.json
+|   |-- eslint.config.mjs
+|   |-- next-env.d.ts
+|   |-- next.config.ts
+|   |-- package.json
+|   |-- pnpm-lock.yaml
+|   |-- pnpm-workspace.yaml
+|   |-- postcss.config.mjs
+|   |-- tsconfig.json
+|   \-- tsconfig.tsbuildinfo
+|-- .gitignore
+|-- .render-deploy-hook
+|-- README.md
+|-- _gen_tree.py
+|-- budget-personnel.md
+|-- docker-compose.yml
+|-- pytest.ini
+|-- render.yaml
+\-- sample-transactions.csv

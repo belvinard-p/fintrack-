@@ -182,6 +182,7 @@ export function BudgetStatusList() {
                     <AlertDialogFooter>
                       <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
                       <AlertDialogAction
+                        disabled={deleteBudget.isPending}
                         onClick={() =>
                           deleteBudget.mutate(status.id, {
                             onSuccess: () => toast.success(t("budgets.status.deleted")),

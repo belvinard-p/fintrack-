@@ -8,6 +8,7 @@ import { useUpdateCategory } from "../hooks/use-update-category";
 import { useDeleteCategory } from "../hooks/use-delete-category";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CategoryDot } from "@/components/category-dot";
@@ -154,11 +155,17 @@ export function CategoryManager() {
                     </DialogHeader>
                     <form onSubmit={handleUpdate} className="space-y-4">
                       {editError && <p className="text-red-600 text-sm">{editError}</p>}
-                      <Input
-                        value={editName}
-                        onChange={(e) => setEditName(stripDigits(e.target.value))}
-                        required
-                      />
+                      <div className="space-y-2">
+                        <Label htmlFor={`rename-category-${category.id}`}>
+                          {t("categories.renameTitle")}
+                        </Label>
+                        <Input
+                          id={`rename-category-${category.id}`}
+                          value={editName}
+                          onChange={(e) => setEditName(stripDigits(e.target.value))}
+                          required
+                        />
+                      </div>
                       <DialogFooter>
                         <DialogClose render={<Button variant="outline" type="button" />}>
                           {t("common.cancel")}
@@ -187,6 +194,7 @@ export function CategoryManager() {
                     <AlertDialogFooter>
                       <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
                       <AlertDialogAction
+                        disabled={deleteCategory.isPending}
                         onClick={() =>
                           deleteCategory.mutate(category.id, {
                             onSuccess: () => toast.success(t("categories.deleted")),
