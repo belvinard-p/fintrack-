@@ -1,6 +1,7 @@
 from datetime import date
 
 TODAY_ISO = date.today().isoformat()
+CURRENT_MONTH = date.today().strftime("%Y-%m")
 
 
 def register_and_login(client, email="audituser@example.com", password="securepass123"):
@@ -47,7 +48,7 @@ def test_deleting_budget_creates_audit_log(client):
     ).json()
     budget = client.post(
         "/budgets/",
-        json={"category_id": category["id"], "monthly_limit": "100.00", "month": "2026-08"},
+        json={"category_id": category["id"], "monthly_limit": "100.00", "month": CURRENT_MONTH},
         headers=headers,
     ).json()
 

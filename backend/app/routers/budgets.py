@@ -13,6 +13,7 @@ from app.models.budget import Budget
 from app.models.category import Category
 from app.models.monthly_income import MonthlyIncome
 from app.models.transaction import Transaction
+from app.core.month_lock import is_locked_month_str, LOCKED_BUDGET_MONTH_DETAIL
 from app.schemas.budget import BudgetCreate, BudgetOut, BudgetStatus, BudgetUpdate
 
 router = APIRouter(prefix="/budgets", tags=["budgets"])
@@ -56,6 +57,9 @@ def create_budget(
     category = db.query(Category).filter(Category.id == budget_in.category_id).first()
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
+
+    if is_locked_month_str(budget_in.month):
+        raise HTTPException(status_code=400, detail=LOCKED_BUDGET_MONTH_DETAIL)
 
     _ensure_within_income(db, current_user.id, budget_in.month, budget_in.monthly_limit)
 
@@ -108,12 +112,18 @@ def update_budget(
     if not budget:
         raise HTTPException(status_code=404, detail="Budget not found")
 
+    if is_locked_month_str(budget.month):
+        raise HTTPException(status_code=400, detail=LOCKED_BUDGET_MONTH_DETAIL)
+
     update_data = budget_in.model_dump(exclude_unset=True)
 
     if "category_id" in update_data:
         category = db.query(Category).filter(Category.id == update_data["category_id"]).first()
         if not category:
             raise HTTPException(status_code=404, detail="Category not found")
+
+    if "month" in update_data and is_locked_month_str(update_data["month"]):
+        raise HTTPException(status_code=400, detail=LOCKED_BUDGET_MONTH_DETAIL)
 
     if "monthly_limit" in update_data or "month" in update_data:
         _ensure_within_income(
@@ -149,7 +159,7 @@ def update_budget(
 @router.delete(
     "/{budget_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    responses={404: {"description": "Budget not found"}},
+    responses={404: {"description": "Budget not found"}, 400: {"description": LOCKED_BUDGET_MONTH_DETAIL}},
 )
 def delete_budget(
     budget_id: int,
@@ -163,6 +173,9 @@ def delete_budget(
     )
     if not budget:
         raise HTTPException(status_code=404, detail="Budget not found")
+
+    if is_locked_month_str(budget.month):
+        raise HTTPException(status_code=400, detail=LOCKED_BUDGET_MONTH_DETAIL)
 
     log_action(
         db,

@@ -1,6 +1,12 @@
-from datetime import date
+from datetime import date, timedelta
 
-TODAY_ISO = date.today().isoformat()
+TODAY = date.today()
+TODAY_ISO = TODAY.isoformat()
+CURRENT_MONTH = TODAY.strftime("%Y-%m")
+_last_day_of_previous_month = TODAY.replace(day=1) - timedelta(days=1)
+PREVIOUS_MONTH = _last_day_of_previous_month.strftime("%Y-%m")
+_first_day_of_next_month = (TODAY.replace(day=28) + timedelta(days=4)).replace(day=1)
+NEXT_MONTH = _first_day_of_next_month.strftime("%Y-%m")
 
 
 def register_and_login(client, email="budgetuser@example.com", password="securepass123"):
@@ -21,7 +27,7 @@ def test_create_budget(client):
 
     response = client.post(
         "/budgets/",
-        json={"category_id": category_id, "monthly_limit": "200.00", "month": "2026-08"},
+        json={"category_id": category_id, "monthly_limit": "200.00", "month": CURRENT_MONTH},
         headers=headers,
     )
     assert response.status_code == 201
@@ -42,18 +48,30 @@ def test_create_budget_invalid_month_format(client):
     assert response.status_code == 422
 
 
+def test_create_budget_rejects_past_month(client):
+    headers = register_and_login(client, email="budgetpastmonth@example.com")
+    category_id = get_category_id(client, headers, "Groceries")
+
+    response = client.post(
+        "/budgets/",
+        json={"category_id": category_id, "monthly_limit": "200.00", "month": PREVIOUS_MONTH},
+        headers=headers,
+    )
+    assert response.status_code == 400
+
+
 def test_create_duplicate_budget_rejected(client):
     headers = register_and_login(client)
     category_id = get_category_id(client, headers, "Groceries")
 
     client.post(
         "/budgets/",
-        json={"category_id": category_id, "monthly_limit": "200.00", "month": "2026-08"},
+        json={"category_id": category_id, "monthly_limit": "200.00", "month": CURRENT_MONTH},
         headers=headers,
     )
     response = client.post(
         "/budgets/",
-        json={"category_id": category_id, "monthly_limit": "300.00", "month": "2026-08"},
+        json={"category_id": category_id, "monthly_limit": "300.00", "month": CURRENT_MONTH},
         headers=headers,
     )
     assert response.status_code == 400
@@ -65,7 +83,7 @@ def test_update_budget_limit(client):
 
     created = client.post(
         "/budgets/",
-        json={"category_id": category_id, "monthly_limit": "200.00", "month": "2026-08"},
+        json={"category_id": category_id, "monthly_limit": "200.00", "month": CURRENT_MONTH},
         headers=headers,
     ).json()
 
@@ -78,7 +96,7 @@ def test_update_budget_limit(client):
     data = response.json()
     assert data["monthly_limit"] == "250.00"
     assert data["category_name"] == "Groceries"
-    assert data["month"] == "2026-08"
+    assert data["month"] == CURRENT_MONTH
 
 
 def test_update_budget_category(client):
@@ -88,7 +106,7 @@ def test_update_budget_category(client):
 
     created = client.post(
         "/budgets/",
-        json={"category_id": groceries_id, "monthly_limit": "200.00", "month": "2026-08"},
+        json={"category_id": groceries_id, "monthly_limit": "200.00", "month": CURRENT_MONTH},
         headers=headers,
     ).json()
 
@@ -109,7 +127,7 @@ def test_update_budget_nonexistent_category_rejected(client):
 
     created = client.post(
         "/budgets/",
-        json={"category_id": category_id, "monthly_limit": "200.00", "month": "2026-08"},
+        json={"category_id": category_id, "monthly_limit": "200.00", "month": CURRENT_MONTH},
         headers=headers,
     ).json()
 
@@ -127,18 +145,56 @@ def test_update_budget_conflict_rejected(client):
 
     client.post(
         "/budgets/",
-        json={"category_id": category_id, "monthly_limit": "200.00", "month": "2026-08"},
+        json={"category_id": category_id, "monthly_limit": "200.00", "month": CURRENT_MONTH},
         headers=headers,
     )
-    created_september = client.post(
+    created_next_month = client.post(
         "/budgets/",
-        json={"category_id": category_id, "monthly_limit": "150.00", "month": "2026-09"},
+        json={"category_id": category_id, "monthly_limit": "150.00", "month": NEXT_MONTH},
         headers=headers,
     ).json()
 
     response = client.patch(
-        f"/budgets/{created_september['id']}",
-        json={"month": "2026-08"},
+        f"/budgets/{created_next_month['id']}",
+        json={"month": CURRENT_MONTH},
+        headers=headers,
+    )
+    assert response.status_code == 400
+
+
+def test_update_budget_rejects_when_budget_in_locked_month(client, db_session):
+    from app.models.budget import Budget
+
+    headers = register_and_login(client, email="budgetlockedupdate@example.com")
+    category_id = get_category_id(client, headers, "Groceries")
+    user_id = client.get("/auth/me", headers=headers).json()["id"]
+
+    budget = Budget(user_id=user_id, category_id=category_id, monthly_limit="200.00", month=PREVIOUS_MONTH)
+    db_session.add(budget)
+    db_session.commit()
+    db_session.refresh(budget)
+
+    response = client.patch(
+        f"/budgets/{budget.id}",
+        json={"monthly_limit": "250.00"},
+        headers=headers,
+    )
+    assert response.status_code == 400
+
+
+def test_update_budget_rejects_moving_month_into_locked_month(client):
+    headers = register_and_login(client, email="budgetmovelocked@example.com")
+    category_id = get_category_id(client, headers, "Groceries")
+
+    created = client.post(
+        "/budgets/",
+        json={"category_id": category_id, "monthly_limit": "200.00", "month": CURRENT_MONTH},
+        headers=headers,
+    ).json()
+
+    response = client.patch(
+        f"/budgets/{created['id']}",
+        json={"month": PREVIOUS_MONTH},
         headers=headers,
     )
     assert response.status_code == 400
@@ -151,7 +207,7 @@ def test_cannot_update_another_users_budget(client):
 
     created = client.post(
         "/budgets/",
-        json={"category_id": category_id, "monthly_limit": "200.00", "month": "2026-08"},
+        json={"category_id": category_id, "monthly_limit": "200.00", "month": CURRENT_MONTH},
         headers=headers_a,
     ).json()
 
@@ -179,15 +235,31 @@ def test_delete_own_budget(client):
 
     created = client.post(
         "/budgets/",
-        json={"category_id": category_id, "monthly_limit": "200.00", "month": "2026-08"},
+        json={"category_id": category_id, "monthly_limit": "200.00", "month": CURRENT_MONTH},
         headers=headers,
     ).json()
 
     response = client.delete(f"/budgets/{created['id']}", headers=headers)
     assert response.status_code == 204
 
-    status_response = client.get("/budgets/status?month=2026-08", headers=headers)
+    status_response = client.get(f"/budgets/status?month={CURRENT_MONTH}", headers=headers)
     assert status_response.json() == []
+
+
+def test_delete_budget_rejects_when_budget_in_locked_month(client, db_session):
+    from app.models.budget import Budget
+
+    headers = register_and_login(client, email="budgetlockeddelete@example.com")
+    category_id = get_category_id(client, headers, "Groceries")
+    user_id = client.get("/auth/me", headers=headers).json()["id"]
+
+    budget = Budget(user_id=user_id, category_id=category_id, monthly_limit="200.00", month=PREVIOUS_MONTH)
+    db_session.add(budget)
+    db_session.commit()
+    db_session.refresh(budget)
+
+    response = client.delete(f"/budgets/{budget.id}", headers=headers)
+    assert response.status_code == 400
 
 
 def test_delete_budget_allows_recreating_same_category_and_month(client):
@@ -196,7 +268,7 @@ def test_delete_budget_allows_recreating_same_category_and_month(client):
 
     created = client.post(
         "/budgets/",
-        json={"category_id": category_id, "monthly_limit": "200.00", "month": "2026-08"},
+        json={"category_id": category_id, "monthly_limit": "200.00", "month": CURRENT_MONTH},
         headers=headers,
     ).json()
 
@@ -204,7 +276,7 @@ def test_delete_budget_allows_recreating_same_category_and_month(client):
 
     response = client.post(
         "/budgets/",
-        json={"category_id": category_id, "monthly_limit": "300.00", "month": "2026-08"},
+        json={"category_id": category_id, "monthly_limit": "300.00", "month": CURRENT_MONTH},
         headers=headers,
     )
     assert response.status_code == 201
@@ -217,7 +289,7 @@ def test_cannot_delete_another_users_budget(client):
 
     created = client.post(
         "/budgets/",
-        json={"category_id": category_id, "monthly_limit": "200.00", "month": "2026-08"},
+        json={"category_id": category_id, "monthly_limit": "200.00", "month": CURRENT_MONTH},
         headers=headers_a,
     ).json()
 
@@ -235,10 +307,9 @@ def test_budget_status_under_budget(client):
     headers = register_and_login(client)
     category_id = get_category_id(client, headers, "Groceries")
 
-    current_month = date.today().strftime("%Y-%m")
     client.post(
         "/budgets/",
-        json={"category_id": category_id, "monthly_limit": "200.00", "month": current_month},
+        json={"category_id": category_id, "monthly_limit": "200.00", "month": CURRENT_MONTH},
         headers=headers,
     )
     client.post(
@@ -247,7 +318,7 @@ def test_budget_status_under_budget(client):
         headers=headers,
     )
 
-    response = client.get(f"/budgets/status?month={current_month}", headers=headers)
+    response = client.get(f"/budgets/status?month={CURRENT_MONTH}", headers=headers)
     assert response.status_code == 200
     data = response.json()
     entry = next(d for d in data if d["category_id"] == category_id)
@@ -259,10 +330,9 @@ def test_budget_status_over_budget(client):
     headers = register_and_login(client)
     category_id = get_category_id(client, headers, "Dining Out")
 
-    current_month = date.today().strftime("%Y-%m")
     client.post(
         "/budgets/",
-        json={"category_id": category_id, "monthly_limit": "10.00", "month": current_month},
+        json={"category_id": category_id, "monthly_limit": "10.00", "month": CURRENT_MONTH},
         headers=headers,
     )
     client.post(
@@ -271,7 +341,7 @@ def test_budget_status_over_budget(client):
         headers=headers,
     )
 
-    response = client.get(f"/budgets/status?month={current_month}", headers=headers)
+    response = client.get(f"/budgets/status?month={CURRENT_MONTH}", headers=headers)
     data = response.json()
     entry = next(d for d in data if d["category_id"] == category_id)
     assert entry["actual_spending"] == "45.00"
@@ -284,16 +354,16 @@ def test_budget_status_ignores_income(client):
 
     client.post(
         "/budgets/",
-        json={"category_id": category_id, "monthly_limit": "10000.00", "month": "2026-08"},
+        json={"category_id": category_id, "monthly_limit": "10000.00", "month": CURRENT_MONTH},
         headers=headers,
     )
     client.post(
         "/transactions/",
-        json={"date": "2026-08-05", "description": "Refund", "amount": "500.00", "category_id": category_id},
+        json={"date": TODAY_ISO, "description": "Refund", "amount": "500.00", "category_id": category_id},
         headers=headers,
     )
 
-    response = client.get("/budgets/status?month=2026-08", headers=headers)
+    response = client.get(f"/budgets/status?month={CURRENT_MONTH}", headers=headers)
     data = response.json()
     entry = next(d for d in data if d["category_id"] == category_id)
     assert entry["actual_spending"] == "0"
@@ -306,11 +376,11 @@ def test_budget_status_with_no_transactions(client):
 
     client.post(
         "/budgets/",
-        json={"category_id": category_id, "monthly_limit": "500.00", "month": "2026-08"},
+        json={"category_id": category_id, "monthly_limit": "500.00", "month": CURRENT_MONTH},
         headers=headers,
     )
 
-    response = client.get("/budgets/status?month=2026-08", headers=headers)
+    response = client.get(f"/budgets/status?month={CURRENT_MONTH}", headers=headers)
     data = response.json()
     entry = next(d for d in data if d["category_id"] == category_id)
     assert entry["actual_spending"] == "0"
@@ -324,11 +394,11 @@ def test_budgets_isolated_between_users(client):
 
     client.post(
         "/budgets/",
-        json={"category_id": category_id, "monthly_limit": "999.00", "month": "2026-08"},
+        json={"category_id": category_id, "monthly_limit": "999.00", "month": CURRENT_MONTH},
         headers=headers_a,
     )
 
-    response = client.get("/budgets/status?month=2026-08", headers=headers_b)
+    response = client.get(f"/budgets/status?month={CURRENT_MONTH}", headers=headers_b)
     data = response.json()
     assert len(data) == 0
 
@@ -336,7 +406,7 @@ def test_budgets_isolated_between_users(client):
 def test_create_budget_requires_auth(client):
     response = client.post(
         "/budgets/",
-        json={"category_id": 1, "monthly_limit": "100.00", "month": "2026-08"},
+        json={"category_id": 1, "monthly_limit": "100.00", "month": CURRENT_MONTH},
     )
     assert response.status_code == 401
 
@@ -344,18 +414,18 @@ def test_create_budget_rejected_when_income_fully_budgeted(client):
     headers = register_and_login(client, email="capuser@example.com")
     first = get_category_id(client, headers, "Groceries")
     second = get_category_id(client, headers, "Dining Out")
-    client.put("/income/2026-09", json={"amount": "1000.00"}, headers=headers)
+    client.put(f"/income/{CURRENT_MONTH}", json={"amount": "1000.00"}, headers=headers)
 
     ok = client.post(
         "/budgets/",
-        json={"category_id": first, "monthly_limit": "1000.00", "month": "2026-09"},
+        json={"category_id": first, "monthly_limit": "1000.00", "month": CURRENT_MONTH},
         headers=headers,
     )
     assert ok.status_code == 201
 
     blocked = client.post(
         "/budgets/",
-        json={"category_id": second, "monthly_limit": "1.00", "month": "2026-09"},
+        json={"category_id": second, "monthly_limit": "1.00", "month": CURRENT_MONTH},
         headers=headers,
     )
     assert blocked.status_code == 400
@@ -366,9 +436,9 @@ def test_update_budget_cannot_exceed_income_but_can_shrink(client):
     headers = register_and_login(client, email="capupdate@example.com")
     first = get_category_id(client, headers, "Groceries")
     second = get_category_id(client, headers, "Dining Out")
-    client.put("/income/2026-09", json={"amount": "1000.00"}, headers=headers)
-    a = client.post("/budgets/", json={"category_id": first, "monthly_limit": "600.00", "month": "2026-09"}, headers=headers).json()
-    client.post("/budgets/", json={"category_id": second, "monthly_limit": "300.00", "month": "2026-09"}, headers=headers)
+    client.put(f"/income/{CURRENT_MONTH}", json={"amount": "1000.00"}, headers=headers)
+    a = client.post("/budgets/", json={"category_id": first, "monthly_limit": "600.00", "month": CURRENT_MONTH}, headers=headers).json()
+    client.post("/budgets/", json={"category_id": second, "monthly_limit": "300.00", "month": CURRENT_MONTH}, headers=headers)
 
     too_much = client.patch(f"/budgets/{a['id']}", json={"monthly_limit": "701.00"}, headers=headers)
     assert too_much.status_code == 400
@@ -383,7 +453,7 @@ def test_budget_not_capped_when_income_not_set(client):
     category = get_category_id(client, headers, "Groceries")
     response = client.post(
         "/budgets/",
-        json={"category_id": category, "monthly_limit": "999999.00", "month": "2026-09"},
+        json={"category_id": category, "monthly_limit": "999999.00", "month": CURRENT_MONTH},
         headers=headers,
     )
     assert response.status_code == 201

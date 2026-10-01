@@ -459,13 +459,17 @@ def test_delete_transaction(client):
     assert get_response.status_code == 404
 
 def test_monthly_summary_totals_and_previous_month(client, db_session):
+    from app.models.monthly_income import MonthlyIncome
+
     headers = register_and_login(client, email="summaryuser@example.com")
     user_id = get_user_id(client, headers)
-    client.put(f"/income/{PREVIOUS_MONTH}", json={"amount": "1000.00"}, headers=headers)
-    client.put(f"/income/{CURRENT_MONTH}", json={"amount": "3000.00"}, headers=headers)
 
-    # Previous month's expense already existed before the lock — inserted directly.
+    # Previous month's income and expense already existed before the lock — inserted directly.
+    db_session.add(MonthlyIncome(user_id=user_id, month=PREVIOUS_MONTH, amount=Decimal("1000.00")))
+    db_session.commit()
     insert_transaction(db_session, user_id, _last_day_of_previous_month, "Old rent", "-400.00")
+
+    client.put(f"/income/{CURRENT_MONTH}", json={"amount": "3000.00"}, headers=headers)
 
     for desc, amount in [("Groceries", "-250.00"), ("Bus", "-50.00")]:
         client.post(

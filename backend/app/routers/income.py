@@ -1,12 +1,13 @@
 from decimal import Decimal
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends, HTTPException, Path
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.deps import get_current_user
+from app.core.month_lock import is_locked_month_str, LOCKED_INCOME_MONTH_DETAIL
 from app.models.budget import Budget
 from app.models.monthly_income import MonthlyIncome
 from app.models.user import User
@@ -49,13 +50,16 @@ def get_monthly_income(
     return build_income_out(db, current_user.id, month)
 
 
-@router.put("/{month}", response_model=MonthlyIncomeOut)
+@router.put("/{month}", response_model=MonthlyIncomeOut, responses={400: {"description": LOCKED_INCOME_MONTH_DETAIL}})
 def set_monthly_income(
     month: MonthPath,
     payload: MonthlyIncomeSet,
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
 ):
+    if is_locked_month_str(month):
+        raise HTTPException(status_code=400, detail=LOCKED_INCOME_MONTH_DETAIL)
+
     income = (
         db.query(MonthlyIncome)
         .filter(MonthlyIncome.user_id == current_user.id, MonthlyIncome.month == month)
