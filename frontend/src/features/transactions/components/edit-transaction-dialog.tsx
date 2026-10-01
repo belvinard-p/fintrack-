@@ -20,7 +20,7 @@ import {
 import { useLanguage } from "@/lib/i18n";
 import { stripDigits } from "@/lib/text";
 import { extractErrorMessage } from "@/lib/error";
-import { getTodayIso } from "@/lib/date";
+import { getTodayIso, getFirstDayOfCurrentMonthIso, isLockedMonth } from "@/lib/date";
 import {
   getTransactionType,
   toAbsoluteAmount,
@@ -39,6 +39,7 @@ import {
 
 export function EditTransactionDialog({ transaction }: Readonly<{ transaction: Transaction }>) {
   const { t } = useLanguage();
+  const locked = isLockedMonth(transaction.date);
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState(transaction.date);
   const [description, setDescription] = useState(transaction.description);
@@ -87,7 +88,16 @@ export function EditTransactionDialog({ transaction }: Readonly<{ transaction: T
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger render={<Button variant="ghost" size="sm" />}>
+      <DialogTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={locked}
+            title={locked ? t("transactions.list.monthLocked") : undefined}
+          />
+        }
+      >
         {t("common.edit")}
       </DialogTrigger>
       <DialogContent>
@@ -104,6 +114,7 @@ export function EditTransactionDialog({ transaction }: Readonly<{ transaction: T
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
+              min={getFirstDayOfCurrentMonthIso()}
               max={getTodayIso()}
               required
             />

@@ -1,3 +1,8 @@
+from datetime import date
+
+TODAY_ISO = date.today().isoformat()
+
+
 def register_and_login(client, email="audituser@example.com", password="securepass123"):
     client.post("/auth/register", json={"email": email, "password": password})
     login_response = client.post("/auth/login", json={"email": email, "password": password})
@@ -9,7 +14,7 @@ def test_deleting_transaction_creates_audit_log(client):
     headers = register_and_login(client)
     transaction = client.post(
         "/transactions/",
-        json={"date": "2026-08-01", "description": "Coffee", "amount": "-4.50"},
+        json={"date": TODAY_ISO, "description": "Coffee", "amount": "-4.50"},
         headers=headers,
     ).json()
 
@@ -83,7 +88,7 @@ def test_audit_logs_only_show_own(client):
 
     transaction = client.post(
         "/transactions/",
-        json={"date": "2026-08-01", "description": "A's tx", "amount": "-1.00"},
+        json={"date": TODAY_ISO, "description": "A's tx", "amount": "-1.00"},
         headers=headers_a,
     ).json()
     client.delete(f"/transactions/{transaction['id']}", headers=headers_a)

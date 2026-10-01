@@ -358,6 +358,7 @@ export const en = {
       editTitle: "Edit transaction",
       updated: "Transaction updated",
       updateError: "Failed to update transaction",
+      monthLocked: "This month is closed. Transactions from past months can no longer be edited or deleted.",
       page: "Page {page} of {totalPages} ({total} total)",
       previous: "Previous",
       next: "Next",

@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.deps import get_current_user
 from app.core.categorization import categorize_transaction
+from app.core.month_lock import is_locked_month, LOCKED_MONTH_DETAIL
 from app.core.audit import log_action
 from app.services.csv_import import parse_csv, CSVParseError
 from app.services.pdf_export import generate_transactions_pdf
@@ -53,12 +54,15 @@ def _filtered_transactions_query(
     return query
 
 
-@router.post("/", response_model=TransactionOut, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=TransactionOut, status_code=status.HTTP_201_CREATED, responses={400: {"description": LOCKED_MONTH_DETAIL}})
 def create_transaction(
     transaction_in: TransactionCreate,
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
 ):
+    if is_locked_month(transaction_in.date):
+        raise HTTPException(status_code=400, detail=LOCKED_MONTH_DETAIL)
+
     transaction_data = transaction_in.model_dump()
 
     if transaction_data["category_id"] is None:
@@ -343,7 +347,11 @@ def get_transaction(
     return transaction
 
 
-@router.patch("/{transaction_id}", response_model=TransactionOut, responses={404: {"description": TRANSACTION_NOT_FOUND}})
+@router.patch(
+    "/{transaction_id}",
+    response_model=TransactionOut,
+    responses={404: {"description": TRANSACTION_NOT_FOUND}, 400: {"description": LOCKED_MONTH_DETAIL}},
+)
 def update_transaction(
     transaction_id: int,
 
@@ -359,7 +367,14 @@ def update_transaction(
     if not transaction:
         raise HTTPException(status_code=404, detail=TRANSACTION_NOT_FOUND)
 
+    if is_locked_month(transaction.date):
+        raise HTTPException(status_code=400, detail=LOCKED_MONTH_DETAIL)
+
     update_data = transaction_in.model_dump(exclude_unset=True)
+
+    if "date" in update_data and is_locked_month(update_data["date"]):
+        raise HTTPException(status_code=400, detail=LOCKED_MONTH_DETAIL)
+
     for field, value in update_data.items():
         setattr(transaction, field, value)
 
@@ -368,7 +383,11 @@ def update_transaction(
     return transaction
 
 
-@router.delete("/{transaction_id}", status_code=status.HTTP_204_NO_CONTENT, responses={404: {"description": TRANSACTION_NOT_FOUND}})
+@router.delete(
+    "/{transaction_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={404: {"description": TRANSACTION_NOT_FOUND}, 400: {"description": LOCKED_MONTH_DETAIL}},
+)
 def delete_transaction(
     transaction_id: int,
     db: Annotated[Session, Depends(get_db)],
@@ -382,6 +401,9 @@ def delete_transaction(
 
     if not transaction:
         raise HTTPException(status_code=404, detail=TRANSACTION_NOT_FOUND)
+
+    if is_locked_month(transaction.date):
+        raise HTTPException(status_code=400, detail=LOCKED_MONTH_DETAIL)
 
     log_action(
         db,

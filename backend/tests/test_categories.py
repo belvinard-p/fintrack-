@@ -1,3 +1,8 @@
+from datetime import date
+
+TODAY_ISO = date.today().isoformat()
+
+
 def register_and_login(client, email="catuser@example.com", password="securepass123"):
     client.post("/auth/register", json={"email": email, "password": password})
     login_response = client.post("/auth/login", json={"email": email, "password": password})
@@ -67,7 +72,7 @@ def test_delete_category_nullifies_transactions(client):
     tx = client.post(
 
         "/transactions/",
-        json={"date": "2026-08-01", "description": "Test", "amount": "-10.00", "category_id": created["id"]},
+        json={"date": TODAY_ISO, "description": "Test", "amount": "-10.00", "category_id": created["id"]},
         headers=headers,
     ).json()
 

@@ -360,6 +360,7 @@ export const fr: typeof en = {
       editTitle: "Modifier la transaction",
       updated: "Transaction mise à jour",
       updateError: "Échec de la mise à jour de la transaction",
+      monthLocked: "Ce mois est clos. Les transactions des mois passés ne peuvent plus être modifiées ni supprimées.",
       page: "Page {page} sur {totalPages} ({total} au total)",
       previous: "Précédent",
       next: "Suivant",

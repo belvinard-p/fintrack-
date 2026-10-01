@@ -11,7 +11,7 @@ import { CategoryDot } from "@/components/category-dot";
 import { useLanguage } from "@/lib/i18n";
 import { stripDigits } from "@/lib/text";
 import { extractErrorMessage } from "@/lib/error";
-import { getTodayIso } from "@/lib/date";
+import { getTodayIso, getFirstDayOfCurrentMonthIso } from "@/lib/date";
 import { toSignedAmount } from "@/lib/amount";
 import {
   Select,
@@ -65,6 +65,7 @@ export function TransactionForm() {
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
+          min={getFirstDayOfCurrentMonthIso()}
           max={getTodayIso()}
           required
         />

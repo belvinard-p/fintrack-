@@ -5,6 +5,7 @@ import { useDeleteTransaction } from "../hooks/use-delete-transaction";
 import { Transaction } from "../types";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/lib/i18n";
+import { isLockedMonth } from "@/lib/date";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,12 +21,18 @@ import {
 export function DeleteTransactionDialog({ transaction }: Readonly<{ transaction: Transaction }>) {
   const { t } = useLanguage();
   const deleteTransaction = useDeleteTransaction();
+  const locked = isLockedMonth(transaction.date);
 
   return (
     <AlertDialog>
       <AlertDialogTrigger
         render={
-          <Button variant="ghost" size="sm">
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={locked}
+            title={locked ? t("transactions.list.monthLocked") : undefined}
+          >
             {t("common.delete")}
           </Button>
         }

@@ -1,3 +1,8 @@
+from datetime import date
+
+TODAY_ISO = date.today().isoformat()
+
+
 def test_register_success(client):
     response = client.post(
         "/auth/register",
@@ -189,7 +194,7 @@ def test_delete_account_removes_user_and_data(client):
     ).json()
     transaction = client.post(
         "/transactions/",
-        json={"date": "2026-08-01", "description": "Test", "amount": "-10.00", "category_id": category["id"]},
+        json={"date": TODAY_ISO, "description": "Test", "amount": "-10.00", "category_id": category["id"]},
         headers=headers,
     ).json()
     client.post(

@@ -1,3 +1,8 @@
+from datetime import date
+
+TODAY_ISO = date.today().isoformat()
+
+
 def register_and_login(client, email="budgetuser@example.com", password="securepass123"):
     client.post("/auth/register", json={"email": email, "password": password})
     login_response = client.post("/auth/login", json={"email": email, "password": password})
@@ -230,18 +235,19 @@ def test_budget_status_under_budget(client):
     headers = register_and_login(client)
     category_id = get_category_id(client, headers, "Groceries")
 
+    current_month = date.today().strftime("%Y-%m")
     client.post(
         "/budgets/",
-        json={"category_id": category_id, "monthly_limit": "200.00", "month": "2026-08"},
+        json={"category_id": category_id, "monthly_limit": "200.00", "month": current_month},
         headers=headers,
     )
     client.post(
         "/transactions/",
-        json={"date": "2026-08-05", "description": "Groceries run", "amount": "-50.00", "category_id": category_id},
+        json={"date": TODAY_ISO, "description": "Groceries run", "amount": "-50.00", "category_id": category_id},
         headers=headers,
     )
 
-    response = client.get("/budgets/status?month=2026-08", headers=headers)
+    response = client.get(f"/budgets/status?month={current_month}", headers=headers)
     assert response.status_code == 200
     data = response.json()
     entry = next(d for d in data if d["category_id"] == category_id)
@@ -253,18 +259,19 @@ def test_budget_status_over_budget(client):
     headers = register_and_login(client)
     category_id = get_category_id(client, headers, "Dining Out")
 
+    current_month = date.today().strftime("%Y-%m")
     client.post(
         "/budgets/",
-        json={"category_id": category_id, "monthly_limit": "10.00", "month": "2026-08"},
+        json={"category_id": category_id, "monthly_limit": "10.00", "month": current_month},
         headers=headers,
     )
     client.post(
         "/transactions/",
-        json={"date": "2026-08-05", "description": "Fancy dinner", "amount": "-45.00", "category_id": category_id},
+        json={"date": TODAY_ISO, "description": "Fancy dinner", "amount": "-45.00", "category_id": category_id},
         headers=headers,
     )
 
-    response = client.get("/budgets/status?month=2026-08", headers=headers)
+    response = client.get(f"/budgets/status?month={current_month}", headers=headers)
     data = response.json()
     entry = next(d for d in data if d["category_id"] == category_id)
     assert entry["actual_spending"] == "45.00"
