@@ -199,6 +199,7 @@ export const en = {
     remaining: "Left to budget",
     notSet: "Set your income for this month to see how much is left to budget.",
     overAllocated: "Your budgets exceed your income by {amount}.",
+    monthLocked: "This month is closed and its income can no longer be edited.",
   },
   budgets: {
     title: "Budgets",
@@ -230,6 +231,7 @@ export const en = {
       deleteDescription:
         "This only removes the budget limit — your transactions in this category are not affected. This action cannot be undone.",
       deleted: "Budget deleted",
+      monthLocked: "This month is closed. Budgets from past months can no longer be edited or deleted.",
     },
     overBudgetBanner: {
       categorySingular: "category",

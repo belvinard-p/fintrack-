@@ -7,6 +7,7 @@ import { useUpdateBudget } from "../hooks/use-update-budget";
 import { useDeleteBudget } from "../hooks/use-delete-budget";
 import { getCurrentMonth } from "../utils";
 import { BudgetAllocationSummary } from "@/features/income";
+import { isLockedMonthStr } from "@/lib/date";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +44,7 @@ export function BudgetStatusList() {
   const { data: statuses, isLoading, error } = useBudgetStatus(month);
   const updateBudget = useUpdateBudget();
   const deleteBudget = useDeleteBudget();
+  const locked = isLockedMonthStr(month);
 
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editLimit, setEditLimit] = useState("");
@@ -127,6 +129,8 @@ export function BudgetStatusList() {
                       <Button
                         variant="ghost"
                         size="sm"
+                        disabled={locked}
+                        title={locked ? t("budgets.status.monthLocked") : undefined}
                         onClick={() => startEdit(status.id, status.monthly_limit)}
                       />
                     }
@@ -166,7 +170,14 @@ export function BudgetStatusList() {
 
                 <AlertDialog>
                   <AlertDialogTrigger
-                    render={<Button variant="ghost" size="sm" />}
+                    render={
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={locked}
+                        title={locked ? t("budgets.status.monthLocked") : undefined}
+                      />
+                    }
                   >
                     {t("common.delete")}
                   </AlertDialogTrigger>

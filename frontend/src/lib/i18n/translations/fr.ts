@@ -201,6 +201,7 @@ export const fr: typeof en = {
     remaining: "Reste à budgétiser",
     notSet: "Définissez votre revenu du mois pour voir ce qu'il reste à budgétiser.",
     overAllocated: "Vos budgets dépassent votre revenu de {amount}.",
+    monthLocked: "Ce mois est clos et son revenu ne peut plus être modifié.",
   },
   budgets: {
     title: "Budgets",
@@ -232,6 +233,7 @@ export const fr: typeof en = {
       deleteDescription:
         "Cela supprime uniquement la limite budgétaire — vos transactions dans cette catégorie ne sont pas affectées. Cette action est irréversible.",
       deleted: "Budget supprimé",
+      monthLocked: "Ce mois est clos. Les budgets des mois passés ne peuvent plus être modifiés ni supprimés.",
     },
     overBudgetBanner: {
       categorySingular: "catégorie",

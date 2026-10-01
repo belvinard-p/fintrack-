@@ -18,11 +18,13 @@ import {
 } from "@/components/ui/dialog";
 import { useLanguage } from "@/lib/i18n";
 import { extractErrorMessage } from "@/lib/error";
+import { isLockedMonthStr } from "@/lib/date";
 
 export function MonthlyIncomeDialog({ month }: Readonly<{ month: string }>) {
   const { t } = useLanguage();
   const { data: income } = useMonthlyIncome(month);
   const setIncome = useSetMonthlyIncome();
+  const locked = isLockedMonthStr(month);
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +51,16 @@ export function MonthlyIncomeDialog({ month }: Readonly<{ month: string }>) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger render={<Button variant="outline" size="sm" />}>
+      <DialogTrigger
+        render={
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={locked}
+            title={locked ? t("income.monthLocked") : undefined}
+          />
+        }
+      >
         {income?.is_set ? t("income.edit") : t("income.set")}
       </DialogTrigger>
       <DialogContent>

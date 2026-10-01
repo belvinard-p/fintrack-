@@ -20,6 +20,10 @@ export function isLockedMonth(dateIso: string): boolean {
   return valueKey < currentKey;
 }
 
+export function isLockedMonthStr(monthIso: string): boolean {
+  return isLockedMonth(`${monthIso}-01`);
+}
+
 export function formatCreatedTime(iso: string | null | undefined, language: string): string | null {
   if (!iso) return null;
   const date = new Date(iso);

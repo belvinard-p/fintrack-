@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { useCreateBudget } from "../hooks/use-create-budget";
+import { getCurrentMonth } from "../utils";
 import { useMonthlyIncome } from "@/features/income";
 import { useCategories } from "@/features/categories";
 import { Button } from "@/components/ui/button";
@@ -95,6 +96,7 @@ export function BudgetForm() {
           type="month"
           value={month}
           onChange={(e) => setMonth(e.target.value)}
+          min={getCurrentMonth()}
           required
         />
       </div>
