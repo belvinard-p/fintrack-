@@ -2,14 +2,13 @@ from decimal import Decimal
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Path
-from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.core.audit import log_action
 from app.core.database import get_db
 from app.core.deps import get_current_user
 from app.core.month_lock import is_locked_month_str, LOCKED_INCOME_MONTH_DETAIL
-from app.models.budget import Budget
+from app.core.allocation import total_allocated
 from app.models.monthly_income import MonthlyIncome
 from app.models.user import User
 from app.schemas.income import MonthlyIncomeOut, MonthlyIncomeSet
@@ -26,11 +25,7 @@ def build_income_out(db: Session, user_id: int, month: str) -> MonthlyIncomeOut:
         .first()
     )
     amount = Decimal(income.amount) if income else Decimal("0")
-    total_budgeted = Decimal(
-        db.query(func.coalesce(func.sum(Budget.monthly_limit), 0))
-        .filter(Budget.user_id == user_id, Budget.month == month)
-        .scalar()
-    )
+    total_budgeted = total_allocated(db, user_id, month)
     remaining = amount - total_budgeted
     return MonthlyIncomeOut(
         month=month,

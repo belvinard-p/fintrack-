@@ -8,10 +8,10 @@ from sqlalchemy import func
 from app.core.database import get_db
 from app.core.deps import get_current_user
 from app.core.audit import log_action
+from app.core.allocation import remaining_income
 from app.models.user import User
 from app.models.budget import Budget
 from app.models.category import Category
-from app.models.monthly_income import MonthlyIncome
 from app.models.transaction import Transaction
 from app.core.month_lock import is_locked_month_str, LOCKED_BUDGET_MONTH_DETAIL
 from app.schemas.budget import BudgetCreate, BudgetOut, BudgetStatus, BudgetUpdate
@@ -26,21 +26,10 @@ def _ensure_within_income(
     new_limit: Decimal,
     exclude_budget_id: int | None = None,
 ) -> None:
-    income = (
-        db.query(MonthlyIncome)
-        .filter(MonthlyIncome.user_id == user_id, MonthlyIncome.month == month)
-        .first()
-    )
-    if income is None:
+    remaining = remaining_income(db, user_id, month, exclude_budget_id=exclude_budget_id)
+    if remaining is None:
         return
 
-    others_query = db.query(func.coalesce(func.sum(Budget.monthly_limit), 0)).filter(
-        Budget.user_id == user_id, Budget.month == month
-    )
-    if exclude_budget_id is not None:
-        others_query = others_query.filter(Budget.id != exclude_budget_id)
-
-    remaining = Decimal(income.amount) - Decimal(others_query.scalar())
     if new_limit > remaining:
         raise HTTPException(
             status_code=400,

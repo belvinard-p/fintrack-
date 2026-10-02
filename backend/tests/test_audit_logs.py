@@ -141,11 +141,16 @@ def test_updating_goal_creates_audit_log(client):
 
 def test_contributing_to_goal_creates_audit_log(client):
     headers = register_and_login(client, email="contributegoalauditor@example.com")
+    account_id = default_account_id(client, headers)
     goal = client.post(
         "/goals/", json={"name": "Trip", "target_amount": "500.00"}, headers=headers
     ).json()
 
-    client.post(f"/goals/{goal['id']}/contribute", json={"amount": "50.00"}, headers=headers)
+    client.post(
+        f"/goals/{goal['id']}/contribute",
+        json={"date": TODAY_ISO, "amount": "50.00", "account_id": account_id},
+        headers=headers,
+    )
 
     logs = client.get("/audit-logs/", headers=headers).json()
     assert any(log["action"] == "contribute_to_goal" for log in logs)

@@ -5,6 +5,7 @@ import { useDeleteGoal } from "../hooks/use-delete-goal";
 import { Goal } from "../types";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/lib/i18n";
+import { extractErrorMessage } from "@/lib/error";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,6 +39,7 @@ export function DeleteGoalDialog({ goal }: Readonly<{ goal: Goal }>) {
             onClick={() =>
               deleteGoal.mutate(goal.id, {
                 onSuccess: () => toast.success(t("goals.list.deleted")),
+                onError: (err) => toast.error(extractErrorMessage(err, t("goals.list.deleteError"))),
               })
             }
           >

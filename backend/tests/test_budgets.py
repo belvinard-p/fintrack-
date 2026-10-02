@@ -457,6 +457,29 @@ def test_create_budget_rejected_when_income_fully_budgeted(client):
     assert "0.00 left" in blocked.json()["detail"]
 
 
+def test_create_budget_rejected_when_goal_allocation_uses_remaining_income(client):
+    headers = register_and_login(client, email="goalcapuser@example.com")
+    category_id = get_category_id(client, headers, "Groceries")
+    client.put(f"/income/{CURRENT_MONTH}", json={"amount": "1000.00"}, headers=headers)
+
+    goal = client.post(
+        "/goals/", json={"name": "Vacation", "target_amount": "5000.00"}, headers=headers
+    ).json()
+    client.put(
+        f"/goals/{goal['id']}/allocations/{CURRENT_MONTH}",
+        json={"amount": "1000.00"},
+        headers=headers,
+    )
+
+    blocked = client.post(
+        "/budgets/",
+        json={"category_id": category_id, "monthly_limit": "1.00", "month": CURRENT_MONTH},
+        headers=headers,
+    )
+    assert blocked.status_code == 400
+    assert "0.00 left" in blocked.json()["detail"]
+
+
 def test_update_budget_cannot_exceed_income_but_can_shrink(client):
     headers = register_and_login(client, email="capupdate@example.com")
     first = get_category_id(client, headers, "Groceries")

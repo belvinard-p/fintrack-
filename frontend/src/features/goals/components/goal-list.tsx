@@ -1,14 +1,18 @@
 "use client";
 
 import { useGoals } from "../hooks/use-goals";
+import { useGoalStatus } from "../hooks/use-goal-status";
 import { useCurrentUser } from "@/features/auth";
+import { getCurrentMonth } from "@/features/budgets/utils";
 import { GoalItem } from "./goal-item";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLanguage } from "@/lib/i18n";
 
 export function GoalList() {
   const { t } = useLanguage();
+  const month = getCurrentMonth();
   const { data: goals, isLoading, error } = useGoals();
+  const { data: statuses } = useGoalStatus(month);
   const { data: currentUser } = useCurrentUser();
 
   if (isLoading) {
@@ -26,7 +30,13 @@ export function GoalList() {
   return (
     <div className="space-y-4">
       {goals.map((goal) => (
-        <GoalItem key={goal.id} goal={goal} userEmail={currentUser?.email} />
+        <GoalItem
+          key={goal.id}
+          goal={goal}
+          userEmail={currentUser?.email}
+          month={month}
+          status={statuses?.find((s) => s.goal_id === goal.id)}
+        />
       ))}
     </div>
   );

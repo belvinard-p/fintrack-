@@ -8,6 +8,7 @@ export function useSourceLabel() {
     if (source === "csv_import") return t("transactions.list.sourceCsvImport");
     if (source === "recurring") return t("transactions.list.sourceRecurring");
     if (source === "debt_payment") return t("transactions.list.sourceDebtPayment");
+    if (source === "goal_contribution") return t("transactions.list.sourceGoalContribution");
     return source.replace("_", " ");
   };
 }

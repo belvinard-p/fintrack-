@@ -25,6 +25,7 @@ export function EditGoalDialog({ goal }: Readonly<{ goal: Goal }>) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(goal.name);
   const [targetAmount, setTargetAmount] = useState(goal.target_amount);
+  const [openingAmount, setOpeningAmount] = useState(goal.opening_amount);
   const [targetDate, setTargetDate] = useState(goal.target_date ?? "");
   const [error, setError] = useState<string | null>(null);
   const updateGoal = useUpdateGoal();
@@ -34,6 +35,7 @@ export function EditGoalDialog({ goal }: Readonly<{ goal: Goal }>) {
     if (next) {
       setName(goal.name);
       setTargetAmount(goal.target_amount);
+      setOpeningAmount(goal.opening_amount);
       setTargetDate(goal.target_date ?? "");
       setError(null);
     }
@@ -45,7 +47,12 @@ export function EditGoalDialog({ goal }: Readonly<{ goal: Goal }>) {
     try {
       await updateGoal.mutateAsync({
         id: goal.id,
-        payload: { name, target_amount: targetAmount, target_date: targetDate || null },
+        payload: {
+          name,
+          target_amount: targetAmount,
+          opening_amount: openingAmount,
+          target_date: targetDate || null,
+        },
       });
       setOpen(false);
       toast.success(t("goals.list.updated"));
@@ -82,6 +89,18 @@ export function EditGoalDialog({ goal }: Readonly<{ goal: Goal }>) {
               step="0.01"
               value={targetAmount}
               onChange={(e) => setTargetAmount(e.target.value)}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor={`edit-goal-opening-${goal.id}`}>{t("goals.form.openingAmount")}</Label>
+            <Input
+              id={`edit-goal-opening-${goal.id}`}
+              type="number"
+              min="0"
+              step="0.01"
+              value={openingAmount}
+              onChange={(e) => setOpeningAmount(e.target.value)}
               required
             />
           </div>

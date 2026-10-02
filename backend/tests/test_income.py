@@ -48,6 +48,32 @@ def test_income_remaining_deducts_budgets(client):
     assert data["is_over_allocated"] is False
 
 
+def test_income_remaining_deducts_goal_allocations_too(client):
+    headers = register_and_login(client, email="incomegoalallocation@example.com")
+    client.put(f"/income/{CURRENT_MONTH}", json={"amount": "10000.00"}, headers=headers)
+
+    category = client.post("/categories/", json={"name": "Alloc"}, headers=headers).json()
+    client.post(
+        "/budgets/",
+        json={"category_id": category["id"], "monthly_limit": "4000.00", "month": CURRENT_MONTH},
+        headers=headers,
+    )
+
+    goal = client.post(
+        "/goals/", json={"name": "Vacation", "target_amount": "5000.00"}, headers=headers
+    ).json()
+    client.put(
+        f"/goals/{goal['id']}/allocations/{CURRENT_MONTH}",
+        json={"amount": "1000.00"},
+        headers=headers,
+    )
+
+    data = client.get(f"/income/{CURRENT_MONTH}", headers=headers).json()
+    assert data["total_budgeted"] == "5000.00"
+    assert data["remaining"] == "5000.00"
+    assert data["is_over_allocated"] is False
+
+
 def test_income_over_allocated_flag(client):
     headers = register_and_login(client, email="incomeover@example.com")
     category = client.post("/categories/", json={"name": "Over"}, headers=headers).json()

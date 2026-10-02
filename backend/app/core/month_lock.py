@@ -3,6 +3,7 @@ from datetime import date
 LOCKED_MONTH_DETAIL = "This transaction is in a closed month and can no longer be created, modified, or deleted."
 LOCKED_BUDGET_MONTH_DETAIL = "This budget is for a closed month and can no longer be created, modified, or deleted."
 LOCKED_INCOME_MONTH_DETAIL = "This month's income is closed and can no longer be modified."
+LOCKED_GOAL_ALLOCATION_MONTH_DETAIL = "This goal allocation is for a closed month and can no longer be created, modified, or deleted."
 
 
 def is_locked_month(value: date) -> bool:

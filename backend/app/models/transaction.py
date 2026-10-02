@@ -11,6 +11,7 @@ class TransactionSource(str, enum.Enum):
     csv_import = "csv_import"
     recurring = "recurring"
     debt_payment = "debt_payment"
+    goal_contribution = "goal_contribution"
 
 
 class Transaction(Base):

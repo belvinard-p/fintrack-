@@ -14,6 +14,7 @@ export function GoalForm() {
   const { t } = useLanguage();
   const [name, setName] = useState("");
   const [targetAmount, setTargetAmount] = useState("");
+  const [openingAmount, setOpeningAmount] = useState("");
   const [targetDate, setTargetDate] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -27,10 +28,12 @@ export function GoalForm() {
       await createGoal.mutateAsync({
         name,
         target_amount: targetAmount,
+        opening_amount: openingAmount || "0",
         target_date: targetDate || null,
       });
       setName("");
       setTargetAmount("");
+      setOpeningAmount("");
       setTargetDate("");
       toast.success(t("goals.form.created"));
     } catch (err) {
@@ -62,6 +65,19 @@ export function GoalForm() {
           value={targetAmount}
           onChange={(e) => setTargetAmount(e.target.value)}
           required
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="goal-opening">{t("goals.form.openingAmount")}</Label>
+        <Input
+          id="goal-opening"
+          type="number"
+          min="0"
+          step="0.01"
+          value={openingAmount}
+          onChange={(e) => setOpeningAmount(e.target.value)}
+          placeholder="0.00"
         />
       </div>
 
