@@ -492,6 +492,7 @@ export const en = {
       uncategorized: "Uncategorized",
       searchCategory: "Search category...",
       noCategoryFound: "No category found.",
+      overBudgetWarning: "This expense would push {category} over budget: {projected} of {limit} spent this month.",
       submit: "Add transaction",
       adding: "Adding...",
       error: "Failed to create transaction",

@@ -494,6 +494,7 @@ export const fr: typeof en = {
       uncategorized: "Non catégorisé",
       searchCategory: "Rechercher une catégorie...",
       noCategoryFound: "Aucune catégorie trouvée.",
+      overBudgetWarning: "Cette dépense ferait dépasser le budget de {category} : {projected} sur {limit} dépensés ce mois-ci.",
       submit: "Ajouter la transaction",
       adding: "Ajout...",
       error: "Échec de la création de la transaction",

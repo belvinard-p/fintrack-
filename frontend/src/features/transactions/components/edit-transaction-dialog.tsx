@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { useUpdateTransaction } from "../hooks/use-update-transaction";
 import { useCategories } from "@/features/categories";
 import { useAccounts } from "@/features/accounts";
+import { useBudgetStatus } from "@/features/budgets";
+import { getCurrentMonth, projectBudgetImpact } from "@/features/budgets/utils";
 import { useCreateRecurringTransaction } from "@/features/recurring-transactions";
 import { Transaction } from "../types";
 import { Button } from "@/components/ui/button";
@@ -66,8 +68,18 @@ export function EditTransactionDialog({ transaction }: Readonly<{ transaction: T
   const createRecurring = useCreateRecurringTransaction();
   const { data: categories } = useCategories();
   const { data: accounts } = useAccounts();
+  const { data: budgetStatuses } = useBudgetStatus(getCurrentMonth());
 
   const dayOfMonth = date ? Math.min(Number(date.split("-")[2]), 28) : null;
+
+  const originalType = getTransactionType(transaction.amount);
+  const alreadyCounted =
+    originalType === "expense" && String(transaction.category_id) === categoryId
+      ? Math.abs(Number(transaction.amount))
+      : 0;
+  const matchingBudget = budgetStatuses?.find((s) => String(s.category_id) === categoryId);
+  const budgetImpact =
+    type === "expense" ? projectBudgetImpact(matchingBudget, Number(amount), alreadyCounted) : null;
 
   function handleOpenChange(next: boolean) {
     setOpen(next);
@@ -241,6 +253,15 @@ export function EditTransactionDialog({ transaction }: Readonly<{ transaction: T
                 ))}
               </ComboboxContent>
             </Combobox>
+            {budgetImpact?.exceeds && matchingBudget && (
+              <p role="alert" className="text-sm text-destructive">
+                {t("transactions.form.overBudgetWarning", {
+                  category: matchingBudget.category_name,
+                  projected: budgetImpact.projected.toFixed(2),
+                  limit: budgetImpact.limit.toFixed(2),
+                })}
+              </p>
+            )}
           </div>
 
           {canOfferRecurring && (

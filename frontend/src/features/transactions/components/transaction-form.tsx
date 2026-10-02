@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { useCreateTransaction } from "../hooks/use-create-transaction";
 import { useCategories } from "@/features/categories";
 import { useAccounts } from "@/features/accounts";
+import { useBudgetStatus } from "@/features/budgets";
+import { getCurrentMonth, projectBudgetImpact } from "@/features/budgets/utils";
 import {
   useCreateRecurringTransaction,
   useGenerateDueTransactions,
@@ -43,9 +45,14 @@ export function TransactionForm() {
   const { data: categories } = useCategories();
   const { data: accounts } = useAccounts();
   const selectedAccountId = accountId || (accounts?.[0] ? String(accounts[0].id) : "");
+  const { data: budgetStatuses } = useBudgetStatus(getCurrentMonth());
 
   const isPending = createTransaction.isPending || createRecurring.isPending;
   const dayOfMonth = date ? Math.min(Number(date.split("-")[2]), 28) : null;
+
+  const matchingBudget = budgetStatuses?.find((s) => String(s.category_id) === categoryId);
+  const budgetImpact =
+    frequency === "once" ? projectBudgetImpact(matchingBudget, Number(amount)) : null;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -195,6 +202,15 @@ export function TransactionForm() {
             ))}
           </ComboboxContent>
         </Combobox>
+        {budgetImpact?.exceeds && matchingBudget && (
+          <p role="alert" className="text-sm text-destructive">
+            {t("transactions.form.overBudgetWarning", {
+              category: matchingBudget.category_name,
+              projected: budgetImpact.projected.toFixed(2),
+              limit: budgetImpact.limit.toFixed(2),
+            })}
+          </p>
+        )}
       </div>
 
       <Button type="submit" className="w-full" disabled={isPending || !date || !description || !amount || !selectedAccountId}>
