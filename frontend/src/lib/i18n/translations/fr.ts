@@ -367,6 +367,9 @@ export const fr: typeof en = {
       added: "Transaction ajoutée",
     },
     list: {
+      month: "Mois",
+      previousMonth: "Mois précédent",
+      nextMonth: "Mois suivant",
       searchPlaceholder: "Rechercher par description...",
       failedToLoad: "Échec du chargement des transactions",
       empty: "Aucune transaction trouvée",

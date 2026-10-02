@@ -365,6 +365,9 @@ export const en = {
       added: "Transaction added",
     },
     list: {
+      month: "Month",
+      previousMonth: "Previous month",
+      nextMonth: "Next month",
       searchPlaceholder: "Search by description...",
       failedToLoad: "Failed to load transactions",
       empty: "No transactions found",

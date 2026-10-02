@@ -5,15 +5,18 @@ import { useTransactions } from "../hooks/use-transactions";
 import { useSourceLabel } from "../hooks/use-source-label";
 import { TransactionCardList } from "./transaction-card-list";
 import { TransactionTable } from "./transaction-table";
+import { TransactionMonthPicker } from "./transaction-month-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLanguage } from "@/lib/i18n";
+import { getCurrentMonth, getMonthDateRange } from "@/lib/date";
 
 const PAGE_SIZE = 20;
 
 export function TransactionList() {
   const { t } = useLanguage();
+  const [month, setMonth] = useState(getCurrentMonth);
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -27,19 +30,28 @@ export function TransactionList() {
     return () => clearTimeout(timeout);
   }, [searchInput]);
 
+  function handleMonthChange(next: string) {
+    setMonth(next);
+    setPage(1);
+  }
+
   const { data, isLoading, error } = useTransactions({
     page,
     page_size: PAGE_SIZE,
     search: search || undefined,
+    ...getMonthDateRange(month),
   });
   return (
     <div className="space-y-4">
-      <Input
-        placeholder={t("transactions.list.searchPlaceholder")}
-        value={searchInput}
-        onChange={(e) => setSearchInput(e.target.value)}
-        className="max-w-xs"
-      />
+      <div className="flex flex-wrap items-end gap-3">
+        <TransactionMonthPicker month={month} onChange={handleMonthChange} />
+        <Input
+          placeholder={t("transactions.list.searchPlaceholder")}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          className="max-w-xs"
+        />
+      </div>
 
       <div aria-live="polite">
         {isLoading && (
