@@ -28,9 +28,16 @@ export async function deleteTransaction(id: number): Promise<void> {
   await api.delete(`/transactions/${id}`);
 }
 
-export async function importCsv(file: File): Promise<ImportResult> {
+export async function importCsv({
+  file,
+  accountId,
+}: {
+  file: File;
+  accountId: number;
+}): Promise<ImportResult> {
   const formData = new FormData();
   formData.append("file", file);
+  formData.append("account_id", String(accountId));
 
   const response = await api.post<ImportResult>("/transactions/import", formData, {
     headers: { "Content-Type": "multipart/form-data" },

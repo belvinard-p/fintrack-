@@ -8,11 +8,17 @@ def register_and_login(client, email="recurringuser@example.com", password="secu
     return {"Authorization": f"Bearer {token}"}
 
 
+def default_account_id(client, headers):
+    return client.get("/accounts/", headers=headers).json()[0]["id"]
+
+
 def test_create_recurring_transaction(client):
     headers = register_and_login(client)
+    account_id = default_account_id(client, headers)
     response = client.post(
         "/recurring-transactions/",
         json={
+            "account_id": account_id,
             "description": "Rent",
             "amount": "-1200.00",
             "day_of_month": 1,
@@ -29,9 +35,11 @@ def test_create_recurring_transaction(client):
 
 def test_create_recurring_transaction_rejects_invalid_day(client):
     headers = register_and_login(client)
+    account_id = default_account_id(client, headers)
     response = client.post(
         "/recurring-transactions/",
         json={
+            "account_id": account_id,
             "description": "Bad",
             "amount": "-10.00",
             "day_of_month": 31,
@@ -45,10 +53,17 @@ def test_create_recurring_transaction_rejects_invalid_day(client):
 def test_list_recurring_transactions_only_returns_own(client):
     headers_a = register_and_login(client, email="recurringa@example.com")
     headers_b = register_and_login(client, email="recurringb@example.com")
+    account_id_a = default_account_id(client, headers_a)
 
     client.post(
         "/recurring-transactions/",
-        json={"description": "A's rent", "amount": "-500.00", "day_of_month": 1, "start_date": "2026-01-01"},
+        json={
+            "account_id": account_id_a,
+            "description": "A's rent",
+            "amount": "-500.00",
+            "day_of_month": 1,
+            "start_date": "2026-01-01",
+        },
         headers=headers_a,
     )
 
@@ -58,9 +73,16 @@ def test_list_recurring_transactions_only_returns_own(client):
 
 def test_update_recurring_transaction(client):
     headers = register_and_login(client, email="recurringupdater@example.com")
+    account_id = default_account_id(client, headers)
     recurring = client.post(
         "/recurring-transactions/",
-        json={"description": "Netflix", "amount": "-15.99", "day_of_month": 5, "start_date": "2026-01-01"},
+        json={
+            "account_id": account_id,
+            "description": "Netflix",
+            "amount": "-15.99",
+            "day_of_month": 5,
+            "start_date": "2026-01-01",
+        },
         headers=headers,
     ).json()
 
@@ -76,9 +98,16 @@ def test_update_recurring_transaction(client):
 
 def test_delete_recurring_transaction(client):
     headers = register_and_login(client, email="recurringdeleter@example.com")
+    account_id = default_account_id(client, headers)
     recurring = client.post(
         "/recurring-transactions/",
-        json={"description": "Gym", "amount": "-30.00", "day_of_month": 10, "start_date": "2026-01-01"},
+        json={
+            "account_id": account_id,
+            "description": "Gym",
+            "amount": "-30.00",
+            "day_of_month": 10,
+            "start_date": "2026-01-01",
+        },
         headers=headers,
     ).json()
 
@@ -91,11 +120,13 @@ def test_delete_recurring_transaction(client):
 
 def test_generate_creates_transaction_for_due_recurring(client):
     headers = register_and_login(client, email="generateuser@example.com")
+    account_id = default_account_id(client, headers)
     today = date.today()
 
     client.post(
         "/recurring-transactions/",
         json={
+            "account_id": account_id,
             "description": "Salary",
             "amount": "2500.00",
             "day_of_month": 1,
@@ -122,11 +153,13 @@ def test_generate_creates_transaction_for_due_recurring(client):
 
 def test_generate_skips_recurring_not_yet_started(client):
     headers = register_and_login(client, email="notstarteduser@example.com")
+    account_id = default_account_id(client, headers)
     future_start = date.today() + timedelta(days=365)
 
     client.post(
         "/recurring-transactions/",
         json={
+            "account_id": account_id,
             "description": "Future bill",
             "amount": "-50.00",
             "day_of_month": 1,
@@ -141,9 +174,11 @@ def test_generate_skips_recurring_not_yet_started(client):
 
 def test_generate_skips_inactive_recurring(client):
     headers = register_and_login(client, email="inactiveuser@example.com")
+    account_id = default_account_id(client, headers)
     recurring = client.post(
         "/recurring-transactions/",
         json={
+            "account_id": account_id,
             "description": "Cancelled sub",
             "amount": "-9.99",
             "day_of_month": 1,

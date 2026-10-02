@@ -11,6 +11,7 @@ export function useUpdateTransaction() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["accounts"] });
     },
   });
 }

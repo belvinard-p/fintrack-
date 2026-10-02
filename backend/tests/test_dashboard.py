@@ -26,9 +26,14 @@ def get_user_id(client, headers):
     return client.get("/auth/me", headers=headers).json()["id"]
 
 
-def insert_transaction(db_session, user_id, date_value, description, amount, category_id=None):
+def default_account_id(client, headers):
+    return client.get("/accounts/", headers=headers).json()[0]["id"]
+
+
+def insert_transaction(db_session, user_id, account_id, date_value, description, amount, category_id=None):
     tx = Transaction(
         user_id=user_id,
+        account_id=account_id,
         date=date_value,
         description=description,
         amount=Decimal(amount),
@@ -42,16 +47,29 @@ def insert_transaction(db_session, user_id, date_value, description, amount, cat
 
 def test_spending_by_category(client):
     headers = register_and_login(client)
+    account_id = default_account_id(client, headers)
     groceries_id = get_category_id(client, headers, "Groceries")
 
     client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "Milk", "amount": "-10.00", "category_id": groceries_id},
+        json={
+            "account_id": account_id,
+            "date": TODAY_ISO,
+            "description": "Milk",
+            "amount": "-10.00",
+            "category_id": groceries_id,
+        },
         headers=headers,
     )
     client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "Bread", "amount": "-5.00", "category_id": groceries_id},
+        json={
+            "account_id": account_id,
+            "date": TODAY_ISO,
+            "description": "Bread",
+            "amount": "-5.00",
+            "category_id": groceries_id,
+        },
         headers=headers,
     )
 
@@ -65,10 +83,11 @@ def test_spending_by_category(client):
 
 def test_spending_by_category_groups_uncategorized(client):
     headers = register_and_login(client)
+    account_id = default_account_id(client, headers)
 
     client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "Mystery expense", "amount": "-20.00"},
+        json={"account_id": account_id, "date": TODAY_ISO, "description": "Mystery expense", "amount": "-20.00"},
         headers=headers,
     )
 
@@ -82,13 +101,16 @@ def test_spending_by_category_groups_uncategorized(client):
 
 def test_spending_by_month(client, db_session):
     headers = register_and_login(client)
+    account_id = default_account_id(client, headers)
     user_id = get_user_id(client, headers)
 
     # Previous month's expense already existed before the lock — inserted directly.
-    insert_transaction(db_session, user_id, _last_day_of_previous_month, "Previous month expense", "-30.00")
+    insert_transaction(
+        db_session, user_id, account_id, _last_day_of_previous_month, "Previous month expense", "-30.00"
+    )
     client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "Current month expense", "amount": "-15.00"},
+        json={"account_id": account_id, "date": TODAY_ISO, "description": "Current month expense", "amount": "-15.00"},
         headers=headers,
     )
 
@@ -105,15 +127,17 @@ def test_spending_by_month(client, db_session):
 def test_dashboard_only_includes_own_transactions(client):
     headers_a = register_and_login(client, email="dashboardowner@example.com")
     headers_b = register_and_login(client, email="dashboardother@example.com")
+    account_id_a = default_account_id(client, headers_a)
+    account_id_b = default_account_id(client, headers_b)
 
     client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "User A expense", "amount": "-100.00"},
+        json={"account_id": account_id_a, "date": TODAY_ISO, "description": "User A expense", "amount": "-100.00"},
         headers=headers_a,
     )
     client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "User B expense", "amount": "-999.00"},
+        json={"account_id": account_id_b, "date": TODAY_ISO, "description": "User B expense", "amount": "-999.00"},
         headers=headers_b,
     )
 
@@ -137,12 +161,13 @@ def _months_ago_date(months: int, day: int = 15):
 
 def test_spending_by_month_excludes_income(client, db_session):
     headers = register_and_login(client, email="monthincome@example.com")
+    account_id = default_account_id(client, headers)
     user_id = get_user_id(client, headers)
 
-    insert_transaction(db_session, user_id, TODAY, "Refund", "500.00")
+    insert_transaction(db_session, user_id, account_id, TODAY, "Refund", "500.00")
     client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "Expense", "amount": "-20.00"},
+        json={"account_id": account_id, "date": TODAY_ISO, "description": "Expense", "amount": "-20.00"},
         headers=headers,
     )
 
@@ -154,10 +179,11 @@ def test_spending_by_month_excludes_income(client, db_session):
 
 def test_spending_by_month_excludes_older_than_12_months(client, db_session):
     headers = register_and_login(client, email="monthwindow@example.com")
+    account_id = default_account_id(client, headers)
     user_id = get_user_id(client, headers)
 
-    insert_transaction(db_session, user_id, _months_ago_date(13), "Too old", "-999.00")
-    insert_transaction(db_session, user_id, _months_ago_date(11), "Within window", "-40.00")
+    insert_transaction(db_session, user_id, account_id, _months_ago_date(13), "Too old", "-999.00")
+    insert_transaction(db_session, user_id, account_id, _months_ago_date(11), "Within window", "-40.00")
 
     response = client.get("/transactions/dashboard/by-month", headers=headers)
     data = response.json()

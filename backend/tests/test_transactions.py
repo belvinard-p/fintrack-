@@ -21,12 +21,17 @@ def get_user_id(client, headers):
     return client.get("/auth/me", headers=headers).json()["id"]
 
 
-def insert_transaction(db_session, user_id, date_value, description, amount, category_id=None):
+def default_account_id(client, headers):
+    return client.get("/accounts/", headers=headers).json()[0]["id"]
+
+
+def insert_transaction(db_session, user_id, account_id, date_value, description, amount, category_id=None):
     """Insert a transaction directly, bypassing the past-month lock on the API — used
     to set up historical data for tests that need it, the same way it would already
     exist in the database from before the lock applied."""
     tx = Transaction(
         user_id=user_id,
+        account_id=account_id,
         date=date_value,
         description=description,
         amount=Decimal(amount),
@@ -40,9 +45,10 @@ def insert_transaction(db_session, user_id, date_value, description, amount, cat
 
 def test_create_transaction(client):
     headers = register_and_login(client)
+    account_id = default_account_id(client, headers)
     response = client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "Groceries", "amount": "45.99"},
+        json={"account_id": account_id, "date": TODAY_ISO, "description": "Groceries", "amount": "45.99"},
         headers=headers,
     )
     assert response.status_code == 201
@@ -54,10 +60,11 @@ def test_create_transaction(client):
 
 def test_create_transaction_rejects_future_date(client):
     headers = register_and_login(client, email="futuredateuser@example.com")
+    account_id = default_account_id(client, headers)
     future_date = (date.today() + timedelta(days=1)).isoformat()
     response = client.post(
         "/transactions/",
-        json={"date": future_date, "description": "Not yet", "amount": "10.00"},
+        json={"account_id": account_id, "date": future_date, "description": "Not yet", "amount": "10.00"},
         headers=headers,
     )
     assert response.status_code == 422
@@ -65,9 +72,10 @@ def test_create_transaction_rejects_future_date(client):
 
 def test_create_transaction_rejects_past_month(client):
     headers = register_and_login(client, email="pastmonthcreateuser@example.com")
+    account_id = default_account_id(client, headers)
     response = client.post(
         "/transactions/",
-        json={"date": _last_day_of_previous_month.isoformat(), "description": "Too late", "amount": "10.00"},
+        json={"account_id": account_id, "date": _last_day_of_previous_month.isoformat(), "description": "Too late", "amount": "10.00"},
         headers=headers,
     )
     assert response.status_code == 400
@@ -75,9 +83,10 @@ def test_create_transaction_rejects_past_month(client):
 
 def test_update_transaction_rejects_future_date(client):
     headers = register_and_login(client, email="futureupdateuser@example.com")
+    account_id = default_account_id(client, headers)
     created = client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "Groceries", "amount": "45.99"},
+        json={"account_id": account_id, "date": TODAY_ISO, "description": "Groceries", "amount": "45.99"},
         headers=headers,
     ).json()
 
@@ -92,12 +101,13 @@ def test_update_transaction_rejects_future_date(client):
 
 def test_update_transaction_accepts_valid_date(client):
     headers = register_and_login(client, email="validupdateuser@example.com")
+    account_id = default_account_id(client, headers)
     category = client.post(
         "/categories/", json={"name": "Valid Update Category"}, headers=headers
     ).json()
     created = client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "Groceries", "amount": "45.99"},
+        json={"account_id": account_id, "date": TODAY_ISO, "description": "Groceries", "amount": "45.99"},
         headers=headers,
     ).json()
 
@@ -120,8 +130,9 @@ def test_update_transaction_accepts_valid_date(client):
 
 def test_update_transaction_rejects_when_transaction_in_locked_month(client, db_session):
     headers = register_and_login(client, email="lockedupdateuser@example.com")
+    account_id = default_account_id(client, headers)
     user_id = get_user_id(client, headers)
-    tx = insert_transaction(db_session, user_id, _last_day_of_previous_month, "Old", "-10.00")
+    tx = insert_transaction(db_session, user_id, account_id, _last_day_of_previous_month, "Old", "-10.00")
 
     response = client.patch(
         f"/transactions/{tx.id}",
@@ -133,9 +144,10 @@ def test_update_transaction_rejects_when_transaction_in_locked_month(client, db_
 
 def test_update_transaction_rejects_moving_date_into_locked_month(client):
     headers = register_and_login(client, email="movelockeduser@example.com")
+    account_id = default_account_id(client, headers)
     created = client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "Groceries", "amount": "45.99"},
+        json={"account_id": account_id, "date": TODAY_ISO, "description": "Groceries", "amount": "45.99"},
         headers=headers,
     ).json()
 
@@ -149,8 +161,9 @@ def test_update_transaction_rejects_moving_date_into_locked_month(client):
 
 def test_delete_transaction_rejects_when_transaction_in_locked_month(client, db_session):
     headers = register_and_login(client, email="lockeddeleteuser@example.com")
+    account_id = default_account_id(client, headers)
     user_id = get_user_id(client, headers)
-    tx = insert_transaction(db_session, user_id, _last_day_of_previous_month, "Old", "-10.00")
+    tx = insert_transaction(db_session, user_id, account_id, _last_day_of_previous_month, "Old", "-10.00")
 
     response = client.delete(f"/transactions/{tx.id}", headers=headers)
     assert response.status_code == 400
@@ -158,13 +171,14 @@ def test_delete_transaction_rejects_when_transaction_in_locked_month(client, db_
 
 def test_create_transaction_auto_categorizes_when_matching_category_exists(client):
     headers = register_and_login(client, email="autocatuser@example.com")
+    account_id = default_account_id(client, headers)
     category = client.post(
         "/categories/", json={"name": "Transport"}, headers=headers
     ).json()
 
     response = client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "UBER TRIP", "amount": "-12.30"},
+        json={"account_id": account_id, "date": TODAY_ISO, "description": "UBER TRIP", "amount": "-12.30"},
         headers=headers,
     )
     assert response.status_code == 201
@@ -173,10 +187,11 @@ def test_create_transaction_auto_categorizes_when_matching_category_exists(clien
 
 def test_create_transaction_leaves_uncategorized_when_no_matching_category(client):
     headers = register_and_login(client, email="nocatuser@example.com")
+    account_id = default_account_id(client, headers)
 
     response = client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "UBER TRIP", "amount": "-12.30"},
+        json={"account_id": account_id, "date": TODAY_ISO, "description": "UBER TRIP", "amount": "-12.30"},
         headers=headers,
     )
     assert response.status_code == 201
@@ -185,6 +200,7 @@ def test_create_transaction_leaves_uncategorized_when_no_matching_category(clien
 
 def test_create_transaction_respects_explicit_category(client):
     headers = register_and_login(client, email="explicitcatuser@example.com")
+    account_id = default_account_id(client, headers)
     transport_category = client.post(
         "/categories/", json={"name": "Transport"}, headers=headers
     ).json()
@@ -194,8 +210,7 @@ def test_create_transaction_respects_explicit_category(client):
 
     response = client.post(
         "/transactions/",
-        json={
-            "date": TODAY_ISO,
+        json={"account_id": account_id, "date": TODAY_ISO,
             "description": "UBER TRIP",
             "amount": "-12.30",
             "category_id": custom_category["id"],
@@ -209,13 +224,13 @@ def test_create_transaction_respects_explicit_category(client):
 
 def test_export_transactions_csv(client):
     headers = register_and_login(client, email="exportuser@example.com")
+    account_id = default_account_id(client, headers)
     category = client.post(
         "/categories/", json={"name": "Export Category"}, headers=headers
     ).json()
     client.post(
         "/transactions/",
-        json={
-            "date": TODAY_ISO,
+        json={"account_id": account_id, "date": TODAY_ISO,
             "description": "Exported tx",
             "amount": "-25.00",
             "category_id": category["id"],
@@ -242,13 +257,13 @@ def test_export_transactions_requires_auth(client):
 
 def test_export_transactions_pdf(client):
     headers = register_and_login(client, email="exportpdfuser@example.com")
+    account_id = default_account_id(client, headers)
     category = client.post(
         "/categories/", json={"name": "PDF Category"}, headers=headers
     ).json()
     client.post(
         "/transactions/",
-        json={
-            "date": TODAY_ISO,
+        json={"account_id": account_id, "date": TODAY_ISO,
             "description": "PDF export tx",
             "amount": "-30.00",
             "category_id": category["id"],
@@ -278,17 +293,19 @@ def test_create_transaction_requires_auth(client):
 
 def test_list_transactions_only_returns_own(client):
     headers_a = register_and_login(client, email="usera@example.com")
+    account_id_a = default_account_id(client, headers_a)
     headers_b = register_and_login(client, email="userb@example.com")
+    account_id_b = default_account_id(client, headers_b)
 
 
     client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "User A tx", "amount": "10.00"},
+        json={"account_id": account_id_a, "date": TODAY_ISO, "description": "User A tx", "amount": "10.00"},
         headers=headers_a,
     )
     client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "User B tx", "amount": "20.00"},
+        json={"account_id": account_id_b, "date": TODAY_ISO, "description": "User B tx", "amount": "20.00"},
         headers=headers_b,
     )
 
@@ -302,11 +319,12 @@ def test_list_transactions_only_returns_own(client):
 
 def test_list_transactions_pagination(client):
     headers = register_and_login(client, email="paginationuser@example.com")
+    account_id = default_account_id(client, headers)
 
     for i in range(5):
         client.post(
             "/transactions/",
-            json={"date": TODAY_ISO, "description": f"Tx {i}", "amount": "10.00"},
+            json={"account_id": account_id, "date": TODAY_ISO, "description": f"Tx {i}", "amount": "10.00"},
             headers=headers,
         )
 
@@ -325,14 +343,15 @@ def test_list_transactions_pagination(client):
 
 def test_list_transactions_search(client):
     headers = register_and_login(client, email="searchuser@example.com")
+    account_id = default_account_id(client, headers)
     client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "Starbucks Coffee", "amount": "-4.50"},
+        json={"account_id": account_id, "date": TODAY_ISO, "description": "Starbucks Coffee", "amount": "-4.50"},
         headers=headers,
     )
     client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "Rent payment", "amount": "-1200.00"},
+        json={"account_id": account_id, "date": TODAY_ISO, "description": "Rent payment", "amount": "-1200.00"},
         headers=headers,
     )
 
@@ -344,18 +363,19 @@ def test_list_transactions_search(client):
 
 def test_list_transactions_filter_by_category(client):
     headers = register_and_login(client, email="filteruser@example.com")
+    account_id = default_account_id(client, headers)
     category = client.post(
         "/categories/", json={"name": "Test Category"}, headers=headers
     ).json()
 
     client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "Categorized", "amount": "-10.00", "category_id": category["id"]},
+        json={"account_id": account_id, "date": TODAY_ISO, "description": "Categorized", "amount": "-10.00", "category_id": category["id"]},
         headers=headers,
     )
     client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "Uncategorized", "amount": "-20.00"},
+        json={"account_id": account_id, "date": TODAY_ISO, "description": "Uncategorized", "amount": "-20.00"},
         headers=headers,
     )
 
@@ -367,14 +387,15 @@ def test_list_transactions_filter_by_category(client):
 
 def test_list_transactions_filter_by_date_range(client, db_session):
     headers = register_and_login(client, email="daterangeuser@example.com")
+    account_id = default_account_id(client, headers)
     user_id = get_user_id(client, headers)
 
     # Historical transaction from a locked month — inserted directly since the API
     # can no longer create one, exactly as it would already exist from before the lock.
-    insert_transaction(db_session, user_id, _last_day_of_previous_month, "Old month", "-10.00")
+    insert_transaction(db_session, user_id, account_id, _last_day_of_previous_month, "Old month", "-10.00")
     client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "Current month", "amount": "-10.00"},
+        json={"account_id": account_id, "date": TODAY_ISO, "description": "Current month", "amount": "-10.00"},
         headers=headers,
     )
 
@@ -388,9 +409,10 @@ def test_list_transactions_filter_by_date_range(client, db_session):
 
 def test_get_single_transaction(client):
     headers = register_and_login(client)
+    account_id = default_account_id(client, headers)
     create_response = client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "Coffee", "amount": "4.50"},
+        json={"account_id": account_id, "date": TODAY_ISO, "description": "Coffee", "amount": "4.50"},
         headers=headers,
     )
     tx_id = create_response.json()["id"]
@@ -403,17 +425,20 @@ def test_get_single_transaction(client):
 
 def test_get_nonexistent_transaction(client):
     headers = register_and_login(client)
+    account_id = default_account_id(client, headers)
     response = client.get("/transactions/9999", headers=headers)
     assert response.status_code == 404
 
 
 def test_cannot_access_another_users_transaction(client):
     headers_a = register_and_login(client, email="ownera@example.com")
+    account_id_a = default_account_id(client, headers_a)
     headers_b = register_and_login(client, email="ownerb@example.com")
+    account_id_b = default_account_id(client, headers_b)
 
     create_response = client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "Private tx", "amount": "99.00"},
+        json={"account_id": account_id_a, "date": TODAY_ISO, "description": "Private tx", "amount": "99.00"},
         headers=headers_a,
     )
     tx_id = create_response.json()["id"]
@@ -424,9 +449,10 @@ def test_cannot_access_another_users_transaction(client):
 
 def test_update_transaction(client):
     headers = register_and_login(client)
+    account_id = default_account_id(client, headers)
     create_response = client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "Original", "amount": "10.00"},
+        json={"account_id": account_id, "date": TODAY_ISO, "description": "Original", "amount": "10.00"},
         headers=headers,
     )
     tx_id = create_response.json()["id"]
@@ -445,9 +471,10 @@ def test_update_transaction(client):
 
 def test_delete_transaction(client):
     headers = register_and_login(client)
+    account_id = default_account_id(client, headers)
     create_response = client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "To delete", "amount": "5.00"},
+        json={"account_id": account_id, "date": TODAY_ISO, "description": "To delete", "amount": "5.00"},
         headers=headers,
     )
     tx_id = create_response.json()["id"]
@@ -462,19 +489,20 @@ def test_monthly_summary_totals_and_previous_month(client, db_session):
     from app.models.monthly_income import MonthlyIncome
 
     headers = register_and_login(client, email="summaryuser@example.com")
+    account_id = default_account_id(client, headers)
     user_id = get_user_id(client, headers)
 
     # Previous month's income and expense already existed before the lock — inserted directly.
     db_session.add(MonthlyIncome(user_id=user_id, month=PREVIOUS_MONTH, amount=Decimal("1000.00")))
     db_session.commit()
-    insert_transaction(db_session, user_id, _last_day_of_previous_month, "Old rent", "-400.00")
+    insert_transaction(db_session, user_id, account_id, _last_day_of_previous_month, "Old rent", "-400.00")
 
     client.put(f"/income/{CURRENT_MONTH}", json={"amount": "3000.00"}, headers=headers)
 
     for desc, amount in [("Groceries", "-250.00"), ("Bus", "-50.00")]:
         client.post(
             "/transactions/",
-            json={"date": TODAY_ISO, "description": desc, "amount": amount},
+            json={"account_id": account_id, "date": TODAY_ISO, "description": desc, "amount": amount},
             headers=headers,
         )
 
@@ -494,6 +522,7 @@ def test_monthly_summary_totals_and_previous_month(client, db_session):
 
 def test_monthly_summary_empty_month(client):
     headers = register_and_login(client, email="emptysummary@example.com")
+    account_id = default_account_id(client, headers)
     response = client.get("/transactions/dashboard/monthly-summary?month=2026-01", headers=headers)
     assert response.status_code == 200
     data = response.json()
@@ -505,6 +534,7 @@ def test_monthly_summary_empty_month(client):
 
 def test_monthly_summary_rejects_bad_month(client):
     headers = register_and_login(client, email="badmonth@example.com")
+    account_id = default_account_id(client, headers)
     response = client.get("/transactions/dashboard/monthly-summary?month=2026-13", headers=headers)
     assert response.status_code == 422
 
@@ -535,10 +565,11 @@ def test_pdf_report_totals_use_declared_monthly_income():
 
 def test_pdf_export_endpoint_with_monthly_income(client):
     headers = register_and_login(client, email="pdfincome@example.com")
+    account_id = default_account_id(client, headers)
     client.put(f"/income/{CURRENT_MONTH}", json={"amount": "3000.00"}, headers=headers)
     client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "Groceries", "amount": "-250.00"},
+        json={"account_id": account_id, "date": TODAY_ISO, "description": "Groceries", "amount": "-250.00"},
         headers=headers,
     )
     response = client.get("/transactions/export/pdf", headers=headers)
@@ -551,13 +582,16 @@ def test_csv_import_is_not_blocked_by_past_month_lock(client):
     import io
 
     headers = register_and_login(client, email="csvpastmonth@example.com")
+    account_id = default_account_id(client, headers)
     csv_content = (
         "date,description,amount\n"
         f"{_last_day_of_previous_month.isoformat()},Historical row,-12.00\n"
     )
     files = {"file": ("statement.csv", io.BytesIO(csv_content.encode()), "text/csv")}
 
-    response = client.post("/transactions/import", headers=headers, files=files)
+    response = client.post(
+        "/transactions/import", headers=headers, files=files, data={"account_id": str(account_id)}
+    )
     assert response.status_code == 201
     data = response.json()
     assert data["created"] == 1
@@ -568,6 +602,7 @@ def test_yearly_summary_totals_and_previous_year(client, db_session):
     from app.models.monthly_income import MonthlyIncome
 
     headers = register_and_login(client, email="yearlysummary@example.com")
+    account_id = default_account_id(client, headers)
     user_id = get_user_id(client, headers)
     current_year = TODAY.strftime("%Y")
     previous_year = str(int(current_year) - 1)
@@ -575,14 +610,14 @@ def test_yearly_summary_totals_and_previous_year(client, db_session):
     # Previous year's data already existed before the lock — inserted directly.
     db_session.add(MonthlyIncome(user_id=user_id, month=f"{previous_year}-06", amount=Decimal("1000.00")))
     db_session.commit()
-    insert_transaction(db_session, user_id, date(int(previous_year), 6, 15), "Old expense", "-400.00")
+    insert_transaction(db_session, user_id, account_id, date(int(previous_year), 6, 15), "Old expense", "-400.00")
 
     client.put(f"/income/{CURRENT_MONTH}", json={"amount": "3000.00"}, headers=headers)
     category = client.post("/categories/", json={"name": "Yearly Cat"}, headers=headers).json()
     for desc, amount in [("Groceries", "-250.00"), ("Bus", "-50.00")]:
         client.post(
             "/transactions/",
-            json={"date": TODAY_ISO, "description": desc, "amount": amount, "category_id": category["id"]},
+            json={"account_id": account_id, "date": TODAY_ISO, "description": desc, "amount": amount, "category_id": category["id"]},
             headers=headers,
         )
 
@@ -603,6 +638,7 @@ def test_yearly_summary_totals_and_previous_year(client, db_session):
 
 def test_yearly_summary_empty_year(client):
     headers = register_and_login(client, email="emptyyearly@example.com")
+    account_id = default_account_id(client, headers)
     response = client.get("/transactions/dashboard/yearly-summary?year=2019", headers=headers)
     assert response.status_code == 200
     data = response.json()
@@ -615,6 +651,7 @@ def test_yearly_summary_empty_year(client):
 
 def test_yearly_summary_rejects_bad_year(client):
     headers = register_and_login(client, email="badyearly@example.com")
+    account_id = default_account_id(client, headers)
     response = client.get("/transactions/dashboard/yearly-summary?year=26", headers=headers)
     assert response.status_code == 422
 
@@ -626,9 +663,10 @@ def test_yearly_summary_requires_auth(client):
 
 def test_pdf_export_in_french(client):
     headers = register_and_login(client, email="pdffrench@example.com")
+    account_id = default_account_id(client, headers)
     client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "Loyer", "amount": "-600.00"},
+        json={"account_id": account_id, "date": TODAY_ISO, "description": "Loyer", "amount": "-600.00"},
         headers=headers,
     )
     response = client.get("/transactions/export/pdf?lang=fr", headers=headers)
@@ -639,11 +677,13 @@ def test_pdf_export_in_french(client):
 
 def test_pdf_export_defaults_to_english(client):
     headers = register_and_login(client, email="pdfdefaultlang@example.com")
+    account_id = default_account_id(client, headers)
     response = client.get("/transactions/export/pdf", headers=headers)
     assert response.status_code == 200
 
 
 def test_pdf_export_rejects_invalid_lang(client):
     headers = register_and_login(client, email="pdfbadlang@example.com")
+    account_id = default_account_id(client, headers)
     response = client.get("/transactions/export/pdf?lang=de", headers=headers)
     assert response.status_code == 422

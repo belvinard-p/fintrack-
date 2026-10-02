@@ -9,6 +9,7 @@ export function useImportCsv() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["accounts"] });
     },
   });
 }

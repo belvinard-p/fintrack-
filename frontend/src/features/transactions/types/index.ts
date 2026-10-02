@@ -1,6 +1,7 @@
 export interface Transaction {
   id: number;
   user_id: number;
+  account_id: number;
   date: string;
   description: string;
   amount: string;
@@ -10,6 +11,7 @@ export interface Transaction {
 }
 
 export interface TransactionCreate {
+  account_id: number;
   date: string;
   description: string;
   amount: string;
@@ -17,6 +19,7 @@ export interface TransactionCreate {
 }
 
 export interface TransactionUpdate {
+  account_id?: number;
   date?: string;
   description?: string;
   amount?: string;

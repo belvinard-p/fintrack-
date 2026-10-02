@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useUpdateRecurringTransaction } from "../hooks/use-update-recurring-transaction";
 import { useCategories } from "@/features/categories";
+import { useAccounts } from "@/features/accounts";
 import { RecurringTransaction } from "../types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,10 +45,12 @@ export function EditRecurringTransactionDialog({ item }: Readonly<{ item: Recurr
   const [amount, setAmount] = useState(toAbsoluteAmount(item.amount));
   const [dayOfMonth, setDayOfMonth] = useState(String(item.day_of_month));
   const [categoryId, setCategoryId] = useState(item.category_id ? String(item.category_id) : "");
+  const [accountId, setAccountId] = useState(String(item.account_id));
   const [error, setError] = useState<string | null>(null);
 
   const updateRecurring = useUpdateRecurringTransaction();
   const { data: categories } = useCategories();
+  const { data: accounts } = useAccounts();
 
   function handleOpenChange(next: boolean) {
     setOpen(next);
@@ -57,6 +60,7 @@ export function EditRecurringTransactionDialog({ item }: Readonly<{ item: Recurr
       setAmount(toAbsoluteAmount(item.amount));
       setDayOfMonth(String(item.day_of_month));
       setCategoryId(item.category_id ? String(item.category_id) : "");
+      setAccountId(String(item.account_id));
       setError(null);
     }
   }
@@ -69,6 +73,7 @@ export function EditRecurringTransactionDialog({ item }: Readonly<{ item: Recurr
       await updateRecurring.mutateAsync({
         id: item.id,
         payload: {
+          account_id: Number(accountId),
           description,
           amount: toSignedAmount(amount, type),
           day_of_month: Number.parseInt(dayOfMonth, 10),
@@ -139,6 +144,32 @@ export function EditRecurringTransactionDialog({ item }: Readonly<{ item: Recurr
               onChange={(e) => setDayOfMonth(e.target.value)}
               required
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor={`edit-recurring-account-${item.id}`}>{t("recurring.form.account")}</Label>
+            <Combobox
+              value={accountId}
+              onValueChange={(value) => setAccountId(value ?? "")}
+              items={accounts?.map((account) => ({
+                value: String(account.id),
+                label: account.name,
+              }))}
+            >
+              <ComboboxTrigger id={`edit-recurring-account-${item.id}`} className="w-full">
+                <ComboboxValue placeholder={t("recurring.form.selectAccount")} />
+              </ComboboxTrigger>
+              <ComboboxContent
+                searchPlaceholder={t("recurring.form.searchAccount")}
+                emptyMessage={t("recurring.form.noAccountFound")}
+              >
+                {accounts?.map((account) => (
+                  <ComboboxItem key={account.id} value={String(account.id)}>
+                    {account.name}
+                  </ComboboxItem>
+                ))}
+              </ComboboxContent>
+            </Combobox>
           </div>
 
           <div className="space-y-2">

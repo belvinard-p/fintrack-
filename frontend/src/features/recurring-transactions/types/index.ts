@@ -1,5 +1,6 @@
 export interface RecurringTransaction {
   id: number;
+  account_id: number;
   description: string;
   amount: string;
   category_id: number | null;
@@ -11,6 +12,7 @@ export interface RecurringTransaction {
 }
 
 export interface RecurringTransactionCreate {
+  account_id: number;
   description: string;
   amount: string;
   category_id?: number | null;
@@ -20,6 +22,7 @@ export interface RecurringTransactionCreate {
 }
 
 export interface RecurringTransactionUpdate {
+  account_id?: number;
   description?: string;
   amount?: string;
   category_id?: number | null;

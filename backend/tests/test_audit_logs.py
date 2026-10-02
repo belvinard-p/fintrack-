@@ -11,11 +11,16 @@ def register_and_login(client, email="audituser@example.com", password="securepa
     return {"Authorization": f"Bearer {token}"}
 
 
+def default_account_id(client, headers):
+    return client.get("/accounts/", headers=headers).json()[0]["id"]
+
+
 def test_creating_transaction_creates_audit_log(client):
     headers = register_and_login(client, email="createtxauditor@example.com")
+    account_id = default_account_id(client, headers)
     client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "Coffee", "amount": "-4.50"},
+        json={"account_id": account_id, "date": TODAY_ISO, "description": "Coffee", "amount": "-4.50"},
         headers=headers,
     )
 
@@ -25,9 +30,10 @@ def test_creating_transaction_creates_audit_log(client):
 
 def test_updating_transaction_creates_audit_log(client):
     headers = register_and_login(client, email="updatetxauditor@example.com")
+    account_id = default_account_id(client, headers)
     transaction = client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "Coffee", "amount": "-4.50"},
+        json={"account_id": account_id, "date": TODAY_ISO, "description": "Coffee", "amount": "-4.50"},
         headers=headers,
     ).json()
 
@@ -39,9 +45,10 @@ def test_updating_transaction_creates_audit_log(client):
 
 def test_deleting_transaction_creates_audit_log(client):
     headers = register_and_login(client)
+    account_id = default_account_id(client, headers)
     transaction = client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "Coffee", "amount": "-4.50"},
+        json={"account_id": account_id, "date": TODAY_ISO, "description": "Coffee", "amount": "-4.50"},
         headers=headers,
     ).json()
 
@@ -160,10 +167,13 @@ def test_csv_import_creates_audit_log(client):
     import io
 
     headers = register_and_login(client, email="csvauditor@example.com")
+    account_id = default_account_id(client, headers)
     csv_content = "date,description,amount\n2026-08-01,Test row,-1.00\n"
     files = {"file": ("statement.csv", io.BytesIO(csv_content.encode()), "text/csv")}
 
-    client.post("/transactions/import", headers=headers, files=files)
+    client.post(
+        "/transactions/import", headers=headers, files=files, data={"account_id": str(account_id)}
+    )
 
     logs = client.get("/audit-logs/", headers=headers).json()
     assert any(log["action"] == "csv_import" for log in logs)
@@ -172,10 +182,11 @@ def test_csv_import_creates_audit_log(client):
 def test_audit_logs_only_show_own(client):
     headers_a = register_and_login(client, email="audita@example.com")
     headers_b = register_and_login(client, email="auditb@example.com")
+    account_id_a = default_account_id(client, headers_a)
 
     transaction = client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "A's tx", "amount": "-1.00"},
+        json={"account_id": account_id_a, "date": TODAY_ISO, "description": "A's tx", "amount": "-1.00"},
         headers=headers_a,
     ).json()
     client.delete(f"/transactions/{transaction['id']}", headers=headers_a)
@@ -191,9 +202,16 @@ def test_audit_logs_require_auth(client):
 
 def test_creating_recurring_transaction_creates_audit_log(client):
     headers = register_and_login(client, email="createrecurringauditor@example.com")
+    account_id = default_account_id(client, headers)
     client.post(
         "/recurring-transactions/",
-        json={"description": "Rent", "amount": "-1000.00", "day_of_month": 1, "start_date": "2026-01-01"},
+        json={
+            "account_id": account_id,
+            "description": "Rent",
+            "amount": "-1000.00",
+            "day_of_month": 1,
+            "start_date": "2026-01-01",
+        },
         headers=headers,
     )
 
@@ -203,9 +221,16 @@ def test_creating_recurring_transaction_creates_audit_log(client):
 
 def test_updating_recurring_transaction_creates_audit_log(client):
     headers = register_and_login(client, email="updaterecurringauditor@example.com")
+    account_id = default_account_id(client, headers)
     recurring = client.post(
         "/recurring-transactions/",
-        json={"description": "Rent", "amount": "-1000.00", "day_of_month": 1, "start_date": "2026-01-01"},
+        json={
+            "account_id": account_id,
+            "description": "Rent",
+            "amount": "-1000.00",
+            "day_of_month": 1,
+            "start_date": "2026-01-01",
+        },
         headers=headers,
     ).json()
 

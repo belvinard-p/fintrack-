@@ -15,3 +15,4 @@ from app.models import (  # noqa: F401
     RecurringTransaction,
 )
 from app.models.monthly_income import MonthlyIncome  # noqa: F401
+from app.models.account import Account  # noqa: F401

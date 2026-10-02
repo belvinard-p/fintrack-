@@ -15,6 +15,7 @@ import {
 } from "@/features/dashboard";
 import { getCurrentMonth, getCurrentYear } from "@/features/dashboard/utils";
 import { OverBudgetBanner } from "@/features/budgets";
+import { NetWorthCard } from "@/features/accounts";
 import { useLanguage } from "@/lib/i18n";
 
 export default function DashboardPage() {
@@ -39,6 +40,8 @@ export default function DashboardPage() {
       </div>
 
       <OverBudgetBanner />
+
+      <NetWorthCard />
 
       {periodType === "month" ? (
         <MonthlySummaryCard month={month} />

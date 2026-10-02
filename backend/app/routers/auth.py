@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -11,6 +12,7 @@ from app.core.limiter import limiter
 from app.core.security import hash_password, verify_password
 from app.models.user import User
 from app.models.transaction import Transaction
+from app.models.account import Account, AccountType
 from app.models.budget import Budget
 from app.models.category import Category
 from app.models.goal import Goal
@@ -35,6 +37,16 @@ def register(request: Request, user_in: UserCreate, db: Annotated[Session, Depen
         db.rollback()
         raise HTTPException(status_code=400, detail="Email already registered")
     db.refresh(new_user)
+
+    default_account = Account(
+        user_id=new_user.id,
+        name="Main account",
+        type=AccountType.other,
+        opening_balance=Decimal("0"),
+    )
+    db.add(default_account)
+    db.commit()
+
     return new_user
 
 
@@ -109,6 +121,7 @@ def delete_account(
 
     db.query(Transaction).filter(Transaction.user_id == current_user.id).delete()
     db.query(RecurringTransaction).filter(RecurringTransaction.user_id == current_user.id).delete()
+    db.query(Account).filter(Account.user_id == current_user.id).delete()
     db.query(Budget).filter(Budget.user_id == current_user.id).delete()
     db.query(Category).filter(Category.user_id == current_user.id).delete()
     db.query(Goal).filter(Goal.user_id == current_user.id).delete()

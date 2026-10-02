@@ -12,8 +12,13 @@ def make_csv_file(content: str, filename: str = "statement.csv"):
     return {"file": (filename, io.BytesIO(content.encode()), "text/csv")}
 
 
+def default_account_id(client, headers):
+    return client.get("/accounts/", headers=headers).json()[0]["id"]
+
+
 def test_import_creates_transactions(client):
     headers = register_and_login(client)
+    account_id = default_account_id(client, headers)
     csv_content = (
         "date,description,amount\n"
         "2026-08-01,STARBUCKS COFFEE,-4.50\n"
@@ -24,6 +29,7 @@ def test_import_creates_transactions(client):
         "/transactions/import",
         headers=headers,
         files=make_csv_file(csv_content),
+        data={"account_id": str(account_id)},
     )
 
     assert response.status_code == 201
@@ -35,6 +41,7 @@ def test_import_creates_transactions(client):
 
 def test_import_categorizes_transactions(client):
     headers = register_and_login(client)
+    account_id = default_account_id(client, headers)
     category_response = client.post(
         "/categories/", headers=headers, json={"name": "Transport"}
     )
@@ -45,7 +52,12 @@ def test_import_categorizes_transactions(client):
         "2026-08-01,UBER TRIP,-12.30\n"
     )
 
-    client.post("/transactions/import", headers=headers, files=make_csv_file(csv_content))
+    client.post(
+        "/transactions/import",
+        headers=headers,
+        files=make_csv_file(csv_content),
+        data={"account_id": str(account_id)},
+    )
 
     list_response = client.get("/transactions/", headers=headers)
     transactions = list_response.json()["items"]
@@ -56,18 +68,25 @@ def test_import_categorizes_transactions(client):
 
 def test_import_skips_duplicates_on_second_upload(client):
     headers = register_and_login(client)
+    account_id = default_account_id(client, headers)
     csv_content = (
         "date,description,amount\n"
         "2026-08-01,STARBUCKS COFFEE,-4.50\n"
     )
 
     first_response = client.post(
-        "/transactions/import", headers=headers, files=make_csv_file(csv_content)
+        "/transactions/import",
+        headers=headers,
+        files=make_csv_file(csv_content),
+        data={"account_id": str(account_id)},
     )
     assert first_response.json()["created"] == 1
 
     second_response = client.post(
-        "/transactions/import", headers=headers, files=make_csv_file(csv_content)
+        "/transactions/import",
+        headers=headers,
+        files=make_csv_file(csv_content),
+        data={"account_id": str(account_id)},
     )
     data = second_response.json()
     assert data["created"] == 0
@@ -76,23 +95,31 @@ def test_import_skips_duplicates_on_second_upload(client):
 
 def test_import_rejects_invalid_csv(client):
     headers = register_and_login(client)
+    account_id = default_account_id(client, headers)
     bad_csv = "not,the,right,columns\n1,2,3,4\n"
 
     response = client.post(
-        "/transactions/import", headers=headers, files=make_csv_file(bad_csv)
+        "/transactions/import",
+        headers=headers,
+        files=make_csv_file(bad_csv),
+        data={"account_id": str(account_id)},
     )
     assert response.status_code == 400
 
 
 def test_import_accepts_common_column_name_variants(client):
     headers = register_and_login(client, email="aliasuser@example.com")
+    account_id = default_account_id(client, headers)
     csv_content = (
         "Transaction Date,Memo,Value\n"
         "2026-08-01,STARBUCKS COFFEE,-4.50\n"
     )
 
     response = client.post(
-        "/transactions/import", headers=headers, files=make_csv_file(csv_content)
+        "/transactions/import",
+        headers=headers,
+        files=make_csv_file(csv_content),
+        data={"account_id": str(account_id)},
     )
     assert response.status_code == 201
     data = response.json()
@@ -102,6 +129,7 @@ def test_import_accepts_common_column_name_variants(client):
 
 def test_import_skips_invalid_rows_without_failing_whole_file(client):
     headers = register_and_login(client, email="partialfailuser@example.com")
+    account_id = default_account_id(client, headers)
     csv_content = (
         "date,description,amount\n"
         "2026-08-01,Good row one,-4.50\n"
@@ -110,7 +138,10 @@ def test_import_skips_invalid_rows_without_failing_whole_file(client):
     )
 
     response = client.post(
-        "/transactions/import", headers=headers, files=make_csv_file(csv_content)
+        "/transactions/import",
+        headers=headers,
+        files=make_csv_file(csv_content),
+        data={"account_id": str(account_id)},
     )
     assert response.status_code == 201
     data = response.json()

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useUpdateTransaction } from "../hooks/use-update-transaction";
 import { useCategories } from "@/features/categories";
+import { useAccounts } from "@/features/accounts";
 import { useCreateRecurringTransaction } from "@/features/recurring-transactions";
 import { Transaction } from "../types";
 import { Button } from "@/components/ui/button";
@@ -56,12 +57,14 @@ export function EditTransactionDialog({ transaction }: Readonly<{ transaction: T
   const [categoryId, setCategoryId] = useState(
     transaction.category_id ? String(transaction.category_id) : ""
   );
+  const [accountId, setAccountId] = useState(String(transaction.account_id));
   const [frequency, setFrequency] = useState<TransactionFrequency>("once");
   const [error, setError] = useState<string | null>(null);
 
   const updateTransaction = useUpdateTransaction();
   const createRecurring = useCreateRecurringTransaction();
   const { data: categories } = useCategories();
+  const { data: accounts } = useAccounts();
 
   const dayOfMonth = date ? Math.min(Number(date.split("-")[2]), 28) : null;
 
@@ -73,6 +76,7 @@ export function EditTransactionDialog({ transaction }: Readonly<{ transaction: T
       setType(getTransactionType(transaction.amount));
       setAmount(toAbsoluteAmount(transaction.amount));
       setCategoryId(transaction.category_id ? String(transaction.category_id) : "");
+      setAccountId(String(transaction.account_id));
       setFrequency("once");
       setError(null);
     }
@@ -86,6 +90,7 @@ export function EditTransactionDialog({ transaction }: Readonly<{ transaction: T
       await updateTransaction.mutateAsync({
         id: transaction.id,
         payload: {
+          account_id: Number(accountId),
           date,
           description,
           amount: toSignedAmount(amount, type),
@@ -95,6 +100,7 @@ export function EditTransactionDialog({ transaction }: Readonly<{ transaction: T
 
       if (frequency === "recurring") {
         await createRecurring.mutateAsync({
+          account_id: Number(accountId),
           description,
           amount: toSignedAmount(amount, type),
           day_of_month: dayOfMonth as number,
@@ -177,6 +183,32 @@ export function EditTransactionDialog({ transaction }: Readonly<{ transaction: T
               onChange={(e) => setAmount(e.target.value)}
               required
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor={`edit-account-${transaction.id}`}>{t("transactions.form.account")}</Label>
+            <Combobox
+              value={accountId}
+              onValueChange={(value) => setAccountId(value ?? "")}
+              items={accounts?.map((account) => ({
+                value: String(account.id),
+                label: account.name,
+              }))}
+            >
+              <ComboboxTrigger id={`edit-account-${transaction.id}`} className="w-full">
+                <ComboboxValue placeholder={t("transactions.form.selectAccount")} />
+              </ComboboxTrigger>
+              <ComboboxContent
+                searchPlaceholder={t("transactions.form.searchAccount")}
+                emptyMessage={t("transactions.form.noAccountFound")}
+              >
+                {accounts?.map((account) => (
+                  <ComboboxItem key={account.id} value={String(account.id)}>
+                    {account.name}
+                  </ComboboxItem>
+                ))}
+              </ComboboxContent>
+            </Combobox>
           </div>
 
           <div className="space-y-2">

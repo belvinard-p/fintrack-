@@ -85,6 +85,10 @@ def register_and_login(client, email="pwuser@example.com", password="securepass1
     return {"Authorization": f"Bearer {token}"}
 
 
+def default_account_id(client, headers):
+    return client.get("/accounts/", headers=headers).json()[0]["id"]
+
+
 def test_register_rejects_short_password(client):
     response = client.post(
         "/auth/register",
@@ -188,13 +192,20 @@ def test_change_email_requires_auth(client):
 
 def test_delete_account_removes_user_and_data(client):
     headers = register_and_login(client, email="deleteme@example.com")
+    account_id = default_account_id(client, headers)
 
     category = client.post(
         "/categories/", json={"name": "To be deleted"}, headers=headers
     ).json()
     transaction = client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "Test", "amount": "-10.00", "category_id": category["id"]},
+        json={
+            "account_id": account_id,
+            "date": TODAY_ISO,
+            "description": "Test",
+            "amount": "-10.00",
+            "category_id": category["id"],
+        },
         headers=headers,
     ).json()
     client.post(
@@ -209,7 +220,13 @@ def test_delete_account_removes_user_and_data(client):
     )
     client.post(
         "/recurring-transactions/",
-        json={"description": "Rent", "amount": "-1000.00", "day_of_month": 1, "start_date": "2026-01-01"},
+        json={
+            "account_id": account_id,
+            "description": "Rent",
+            "amount": "-1000.00",
+            "day_of_month": 1,
+            "start_date": "2026-01-01",
+        },
         headers=headers,
     )
     # Delete the transaction first so an audit log entry exists for this account too.

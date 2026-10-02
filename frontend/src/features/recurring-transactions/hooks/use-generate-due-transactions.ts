@@ -11,6 +11,7 @@ export function useGenerateDueTransactions() {
         queryClient.invalidateQueries({ queryKey: ["transactions"] });
         queryClient.invalidateQueries({ queryKey: ["dashboard"] });
         queryClient.invalidateQueries({ queryKey: ["budgets"] });
+        queryClient.invalidateQueries({ queryKey: ["accounts"] });
       }
     },
   });

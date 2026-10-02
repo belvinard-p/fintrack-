@@ -2,7 +2,7 @@ import csv
 from datetime import date
 from io import StringIO
 from typing import Annotated, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Query, status, UploadFile, File, Form
 from fastapi.responses import StreamingResponse
 from decimal import Decimal
 from sqlalchemy import extract, func
@@ -18,6 +18,7 @@ from app.services.pdf_export import generate_transactions_pdf
 from app.models.user import User
 from app.models.transaction import Transaction
 from app.models.category import Category
+from app.models.account import Account
 from app.models.monthly_income import MonthlyIncome
 from app.schemas.dashboard import (
     CategorySpending,
@@ -37,6 +38,7 @@ from app.schemas.transaction import (
 router = APIRouter(prefix="/transactions", tags=["transactions"])
 
 TRANSACTION_NOT_FOUND = "Transaction not found"
+ACCOUNT_NOT_FOUND = "Account not found"
 
 
 def _filtered_transactions_query(
@@ -61,7 +63,7 @@ def _filtered_transactions_query(
     return query
 
 
-@router.post("/", response_model=TransactionOut, status_code=status.HTTP_201_CREATED, responses={400: {"description": LOCKED_MONTH_DETAIL}})
+@router.post("/", response_model=TransactionOut, status_code=status.HTTP_201_CREATED, responses={400: {"description": LOCKED_MONTH_DETAIL}, 404: {"description": ACCOUNT_NOT_FOUND}})
 def create_transaction(
     transaction_in: TransactionCreate,
     db: Annotated[Session, Depends(get_db)],
@@ -69,6 +71,14 @@ def create_transaction(
 ):
     if is_locked_month(transaction_in.date):
         raise HTTPException(status_code=400, detail=LOCKED_MONTH_DETAIL)
+
+    account = (
+        db.query(Account)
+        .filter(Account.id == transaction_in.account_id, Account.user_id == current_user.id)
+        .first()
+    )
+    if not account:
+        raise HTTPException(status_code=404, detail=ACCOUNT_NOT_FOUND)
 
     transaction_data = transaction_in.model_dump()
 
@@ -486,6 +496,15 @@ def update_transaction(
     if "date" in update_data and is_locked_month(update_data["date"]):
         raise HTTPException(status_code=400, detail=LOCKED_MONTH_DETAIL)
 
+    if "account_id" in update_data:
+        account = (
+            db.query(Account)
+            .filter(Account.id == update_data["account_id"], Account.user_id == current_user.id)
+            .first()
+        )
+        if not account:
+            raise HTTPException(status_code=404, detail=ACCOUNT_NOT_FOUND)
+
     for field, value in update_data.items():
         setattr(transaction, field, value)
 
@@ -535,9 +554,18 @@ def delete_transaction(
 @router.post("/import", status_code=status.HTTP_201_CREATED)
 async def import_csv(
     file: UploadFile,
+    account_id: Annotated[int, Form()],
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
 ):
+    account = (
+        db.query(Account)
+        .filter(Account.id == account_id, Account.user_id == current_user.id)
+        .first()
+    )
+    if not account:
+        raise HTTPException(status_code=400, detail=ACCOUNT_NOT_FOUND)
+
     content = await file.read()
 
     try:
@@ -572,6 +600,7 @@ async def import_csv(
 
         new_transaction = Transaction(
             user_id=current_user.id,
+            account_id=account_id,
             date=parsed.date,
             description=parsed.description,
             amount=parsed.amount,

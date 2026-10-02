@@ -8,6 +8,7 @@ from app.core.deps import get_current_user
 from app.core.audit import log_action
 from app.models.user import User
 from app.models.transaction import Transaction
+from app.models.account import Account
 from app.models.recurring_transaction import RecurringTransaction
 from app.schemas.recurring_transaction import (
     RecurringTransactionCreate,
@@ -19,19 +20,34 @@ from app.schemas.recurring_transaction import (
 router = APIRouter(prefix="/recurring-transactions", tags=["recurring-transactions"])
 
 RECURRING_NOT_FOUND = "Recurring transaction not found"
+ACCOUNT_NOT_FOUND = "Account not found"
 
 
-@router.post("/", response_model=RecurringTransactionOut, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/",
+    response_model=RecurringTransactionOut,
+    status_code=status.HTTP_201_CREATED,
+    responses={404: {"description": ACCOUNT_NOT_FOUND}},
+)
 def create_recurring_transaction(
     payload: RecurringTransactionCreate,
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
 ):
+    account = (
+        db.query(Account)
+        .filter(Account.id == payload.account_id, Account.user_id == current_user.id)
+        .first()
+    )
+    if not account:
+        raise HTTPException(status_code=404, detail=ACCOUNT_NOT_FOUND)
+
     new_recurring = RecurringTransaction(
         user_id=current_user.id,
         description=payload.description,
         amount=payload.amount,
         category_id=payload.category_id,
+        account_id=payload.account_id,
         day_of_month=payload.day_of_month,
         start_date=payload.start_date,
         end_date=payload.end_date,
@@ -81,6 +97,16 @@ def update_recurring_transaction(
         raise HTTPException(status_code=404, detail=RECURRING_NOT_FOUND)
 
     update_data = payload.model_dump(exclude_unset=True)
+
+    if "account_id" in update_data:
+        account = (
+            db.query(Account)
+            .filter(Account.id == update_data["account_id"], Account.user_id == current_user.id)
+            .first()
+        )
+        if not account:
+            raise HTTPException(status_code=404, detail=ACCOUNT_NOT_FOUND)
+
     for field, value in update_data.items():
         setattr(recurring, field, value)
 
@@ -154,6 +180,7 @@ def generate_due_transactions(
             Transaction(
                 user_id=current_user.id,
                 category_id=recurring.category_id,
+                account_id=recurring.account_id,
                 date=occurrence_date,
                 description=recurring.description,
                 amount=recurring.amount,

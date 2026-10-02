@@ -9,6 +9,7 @@ export function useDeleteTransaction() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["accounts"] });
     },
   });
 }

@@ -11,6 +11,7 @@ class TransactionBase(BaseModel):
     description: str = Field(min_length=1, max_length=255)
     amount: Decimal
     category_id: Optional[int] = None
+    account_id: int
 
     @field_validator("date")
     @classmethod
@@ -29,6 +30,7 @@ class TransactionUpdate(BaseModel):
     description: Optional[str] = Field(default=None, min_length=1, max_length=255)
     amount: Optional[Decimal] = None
     category_id: Optional[int] = None
+    account_id: Optional[int] = None
 
     @field_validator("date")
     @classmethod

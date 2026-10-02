@@ -16,6 +16,10 @@ def register_and_login(client, email="budgetuser@example.com", password="securep
     return {"Authorization": f"Bearer {token}"}
 
 
+def default_account_id(client, headers):
+    return client.get("/accounts/", headers=headers).json()[0]["id"]
+
+
 def get_category_id(client, headers, name):
     response = client.post("/categories/", json={"name": name}, headers=headers)
     return response.json()["id"]
@@ -305,6 +309,7 @@ def test_delete_nonexistent_budget(client):
 
 def test_budget_status_under_budget(client):
     headers = register_and_login(client)
+    account_id = default_account_id(client, headers)
     category_id = get_category_id(client, headers, "Groceries")
 
     client.post(
@@ -314,7 +319,13 @@ def test_budget_status_under_budget(client):
     )
     client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "Groceries run", "amount": "-50.00", "category_id": category_id},
+        json={
+            "account_id": account_id,
+            "date": TODAY_ISO,
+            "description": "Groceries run",
+            "amount": "-50.00",
+            "category_id": category_id,
+        },
         headers=headers,
     )
 
@@ -328,6 +339,7 @@ def test_budget_status_under_budget(client):
 
 def test_budget_status_over_budget(client):
     headers = register_and_login(client)
+    account_id = default_account_id(client, headers)
     category_id = get_category_id(client, headers, "Dining Out")
 
     client.post(
@@ -337,7 +349,13 @@ def test_budget_status_over_budget(client):
     )
     client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "Fancy dinner", "amount": "-45.00", "category_id": category_id},
+        json={
+            "account_id": account_id,
+            "date": TODAY_ISO,
+            "description": "Fancy dinner",
+            "amount": "-45.00",
+            "category_id": category_id,
+        },
         headers=headers,
     )
 
@@ -350,6 +368,7 @@ def test_budget_status_over_budget(client):
 
 def test_budget_status_ignores_income(client):
     headers = register_and_login(client)
+    account_id = default_account_id(client, headers)
     category_id = get_category_id(client, headers, "Transport")
 
     client.post(
@@ -359,7 +378,13 @@ def test_budget_status_ignores_income(client):
     )
     client.post(
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "Refund", "amount": "500.00", "category_id": category_id},
+        json={
+            "account_id": account_id,
+            "date": TODAY_ISO,
+            "description": "Refund",
+            "amount": "500.00",
+            "category_id": category_id,
+        },
         headers=headers,
     )
 

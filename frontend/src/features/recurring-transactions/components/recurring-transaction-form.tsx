@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useCreateRecurringTransaction } from "../hooks/use-create-recurring-transaction";
 import { useCategories } from "@/features/categories";
+import { useAccounts } from "@/features/accounts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,10 +28,13 @@ export function RecurringTransactionForm() {
   const [dayOfMonth, setDayOfMonth] = useState("1");
   const [startDate, setStartDate] = useState("");
   const [categoryId, setCategoryId] = useState("");
+  const [accountId, setAccountId] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const createRecurring = useCreateRecurringTransaction();
   const { data: categories } = useCategories();
+  const { data: accounts } = useAccounts();
+  const selectedAccountId = accountId || (accounts?.[0] ? String(accounts[0].id) : "");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -38,6 +42,7 @@ export function RecurringTransactionForm() {
 
     try {
       await createRecurring.mutateAsync({
+        account_id: Number(selectedAccountId),
         description,
         amount: toSignedAmount(amount, "expense"),
         day_of_month: parseInt(dayOfMonth, 10),
@@ -109,6 +114,32 @@ export function RecurringTransactionForm() {
       </div>
 
       <div className="space-y-2">
+        <Label htmlFor="recurring-account">{t("recurring.form.account")}</Label>
+        <Combobox
+          value={selectedAccountId}
+          onValueChange={(value) => setAccountId(value ?? "")}
+          items={accounts?.map((account) => ({
+            value: String(account.id),
+            label: account.name,
+          }))}
+        >
+          <ComboboxTrigger id="recurring-account" className="w-full">
+            <ComboboxValue placeholder={t("recurring.form.selectAccount")} />
+          </ComboboxTrigger>
+          <ComboboxContent
+            searchPlaceholder={t("recurring.form.searchAccount")}
+            emptyMessage={t("recurring.form.noAccountFound")}
+          >
+            {accounts?.map((account) => (
+              <ComboboxItem key={account.id} value={String(account.id)}>
+                {account.name}
+              </ComboboxItem>
+            ))}
+          </ComboboxContent>
+        </Combobox>
+      </div>
+
+      <div className="space-y-2">
         <Label htmlFor="recurring-category">{t("recurring.form.category")}</Label>
         <Combobox
           value={categoryId}
@@ -135,7 +166,7 @@ export function RecurringTransactionForm() {
         </Combobox>
       </div>
 
-      <Button type="submit" className="w-full" disabled={createRecurring.isPending || !description || !amount || !startDate}>
+      <Button type="submit" className="w-full" disabled={createRecurring.isPending || !description || !amount || !startDate || !selectedAccountId}>
         {createRecurring.isPending ? t("recurring.form.creating") : t("recurring.form.submit")}
       </Button>
     </form>

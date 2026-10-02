@@ -10,6 +10,10 @@ def register_and_login(client, email="catuser@example.com", password="securepass
     return {"Authorization": f"Bearer {token}"}
 
 
+def default_account_id(client, headers):
+    return client.get("/accounts/", headers=headers).json()[0]["id"]
+
+
 def test_create_category(client):
     headers = register_and_login(client)
     response = client.post("/categories/", json={"name": "Freelance Income"}, headers=headers)
@@ -67,12 +71,19 @@ def test_delete_own_category(client):
 
 def test_delete_category_nullifies_transactions(client):
     headers = register_and_login(client)
+    account_id = default_account_id(client, headers)
     created = client.post("/categories/", json={"name": "Temp Category"}, headers=headers).json()
 
     tx = client.post(
 
         "/transactions/",
-        json={"date": TODAY_ISO, "description": "Test", "amount": "-10.00", "category_id": created["id"]},
+        json={
+            "account_id": account_id,
+            "date": TODAY_ISO,
+            "description": "Test",
+            "amount": "-10.00",
+            "category_id": created["id"],
+        },
         headers=headers,
     ).json()
 
@@ -88,6 +99,7 @@ def test_category_endpoints_require_auth(client):
 
 def test_delete_category_removes_budgets_and_detaches_recurring(client):
     headers = register_and_login(client, email="delcatrefs@example.com")
+    account_id = default_account_id(client, headers)
     category = client.post("/categories/", json={"name": "Referenced"}, headers=headers).json()
     client.post(
         "/budgets/",
@@ -97,6 +109,7 @@ def test_delete_category_removes_budgets_and_detaches_recurring(client):
     recurring = client.post(
         "/recurring-transactions/",
         json={
+            "account_id": account_id,
             "description": "Bus pass",
             "amount": "-30.00",
             "day_of_month": 5,

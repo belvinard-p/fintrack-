@@ -3,20 +3,31 @@
 import { useState, useRef } from "react";
 import { useImportCsv } from "../hooks/use-import-csv";
 import { ImportResult } from "../types";
+import { useAccounts } from "@/features/accounts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxItem,
+  ComboboxTrigger,
+  ComboboxValue,
+} from "@/components/ui/combobox";
 import { useLanguage } from "@/lib/i18n";
 import { extractErrorMessage } from "@/lib/error";
 
 export function CsvImportForm() {
   const { t } = useLanguage();
   const [file, setFile] = useState<File | null>(null);
+  const [accountId, setAccountId] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ImportResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const importCsv = useImportCsv();
+  const { data: accounts } = useAccounts();
+  const selectedAccountId = accountId || (accounts?.[0] ? String(accounts[0].id) : "");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -29,7 +40,7 @@ export function CsvImportForm() {
     }
 
     try {
-      const data = await importCsv.mutateAsync(file);
+      const data = await importCsv.mutateAsync({ file, accountId: Number(selectedAccountId) });
       setResult(data);
       setFile(null);
       if (fileInputRef.current) {
@@ -69,6 +80,32 @@ export function CsvImportForm() {
       )}
 
       <div className="space-y-2">
+        <Label htmlFor="csv-account">{t("transactions.csvImport.account")}</Label>
+        <Combobox
+          value={selectedAccountId}
+          onValueChange={(value) => setAccountId(value ?? "")}
+          items={accounts?.map((account) => ({
+            value: String(account.id),
+            label: account.name,
+          }))}
+        >
+          <ComboboxTrigger id="csv-account" className="w-full">
+            <ComboboxValue placeholder={t("transactions.csvImport.selectAccount")} />
+          </ComboboxTrigger>
+          <ComboboxContent
+            searchPlaceholder={t("transactions.csvImport.searchAccount")}
+            emptyMessage={t("transactions.csvImport.noAccountFound")}
+          >
+            {accounts?.map((account) => (
+              <ComboboxItem key={account.id} value={String(account.id)}>
+                {account.name}
+              </ComboboxItem>
+            ))}
+          </ComboboxContent>
+        </Combobox>
+      </div>
+
+      <div className="space-y-2">
         <Label htmlFor="csv-file">{t("transactions.csvImport.label")}</Label>
         <Input
           id="csv-file"
@@ -80,7 +117,7 @@ export function CsvImportForm() {
         <p className="text-xs text-muted-foreground">{t("transactions.csvImport.hint")}</p>
       </div>
 
-      <Button type="submit" disabled={importCsv.isPending || !file} className="w-full">
+      <Button type="submit" disabled={importCsv.isPending || !file || !selectedAccountId} className="w-full">
         {importCsv.isPending ? t("transactions.csvImport.importing") : t("transactions.csvImport.submit")}
       </Button>
     </form>
