@@ -49,6 +49,7 @@ export function EditTransactionDialog({ transaction }: Readonly<{ transaction: T
   const { t } = useLanguage();
   const locked = isLockedMonth(transaction.date);
   const canOfferRecurring = transaction.source !== "recurring";
+  const canEditAmountAndDate = transaction.source !== "debt_payment";
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState(transaction.date);
   const [description, setDescription] = useState(transaction.description);
@@ -147,6 +148,8 @@ export function EditTransactionDialog({ transaction }: Readonly<{ transaction: T
               onChange={(e) => setDate(e.target.value)}
               min={getFirstDayOfCurrentMonthIso()}
               max={getTodayIso()}
+              disabled={!canEditAmountAndDate}
+              title={!canEditAmountAndDate ? t("transactions.list.debtPaymentAmountDateLocked") : undefined}
               required
             />
           </div>
@@ -181,6 +184,8 @@ export function EditTransactionDialog({ transaction }: Readonly<{ transaction: T
               step="0.01"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
+              disabled={!canEditAmountAndDate}
+              title={!canEditAmountAndDate ? t("transactions.list.debtPaymentAmountDateLocked") : undefined}
               required
             />
           </div>

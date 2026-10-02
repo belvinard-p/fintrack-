@@ -5,7 +5,7 @@ from slowapi.errors import RateLimitExceeded
 
 from app.core.config import settings
 from app.core.limiter import limiter
-from app.routers import auth, categories, transactions, budgets, goals, audit_logs, recurring_transactions, income, accounts
+from app.routers import auth, categories, transactions, budgets, goals, audit_logs, recurring_transactions, income, accounts, dashboard, debts
 
 
 app = FastAPI(title="FinTrack API", version="0.1.0")
@@ -23,8 +23,10 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(accounts.router)
+app.include_router(debts.router)
 app.include_router(budgets.router)
 app.include_router(transactions.router)
+app.include_router(dashboard.router)
 app.include_router(categories.router)
 app.include_router(goals.router)
 app.include_router(audit_logs.router)

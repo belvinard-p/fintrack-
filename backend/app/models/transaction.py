@@ -10,6 +10,7 @@ class TransactionSource(str, enum.Enum):
     manual = "manual"
     csv_import = "csv_import"
     recurring = "recurring"
+    debt_payment = "debt_payment"
 
 
 class Transaction(Base):

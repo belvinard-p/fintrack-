@@ -28,6 +28,7 @@ export default function ProtectedLayout({
   const NAV_LINKS = [
     { href: "/dashboard", label: t("nav.dashboard") },
     { href: "/accounts", label: t("nav.accounts") },
+    { href: "/debts", label: t("nav.debts") },
     { href: "/transactions", label: t("nav.transactions") },
     { href: "/recurring", label: t("nav.recurring") },
     { href: "/budgets", label: t("nav.budgets") },

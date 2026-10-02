@@ -7,6 +7,7 @@ export function useSourceLabel() {
     if (source === "manual") return t("transactions.list.sourceManual");
     if (source === "csv_import") return t("transactions.list.sourceCsvImport");
     if (source === "recurring") return t("transactions.list.sourceRecurring");
+    if (source === "debt_payment") return t("transactions.list.sourceDebtPayment");
     return source.replace("_", " ");
   };
 }
