@@ -11,6 +11,32 @@ def register_and_login(client, email="audituser@example.com", password="securepa
     return {"Authorization": f"Bearer {token}"}
 
 
+def test_creating_transaction_creates_audit_log(client):
+    headers = register_and_login(client, email="createtxauditor@example.com")
+    client.post(
+        "/transactions/",
+        json={"date": TODAY_ISO, "description": "Coffee", "amount": "-4.50"},
+        headers=headers,
+    )
+
+    logs = client.get("/audit-logs/", headers=headers).json()
+    assert any(log["action"] == "create_transaction" and "Coffee" in log["details"] for log in logs)
+
+
+def test_updating_transaction_creates_audit_log(client):
+    headers = register_and_login(client, email="updatetxauditor@example.com")
+    transaction = client.post(
+        "/transactions/",
+        json={"date": TODAY_ISO, "description": "Coffee", "amount": "-4.50"},
+        headers=headers,
+    ).json()
+
+    client.patch(f"/transactions/{transaction['id']}", json={"description": "Tea"}, headers=headers)
+
+    logs = client.get("/audit-logs/", headers=headers).json()
+    assert any(log["action"] == "update_transaction" and "Tea" in log["details"] for log in logs)
+
+
 def test_deleting_transaction_creates_audit_log(client):
     headers = register_and_login(client)
     transaction = client.post(
@@ -24,9 +50,9 @@ def test_deleting_transaction_creates_audit_log(client):
     response = client.get("/audit-logs/", headers=headers)
     assert response.status_code == 200
     logs = response.json()
-    assert len(logs) == 1
-    assert logs[0]["action"] == "delete_transaction"
-    assert "Coffee" in logs[0]["details"]
+    delete_logs = [log for log in logs if log["action"] == "delete_transaction"]
+    assert len(delete_logs) == 1
+    assert "Coffee" in delete_logs[0]["details"]
 
 
 def test_deleting_category_creates_audit_log(client):
@@ -39,6 +65,34 @@ def test_deleting_category_creates_audit_log(client):
 
     logs = client.get("/audit-logs/", headers=headers).json()
     assert any(log["action"] == "delete_category" for log in logs)
+
+
+def test_creating_budget_creates_audit_log(client):
+    headers = register_and_login(client, email="createbudgetauditor@example.com")
+    category = client.post("/categories/", json={"name": "Groceries"}, headers=headers).json()
+    client.post(
+        "/budgets/",
+        json={"category_id": category["id"], "monthly_limit": "100.00", "month": CURRENT_MONTH},
+        headers=headers,
+    )
+
+    logs = client.get("/audit-logs/", headers=headers).json()
+    assert any(log["action"] == "create_budget" for log in logs)
+
+
+def test_updating_budget_creates_audit_log(client):
+    headers = register_and_login(client, email="updatebudgetauditor@example.com")
+    category = client.post("/categories/", json={"name": "Groceries"}, headers=headers).json()
+    budget = client.post(
+        "/budgets/",
+        json={"category_id": category["id"], "monthly_limit": "100.00", "month": CURRENT_MONTH},
+        headers=headers,
+    ).json()
+
+    client.patch(f"/budgets/{budget['id']}", json={"monthly_limit": "150.00"}, headers=headers)
+
+    logs = client.get("/audit-logs/", headers=headers).json()
+    assert any(log["action"] == "update_budget" for log in logs)
 
 
 def test_deleting_budget_creates_audit_log(client):
@@ -56,6 +110,38 @@ def test_deleting_budget_creates_audit_log(client):
 
     logs = client.get("/audit-logs/", headers=headers).json()
     assert any(log["action"] == "delete_budget" for log in logs)
+
+
+def test_creating_goal_creates_audit_log(client):
+    headers = register_and_login(client, email="creategoalauditor@example.com")
+    client.post("/goals/", json={"name": "Trip", "target_amount": "500.00"}, headers=headers)
+
+    logs = client.get("/audit-logs/", headers=headers).json()
+    assert any(log["action"] == "create_goal" for log in logs)
+
+
+def test_updating_goal_creates_audit_log(client):
+    headers = register_and_login(client, email="updategoalauditor@example.com")
+    goal = client.post(
+        "/goals/", json={"name": "Trip", "target_amount": "500.00"}, headers=headers
+    ).json()
+
+    client.patch(f"/goals/{goal['id']}", json={"target_amount": "600.00"}, headers=headers)
+
+    logs = client.get("/audit-logs/", headers=headers).json()
+    assert any(log["action"] == "update_goal" for log in logs)
+
+
+def test_contributing_to_goal_creates_audit_log(client):
+    headers = register_and_login(client, email="contributegoalauditor@example.com")
+    goal = client.post(
+        "/goals/", json={"name": "Trip", "target_amount": "500.00"}, headers=headers
+    ).json()
+
+    client.post(f"/goals/{goal['id']}/contribute", json={"amount": "50.00"}, headers=headers)
+
+    logs = client.get("/audit-logs/", headers=headers).json()
+    assert any(log["action"] == "contribute_to_goal" for log in logs)
 
 
 def test_deleting_goal_creates_audit_log(client):
@@ -101,3 +187,37 @@ def test_audit_logs_only_show_own(client):
 def test_audit_logs_require_auth(client):
     response = client.get("/audit-logs/")
     assert response.status_code == 401
+
+
+def test_creating_recurring_transaction_creates_audit_log(client):
+    headers = register_and_login(client, email="createrecurringauditor@example.com")
+    client.post(
+        "/recurring-transactions/",
+        json={"description": "Rent", "amount": "-1000.00", "day_of_month": 1, "start_date": "2026-01-01"},
+        headers=headers,
+    )
+
+    logs = client.get("/audit-logs/", headers=headers).json()
+    assert any(log["action"] == "create_recurring_transaction" for log in logs)
+
+
+def test_updating_recurring_transaction_creates_audit_log(client):
+    headers = register_and_login(client, email="updaterecurringauditor@example.com")
+    recurring = client.post(
+        "/recurring-transactions/",
+        json={"description": "Rent", "amount": "-1000.00", "day_of_month": 1, "start_date": "2026-01-01"},
+        headers=headers,
+    ).json()
+
+    client.patch(f"/recurring-transactions/{recurring['id']}", json={"amount": "-1100.00"}, headers=headers)
+
+    logs = client.get("/audit-logs/", headers=headers).json()
+    assert any(log["action"] == "update_recurring_transaction" for log in logs)
+
+
+def test_setting_income_creates_audit_log(client):
+    headers = register_and_login(client, email="incomeauditor@example.com")
+    client.put(f"/income/{CURRENT_MONTH}", json={"amount": "3000.00"}, headers=headers)
+
+    logs = client.get("/audit-logs/", headers=headers).json()
+    assert any(log["action"] == "set_income" for log in logs)

@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Path
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
+from app.core.audit import log_action
 from app.core.database import get_db
 from app.core.deps import get_current_user
 from app.core.month_lock import is_locked_month_str, LOCKED_INCOME_MONTH_DETAIL
@@ -69,5 +70,7 @@ def set_monthly_income(
         income.amount = payload.amount
     else:
         db.add(MonthlyIncome(user_id=current_user.id, month=month, amount=payload.amount))
+
+    log_action(db, current_user.id, "set_income", f"{month}: {payload.amount}")
     db.commit()
     return build_income_out(db, current_user.id, month)

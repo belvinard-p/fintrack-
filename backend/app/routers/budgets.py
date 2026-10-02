@@ -71,6 +71,12 @@ def create_budget(
 
     )
     db.add(new_budget)
+    log_action(
+        db,
+        current_user.id,
+        "create_budget",
+        f"{category.name} — {new_budget.month} (limit {new_budget.monthly_limit})",
+    )
     try:
         db.commit()
     except IntegrityError:
@@ -137,6 +143,12 @@ def update_budget(
     for field, value in update_data.items():
         setattr(budget, field, value)
 
+    log_action(
+        db,
+        current_user.id,
+        "update_budget",
+        f"{budget.category.name} — {budget.month} (limit {budget.monthly_limit})",
+    )
     try:
         db.commit()
     except IntegrityError:

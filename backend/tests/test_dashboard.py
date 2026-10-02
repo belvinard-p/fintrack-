@@ -127,3 +127,41 @@ def test_dashboard_only_includes_own_transactions(client):
 def test_dashboard_requires_auth(client):
     response = client.get("/transactions/dashboard/by-category")
     assert response.status_code == 401
+
+
+def _months_ago_date(months: int, day: int = 15):
+    month_index = TODAY.year * 12 + (TODAY.month - 1) - months
+    year, month = divmod(month_index, 12)
+    return date(year, month + 1, day)
+
+
+def test_spending_by_month_excludes_income(client, db_session):
+    headers = register_and_login(client, email="monthincome@example.com")
+    user_id = get_user_id(client, headers)
+
+    insert_transaction(db_session, user_id, TODAY, "Refund", "500.00")
+    client.post(
+        "/transactions/",
+        json={"date": TODAY_ISO, "description": "Expense", "amount": "-20.00"},
+        headers=headers,
+    )
+
+    response = client.get("/transactions/dashboard/by-month", headers=headers)
+    data = response.json()
+    current = next(d for d in data if d["month"] == CURRENT_MONTH)
+    assert current["total"] == "20.00"
+
+
+def test_spending_by_month_excludes_older_than_12_months(client, db_session):
+    headers = register_and_login(client, email="monthwindow@example.com")
+    user_id = get_user_id(client, headers)
+
+    insert_transaction(db_session, user_id, _months_ago_date(13), "Too old", "-999.00")
+    insert_transaction(db_session, user_id, _months_ago_date(11), "Within window", "-40.00")
+
+    response = client.get("/transactions/dashboard/by-month", headers=headers)
+    data = response.json()
+    months = {d["month"] for d in data}
+
+    assert _months_ago_date(13).strftime("%Y-%m") not in months
+    assert _months_ago_date(11).strftime("%Y-%m") in months

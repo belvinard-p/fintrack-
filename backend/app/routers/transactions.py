@@ -87,6 +87,12 @@ def create_transaction(
         user_id=current_user.id,
     )
     db.add(new_transaction)
+    log_action(
+        db,
+        current_user.id,
+        "create_transaction",
+        f"{new_transaction.date} — {new_transaction.description} ({new_transaction.amount})",
+    )
     db.commit()
     db.refresh(new_transaction)
     return new_transaction
@@ -227,18 +233,34 @@ def spending_by_category(
     ]
 
 
+SPENDING_OVER_TIME_MONTHS = 12
+
+
+def _months_ago_first_day(months: int) -> date:
+    today = date.today()
+    month_index = today.year * 12 + (today.month - 1) - months
+    year, month = divmod(month_index, 12)
+    return date(year, month + 1, 1)
+
+
 @router.get("/dashboard/by-month", response_model=list[MonthlySpending])
 def spending_by_month(
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
 ):
+    cutoff = _months_ago_first_day(SPENDING_OVER_TIME_MONTHS - 1)
+
     results = (
         db.query(
             extract("year", Transaction.date).label("year"),
             extract("month", Transaction.date).label("month"),
             func.sum(Transaction.amount).label("total"),
         )
-        .filter(Transaction.user_id == current_user.id)
+        .filter(
+            Transaction.user_id == current_user.id,
+            Transaction.amount < 0,
+            Transaction.date >= cutoff,
+        )
         .group_by(extract("year", Transaction.date), extract("month", Transaction.date))
         .order_by(extract("year", Transaction.date), extract("month", Transaction.date))
         .all()
@@ -467,6 +489,12 @@ def update_transaction(
     for field, value in update_data.items():
         setattr(transaction, field, value)
 
+    log_action(
+        db,
+        current_user.id,
+        "update_transaction",
+        f"{transaction.date} — {transaction.description} ({transaction.amount})",
+    )
     db.commit()
     db.refresh(transaction)
     return transaction

@@ -39,6 +39,7 @@ def create_goal(
         target_date=goal_in.target_date,
     )
     db.add(new_goal)
+    log_action(db, current_user.id, "create_goal", f"'{new_goal.name}' — target {new_goal.target_amount}")
     db.commit()
     db.refresh(new_goal)
     return _to_goal_out(new_goal)
@@ -73,6 +74,7 @@ def update_goal(
     for field, value in update_data.items():
         setattr(goal, field, value)
 
+    log_action(db, current_user.id, "update_goal", f"'{goal.name}' — target {goal.target_amount}")
     db.commit()
     db.refresh(goal)
     return _to_goal_out(goal)
@@ -94,6 +96,12 @@ def contribute_to_goal(
         raise HTTPException(status_code=404, detail=GOAL_NOT_FOUND)
 
     goal.current_amount = goal.current_amount + contribution.amount
+    log_action(
+        db,
+        current_user.id,
+        "contribute_to_goal",
+        f"'{goal.name}' — +{contribution.amount} ({goal.current_amount}/{goal.target_amount})",
+    )
     db.commit()
     db.refresh(goal)
     return _to_goal_out(goal)

@@ -37,6 +37,12 @@ def create_recurring_transaction(
         end_date=payload.end_date,
     )
     db.add(new_recurring)
+    log_action(
+        db,
+        current_user.id,
+        "create_recurring_transaction",
+        f"'{new_recurring.description}' — {new_recurring.amount} on day {new_recurring.day_of_month}",
+    )
     db.commit()
     db.refresh(new_recurring)
     return new_recurring
@@ -78,6 +84,12 @@ def update_recurring_transaction(
     for field, value in update_data.items():
         setattr(recurring, field, value)
 
+    log_action(
+        db,
+        current_user.id,
+        "update_recurring_transaction",
+        f"'{recurring.description}' — {recurring.amount} on day {recurring.day_of_month}",
+    )
     db.commit()
     db.refresh(recurring)
     return recurring
