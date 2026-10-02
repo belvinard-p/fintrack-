@@ -382,6 +382,8 @@ export const en = {
       deleted: "Transaction deleted",
       editTitle: "Edit transaction",
       updated: "Transaction updated",
+      updatedAndRecurring: "Transaction updated and set to repeat every month",
+      makeRecurringHint: "Starting next month, this will repeat automatically on day {day}. This transaction stays as is.",
       updateError: "Failed to update transaction",
       monthLocked: "This month is closed. Transactions from past months can no longer be edited or deleted.",
       page: "Page {page} of {totalPages} ({total} total)",

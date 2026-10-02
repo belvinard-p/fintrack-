@@ -5,7 +5,7 @@ export interface Transaction {
   description: string;
   amount: string;
   category_id: number | null;
-  source: "manual" | "csv_import";
+  source: "manual" | "csv_import" | "recurring";
   created_at: string;
 }
 

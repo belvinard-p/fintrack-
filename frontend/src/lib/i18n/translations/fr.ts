@@ -384,6 +384,8 @@ export const fr: typeof en = {
       deleted: "Transaction supprimée",
       editTitle: "Modifier la transaction",
       updated: "Transaction mise à jour",
+      updatedAndRecurring: "Transaction mise à jour et rendue récurrente",
+      makeRecurringHint: "À partir du mois prochain, elle se répétera automatiquement le {day}. Cette transaction reste inchangée.",
       updateError: "Échec de la mise à jour de la transaction",
       monthLocked: "Ce mois est clos. Les transactions des mois passés ne peuvent plus être modifiées ni supprimées.",
       page: "Page {page} sur {totalPages} ({total} au total)",

@@ -4,12 +4,14 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useUpdateTransaction } from "../hooks/use-update-transaction";
 import { useCategories } from "@/features/categories";
+import { useCreateRecurringTransaction } from "@/features/recurring-transactions";
 import { Transaction } from "../types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CategoryDot } from "@/components/category-dot";
 import { TransactionTypeToggle } from "@/components/transaction-type-toggle";
+import { FrequencyToggle, type TransactionFrequency } from "@/components/frequency-toggle";
 import {
   Combobox,
   ComboboxContent,
@@ -20,7 +22,12 @@ import {
 import { useLanguage } from "@/lib/i18n";
 import { stripDigits } from "@/lib/text";
 import { extractErrorMessage } from "@/lib/error";
-import { getTodayIso, getFirstDayOfCurrentMonthIso, isLockedMonth } from "@/lib/date";
+import {
+  getTodayIso,
+  getFirstDayOfCurrentMonthIso,
+  getFirstDayOfNextMonthIso,
+  isLockedMonth,
+} from "@/lib/date";
 import {
   getTransactionType,
   toAbsoluteAmount,
@@ -40,6 +47,7 @@ import {
 export function EditTransactionDialog({ transaction }: Readonly<{ transaction: Transaction }>) {
   const { t } = useLanguage();
   const locked = isLockedMonth(transaction.date);
+  const canOfferRecurring = transaction.source !== "recurring";
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState(transaction.date);
   const [description, setDescription] = useState(transaction.description);
@@ -48,10 +56,14 @@ export function EditTransactionDialog({ transaction }: Readonly<{ transaction: T
   const [categoryId, setCategoryId] = useState(
     transaction.category_id ? String(transaction.category_id) : ""
   );
+  const [frequency, setFrequency] = useState<TransactionFrequency>("once");
   const [error, setError] = useState<string | null>(null);
 
   const updateTransaction = useUpdateTransaction();
+  const createRecurring = useCreateRecurringTransaction();
   const { data: categories } = useCategories();
+
+  const dayOfMonth = date ? Math.min(Number(date.split("-")[2]), 28) : null;
 
   function handleOpenChange(next: boolean) {
     setOpen(next);
@@ -61,6 +73,7 @@ export function EditTransactionDialog({ transaction }: Readonly<{ transaction: T
       setType(getTransactionType(transaction.amount));
       setAmount(toAbsoluteAmount(transaction.amount));
       setCategoryId(transaction.category_id ? String(transaction.category_id) : "");
+      setFrequency("once");
       setError(null);
     }
   }
@@ -79,8 +92,20 @@ export function EditTransactionDialog({ transaction }: Readonly<{ transaction: T
           category_id: categoryId ? Number.parseInt(categoryId, 10) : null,
         },
       });
+
+      if (frequency === "recurring") {
+        await createRecurring.mutateAsync({
+          description,
+          amount: toSignedAmount(amount, type),
+          day_of_month: dayOfMonth as number,
+          start_date: getFirstDayOfNextMonthIso(),
+          category_id: categoryId ? Number.parseInt(categoryId, 10) : null,
+        });
+        toast.success(t("transactions.list.updatedAndRecurring"));
+      } else {
+        toast.success(t("transactions.list.updated"));
+      }
       setOpen(false);
-      toast.success(t("transactions.list.updated"));
     } catch (err) {
       setError(extractErrorMessage(err, t("transactions.list.updateError")));
     }
@@ -181,12 +206,32 @@ export function EditTransactionDialog({ transaction }: Readonly<{ transaction: T
             </Combobox>
           </div>
 
+          {canOfferRecurring && (
+            <div className="space-y-2">
+              <Label>{t("transactions.form.frequency")}</Label>
+              <FrequencyToggle
+                value={frequency}
+                onChange={setFrequency}
+                onceLabel={t("transactions.form.once")}
+                recurringLabel={t("transactions.form.recurring")}
+                idPrefix={`edit-transaction-frequency-${transaction.id}`}
+              />
+              {frequency === "recurring" && dayOfMonth && (
+                <p className="text-xs text-muted-foreground">
+                  {t("transactions.list.makeRecurringHint", { day: dayOfMonth })}
+                </p>
+              )}
+            </div>
+          )}
+
           <DialogFooter>
             <DialogClose render={<Button variant="outline" type="button" />}>
               {t("common.cancel")}
             </DialogClose>
-            <Button type="submit" disabled={updateTransaction.isPending}>
-              {updateTransaction.isPending ? t("common.saving") : t("common.save")}
+            <Button type="submit" disabled={updateTransaction.isPending || createRecurring.isPending}>
+              {updateTransaction.isPending || createRecurring.isPending
+                ? t("common.saving")
+                : t("common.save")}
             </Button>
           </DialogFooter>
         </form>

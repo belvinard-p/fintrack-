@@ -35,6 +35,10 @@ export function shiftMonth(month: string, delta: number): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
 
+export function getFirstDayOfNextMonthIso(): string {
+  return `${shiftMonth(getCurrentMonth(), 1)}-01`;
+}
+
 export function getMonthDateRange(month: string): { date_from: string; date_to: string } {
   const [year, m] = month.split("-").map(Number);
   const lastDay = new Date(year, m, 0).getDate();
