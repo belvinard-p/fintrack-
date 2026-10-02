@@ -1,6 +1,11 @@
 export { useMonthlySpending } from "./hooks/use-monthly-spending";
 export { useMonthlySummary } from "./hooks/use-monthly-summary";
+export { useYearlySummary } from "./hooks/use-yearly-summary";
 export { MonthlySpendingChart } from "./components/monthly-spending-chart";
 export { MonthlySummaryCard } from "./components/monthly-summary-card";
+export { YearlySummaryCard } from "./components/yearly-summary-card";
 export { DashboardMonthPicker } from "./components/dashboard-month-picker";
-export type { CategorySpending, MonthlySpending, MonthlySummary } from "./types";
+export { DashboardYearPicker } from "./components/dashboard-year-picker";
+export { PeriodTypeToggle } from "./components/period-type-toggle";
+export type { PeriodType } from "./components/period-type-toggle";
+export type { CategorySpending, MonthlySpending, MonthlySummary, YearlySummary } from "./types";

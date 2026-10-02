@@ -6,28 +6,45 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   useMonthlySpending,
   DashboardMonthPicker,
+  DashboardYearPicker,
+  PeriodTypeToggle,
   MonthlySpendingChart,
   MonthlySummaryCard,
+  YearlySummaryCard,
+  type PeriodType,
 } from "@/features/dashboard";
-import { getCurrentMonth } from "@/features/dashboard/utils";
+import { getCurrentMonth, getCurrentYear } from "@/features/dashboard/utils";
 import { OverBudgetBanner } from "@/features/budgets";
 import { useLanguage } from "@/lib/i18n";
 
 export default function DashboardPage() {
   const { t } = useLanguage();
+  const [periodType, setPeriodType] = useState<PeriodType>("month");
   const [month, setMonth] = useState(getCurrentMonth);
+  const [year, setYear] = useState(getCurrentYear);
   const { data: monthlyData, isLoading: monthlyLoading, error: monthlyError } = useMonthlySpending();
 
   return (
     <main className="p-4 space-y-8 sm:p-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-bold">{t("dashboard.title")}</h1>
-        <DashboardMonthPicker month={month} onChange={setMonth} />
+        <div className="flex flex-wrap items-center gap-3">
+          <PeriodTypeToggle value={periodType} onChange={setPeriodType} />
+          {periodType === "month" ? (
+            <DashboardMonthPicker month={month} onChange={setMonth} />
+          ) : (
+            <DashboardYearPicker year={year} onChange={setYear} />
+          )}
+        </div>
       </div>
 
       <OverBudgetBanner />
 
-      <MonthlySummaryCard month={month} />
+      {periodType === "month" ? (
+        <MonthlySummaryCard month={month} />
+      ) : (
+        <YearlySummaryCard year={year} />
+      )}
 
       <Card>
         <CardHeader>

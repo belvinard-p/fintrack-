@@ -28,3 +28,22 @@ class MonthlySummary(BaseModel):
     transaction_count: int
     previous: PeriodTotals
     expenses_by_category: list[CategorySpending]
+
+
+class MonthlyBreakdownItem(BaseModel):
+    month: str  # "YYYY-MM"
+    income: Decimal
+    expenses: Decimal
+
+
+class YearlySummary(BaseModel):
+    year: str  # "YYYY"
+    income_set_months: int
+    total_income: Decimal
+    total_expenses: Decimal
+    net: Decimal
+    savings_rate: Decimal | None
+    transaction_count: int
+    previous: PeriodTotals
+    expenses_by_category: list[CategorySpending]
+    monthly_breakdown: list[MonthlyBreakdownItem]

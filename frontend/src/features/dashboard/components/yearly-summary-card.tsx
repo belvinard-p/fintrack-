@@ -1,31 +1,26 @@
 "use client";
 
-import { useMonthlySummary } from "../hooks/use-monthly-summary";
+import { useYearlySummary } from "../hooks/use-yearly-summary";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CategoryBreakdownList } from "./category-breakdown-list";
 import { PeriodDelta } from "./period-delta";
-import { MonthlyIncomeDialog, useMonthlyIncome } from "@/features/income";
+import { YearlyBreakdownChart } from "./yearly-breakdown-chart";
 import { useLanguage } from "@/lib/i18n";
 import { amountColorClass, formatSignedAmount } from "@/lib/amount";
 
-export function MonthlySummaryCard({ month }: Readonly<{ month: string }>) {
+export function YearlySummaryCard({ year }: Readonly<{ year: string }>) {
   const { t } = useLanguage();
-  const { data: summary, isLoading, error } = useMonthlySummary(month);
-  const { data: income } = useMonthlyIncome(month);
+  const { data: summary, isLoading, error } = useYearlySummary(year);
 
   const totalExpenses = Number(summary?.total_expenses ?? 0);
   const categories = summary?.expenses_by_category ?? [];
-
-  const remaining = income?.is_set ? Number(income.remaining) : null;
+  const hasIncome = Number(summary?.total_income ?? 0) > 0;
 
   return (
     <Card>
       <CardHeader>
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <CardTitle>{t("dashboard.summary.title")}</CardTitle>
-          {summary?.income_set && <MonthlyIncomeDialog month={month} />}
-        </div>
+        <CardTitle>{t("dashboard.summary.yearlyTitle")}</CardTitle>
       </CardHeader>
 
       <CardContent className="space-y-6">
@@ -34,22 +29,19 @@ export function MonthlySummaryCard({ month }: Readonly<{ month: string }>) {
           {error && <p className="text-red-600">{t("dashboard.summary.failedToLoad")}</p>}
         </div>
 
-        {summary && !summary.income_set && (
-          <div className="flex flex-col items-start gap-3 rounded-lg border border-dashed p-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="space-y-1">
-              <p className="text-sm font-medium">{t("dashboard.summary.onboardingTitle")}</p>
-              <p className="text-sm text-muted-foreground">
-                {t("dashboard.summary.onboardingBody", { month })}
-              </p>
-            </div>
-            <MonthlyIncomeDialog month={month} />
-          </div>
+        {summary && summary.income_set_months === 0 && (
+          <p className="text-sm text-muted-foreground">{t("dashboard.summary.yearlyNoIncome")}</p>
+        )}
+        {summary && summary.income_set_months > 0 && summary.income_set_months < 12 && (
+          <p className="text-sm text-muted-foreground">
+            {t("dashboard.summary.yearlyPartialIncome", { count: summary.income_set_months })}
+          </p>
         )}
 
         {summary && (
           <>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-              {summary.income_set && (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {hasIncome && (
                 <div className="space-y-1 rounded-lg border p-4">
                   <p className="text-sm text-muted-foreground">{t("dashboard.summary.income")}</p>
                   <p className="text-2xl font-semibold text-emerald-600 dark:text-emerald-400">
@@ -59,7 +51,7 @@ export function MonthlySummaryCard({ month }: Readonly<{ month: string }>) {
                     current={summary.total_income}
                     previous={summary.previous.total_income}
                     goodWhenUp
-                    period="month"
+                    period="year"
                   />
                 </div>
               )}
@@ -73,18 +65,18 @@ export function MonthlySummaryCard({ month }: Readonly<{ month: string }>) {
                   current={summary.total_expenses}
                   previous={summary.previous.total_expenses}
                   goodWhenUp={false}
-                  period="month"
+                  period="year"
                 />
               </div>
 
-              {summary.income_set && (
+              {hasIncome && (
                 <>
                   <div className="space-y-1 rounded-lg border p-4">
                     <p className="text-sm text-muted-foreground">{t("dashboard.summary.net")}</p>
                     <p className={`text-2xl font-semibold ${amountColorClass(summary.net)}`}>
                       {formatSignedAmount(Number(summary.net).toFixed(2))}
                     </p>
-                    <PeriodDelta current={summary.net} previous={summary.previous.net} goodWhenUp period="month" />
+                    <PeriodDelta current={summary.net} previous={summary.previous.net} goodWhenUp period="year" />
                   </div>
 
                   <div className="space-y-1 rounded-lg border p-4">
@@ -97,24 +89,13 @@ export function MonthlySummaryCard({ month }: Readonly<{ month: string }>) {
                       </p>
                     )}
                   </div>
-
-                  {remaining !== null && (
-                    <div className="space-y-1 rounded-lg border p-4">
-                      <p className="text-sm text-muted-foreground">{t("income.remaining")}</p>
-                      <p className={`text-2xl font-semibold ${amountColorClass(remaining)}`}>
-                        {remaining.toFixed(2)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {t("dashboard.summary.budgetedOf", {
-                          budgeted: Number(income?.total_budgeted ?? 0).toFixed(2),
-                          income: Number(income?.amount ?? 0).toFixed(2),
-                        })}
-                      </p>
-                    </div>
-                  )}
                 </>
               )}
             </div>
+
+            {summary.monthly_breakdown.some((m) => Number(m.income) > 0 || Number(m.expenses) > 0) && (
+              <YearlyBreakdownChart data={summary.monthly_breakdown} />
+            )}
 
             <CategoryBreakdownList categories={categories} totalExpenses={totalExpenses} />
           </>

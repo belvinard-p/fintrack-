@@ -19,7 +19,14 @@ from app.models.user import User
 from app.models.transaction import Transaction
 from app.models.category import Category
 from app.models.monthly_income import MonthlyIncome
-from app.schemas.dashboard import CategorySpending, MonthlySpending, MonthlySummary, PeriodTotals
+from app.schemas.dashboard import (
+    CategorySpending,
+    MonthlySpending,
+    MonthlySummary,
+    MonthlyBreakdownItem,
+    PeriodTotals,
+    YearlySummary,
+)
 from app.schemas.transaction import (
     TransactionCreate,
     TransactionUpdate,
@@ -328,6 +335,87 @@ def monthly_summary(
             key=lambda c: c.total,
             reverse=True,
         ),
+    )
+
+
+@router.get("/dashboard/yearly-summary", response_model=YearlySummary)
+def yearly_summary(
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+    year: Annotated[str, Query(pattern=r"^\d{4}$")],
+):
+    year_number = int(year)
+    prev_year_number = year_number - 1
+
+    monthly_breakdown = []
+    total_income = Decimal("0")
+    total_expenses = Decimal("0")
+    total_count = 0
+    income_set_months = 0
+    for month_number in range(1, 13):
+        declared = _declared_income(db, current_user.id, year_number, month_number)
+        expenses, count = _month_expenses(db, current_user.id, year_number, month_number)
+        income = declared or Decimal("0")
+        if declared is not None:
+            income_set_months += 1
+        total_income += income
+        total_expenses += expenses
+        total_count += count
+        monthly_breakdown.append(
+            MonthlyBreakdownItem(month=f"{year_number}-{month_number:02d}", income=income, expenses=expenses)
+        )
+
+    prev_total_income = Decimal("0")
+    prev_total_expenses = Decimal("0")
+    for month_number in range(1, 13):
+        prev_total_income += _declared_income(db, current_user.id, prev_year_number, month_number) or Decimal("0")
+        prev_expenses, _ = _month_expenses(db, current_user.id, prev_year_number, month_number)
+        prev_total_expenses += prev_expenses
+
+    by_category = (
+        db.query(
+            Transaction.category_id,
+            Category.name.label("category_name"),
+            func.sum(Transaction.amount).label("total"),
+        )
+        .outerjoin(Category, Transaction.category_id == Category.id)
+        .filter(
+            Transaction.user_id == current_user.id,
+            Transaction.amount < 0,
+            extract("year", Transaction.date) == year_number,
+        )
+        .group_by(Transaction.category_id, Category.name)
+        .all()
+    )
+
+    return YearlySummary(
+        year=year,
+        income_set_months=income_set_months,
+        total_income=total_income,
+        total_expenses=total_expenses,
+        net=total_income - total_expenses,
+        savings_rate=((total_income - total_expenses) / total_income * 100).quantize(Decimal("0.1"))
+        if total_income > 0
+        else None,
+        transaction_count=total_count,
+        previous=PeriodTotals(
+            total_income=prev_total_income,
+            total_expenses=prev_total_expenses,
+            net=prev_total_income - prev_total_expenses,
+        ),
+        expenses_by_category=sorted(
+            [
+                CategorySpending(
+                    category_id=r.category_id,
+                    category_name=r.category_name or "Uncategorized",
+                    total=abs(r.total),
+                )
+                for r in by_category
+            ],
+            key=lambda c: c.total,
+            reverse=True,
+        ),
+        monthly_breakdown=monthly_breakdown,
     )
 
 

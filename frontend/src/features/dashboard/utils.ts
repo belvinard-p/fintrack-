@@ -8,3 +8,11 @@ export function shiftMonth(month: string, delta: number): string {
   const date = new Date(year, m - 1 + delta, 1);
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
+
+export function getCurrentYear(): string {
+  return String(new Date().getFullYear());
+}
+
+export function shiftYear(year: string, delta: number): string {
+  return String(Number(year) + delta);
+}

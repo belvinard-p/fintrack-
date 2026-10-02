@@ -562,3 +562,63 @@ def test_csv_import_is_not_blocked_by_past_month_lock(client):
     data = response.json()
     assert data["created"] == 1
     assert data["invalid_rows"] == 0
+
+
+def test_yearly_summary_totals_and_previous_year(client, db_session):
+    from app.models.monthly_income import MonthlyIncome
+
+    headers = register_and_login(client, email="yearlysummary@example.com")
+    user_id = get_user_id(client, headers)
+    current_year = TODAY.strftime("%Y")
+    previous_year = str(int(current_year) - 1)
+
+    # Previous year's data already existed before the lock — inserted directly.
+    db_session.add(MonthlyIncome(user_id=user_id, month=f"{previous_year}-06", amount=Decimal("1000.00")))
+    db_session.commit()
+    insert_transaction(db_session, user_id, date(int(previous_year), 6, 15), "Old expense", "-400.00")
+
+    client.put(f"/income/{CURRENT_MONTH}", json={"amount": "3000.00"}, headers=headers)
+    category = client.post("/categories/", json={"name": "Yearly Cat"}, headers=headers).json()
+    for desc, amount in [("Groceries", "-250.00"), ("Bus", "-50.00")]:
+        client.post(
+            "/transactions/",
+            json={"date": TODAY_ISO, "description": desc, "amount": amount, "category_id": category["id"]},
+            headers=headers,
+        )
+
+    response = client.get(f"/transactions/dashboard/yearly-summary?year={current_year}", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["income_set_months"] == 1
+    assert data["total_income"] == "3000.00"
+    assert data["total_expenses"] == "300.00"
+    assert data["net"] == "2700.00"
+    assert data["savings_rate"] == "90.0"
+    assert data["transaction_count"] == 2
+    assert data["previous"]["total_income"] == "1000.00"
+    assert data["previous"]["total_expenses"] == "400.00"
+    assert len(data["monthly_breakdown"]) == 12
+    assert data["expenses_by_category"][0]["category_name"] == "Yearly Cat"
+
+
+def test_yearly_summary_empty_year(client):
+    headers = register_and_login(client, email="emptyyearly@example.com")
+    response = client.get("/transactions/dashboard/yearly-summary?year=2019", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["transaction_count"] == 0
+    assert data["income_set_months"] == 0
+    assert data["savings_rate"] is None
+    assert data["expenses_by_category"] == []
+    assert len(data["monthly_breakdown"]) == 12
+
+
+def test_yearly_summary_rejects_bad_year(client):
+    headers = register_and_login(client, email="badyearly@example.com")
+    response = client.get("/transactions/dashboard/yearly-summary?year=26", headers=headers)
+    assert response.status_code == 422
+
+
+def test_yearly_summary_requires_auth(client):
+    response = client.get("/transactions/dashboard/yearly-summary?year=2026")
+    assert response.status_code == 401

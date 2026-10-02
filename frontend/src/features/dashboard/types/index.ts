@@ -27,3 +27,22 @@ export interface MonthlySummary {
   previous: PeriodTotals;
   expenses_by_category: CategorySpending[];
 }
+
+export interface MonthlyBreakdownItem {
+  month: string;
+  income: string;
+  expenses: string;
+}
+
+export interface YearlySummary {
+  year: string;
+  income_set_months: number;
+  total_income: string;
+  total_expenses: string;
+  net: string;
+  savings_rate: string | null;
+  transaction_count: number;
+  previous: PeriodTotals;
+  expenses_by_category: CategorySpending[];
+  monthly_breakdown: MonthlyBreakdownItem[];
+}
