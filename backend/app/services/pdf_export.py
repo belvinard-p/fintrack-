@@ -14,6 +14,55 @@ from reportlab.platypus import (
     TableStyle,
 )
 
+PDF_TRANSLATIONS = {
+    "en": {
+        "title": "FinTrack — Transaction Report",
+        "account": "Account",
+        "generated": "Generated",
+        "total_income": "Total income",
+        "total_expenses": "Total expenses",
+        "net": "Net",
+        "monthly_summary": "Monthly summary",
+        "month": "Month",
+        "income": "Income",
+        "expenses": "Expenses",
+        "spending_by_category": "Spending by category",
+        "category": "Category",
+        "total": "Total",
+        "transactions": "Transactions",
+        "date": "Date",
+        "description": "Description",
+        "type": "Type",
+        "amount": "Amount",
+        "type_income": "Income",
+        "type_expense": "Expense",
+        "uncategorized": "Uncategorized",
+    },
+    "fr": {
+        "title": "FinTrack — Rapport de transactions",
+        "account": "Compte",
+        "generated": "Généré le",
+        "total_income": "Total des revenus",
+        "total_expenses": "Total des dépenses",
+        "net": "Solde net",
+        "monthly_summary": "Résumé mensuel",
+        "month": "Mois",
+        "income": "Revenu",
+        "expenses": "Dépenses",
+        "spending_by_category": "Dépenses par catégorie",
+        "category": "Catégorie",
+        "total": "Total",
+        "transactions": "Transactions",
+        "date": "Date",
+        "description": "Description",
+        "type": "Type",
+        "amount": "Montant",
+        "type_income": "Revenu",
+        "type_expense": "Dépense",
+        "uncategorized": "Non catégorisé",
+    },
+}
+
 HEADER_COLOR = colors.HexColor("#0f172a")
 ROW_ALT_COLOR = colors.HexColor("#f1f5f9")
 INCOME_COLOR = colors.HexColor("#059669")
@@ -43,7 +92,9 @@ def generate_transactions_pdf(
     category_names: dict,
     user_email: str,
     monthly_incomes: dict | None = None,
+    lang: str = "en",
 ) -> BytesIO:
+    t = PDF_TRANSLATIONS.get(lang, PDF_TRANSLATIONS["en"])
     buffer = BytesIO()
     doc = SimpleDocTemplate(
         buffer,
@@ -56,19 +107,19 @@ def generate_transactions_pdf(
     styles = getSampleStyleSheet()
     elements = []
 
-    elements.append(Paragraph("FinTrack — Transaction Report", styles["Title"]))
+    elements.append(Paragraph(t["title"], styles["Title"]))
     generated_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-    elements.append(Paragraph(f"Account: {user_email}", styles["Normal"]))
-    elements.append(Paragraph(f"Generated: {generated_at}", styles["Normal"]))
+    elements.append(Paragraph(f"{t['account']}: {user_email}", styles["Normal"]))
+    elements.append(Paragraph(f"{t['generated']}: {generated_at}", styles["Normal"]))
     elements.append(Spacer(1, 0.5 * cm))
 
     month_rows = build_month_rows(transactions, monthly_incomes or {})
     total_income, total_expenses, net = compute_totals(month_rows)
 
     summary_data = [
-        ["Total income", f"{total_income:.2f}"],
-        ["Total expenses", f"{-total_expenses:.2f}"],
-        ["Net", f"{net:.2f}"],
+        [t["total_income"], f"{total_income:.2f}"],
+        [t["total_expenses"], f"{-total_expenses:.2f}"],
+        [t["net"], f"{net:.2f}"],
     ]
     summary_table = Table(summary_data, colWidths=[8 * cm, 4 * cm])
     summary_table.setStyle(
@@ -85,8 +136,8 @@ def generate_transactions_pdf(
     elements.append(Spacer(1, 0.8 * cm))
 
     if month_rows:
-        elements.append(Paragraph("Monthly summary", styles["Heading2"]))
-        monthly_table_rows = [["Month", "Income", "Expenses", "Net"]]
+        elements.append(Paragraph(t["monthly_summary"], styles["Heading2"]))
+        monthly_table_rows = [[t["month"], t["income"], t["expenses"], t["net"]]]
         for month, income, expenses in month_rows:
             monthly_table_rows.append(
                 [
@@ -102,15 +153,15 @@ def generate_transactions_pdf(
         elements.append(Spacer(1, 0.8 * cm))
 
     category_totals: dict[str, Decimal] = {}
-    for t in transactions:
-        if t.amount >= 0:
+    for tx in transactions:
+        if tx.amount >= 0:
             continue
-        name = category_names.get(t.category_id, "Uncategorized")
-        category_totals[name] = category_totals.get(name, Decimal("0")) + t.amount
+        name = category_names.get(tx.category_id, t["uncategorized"])
+        category_totals[name] = category_totals.get(name, Decimal("0")) + tx.amount
 
     if category_totals:
-        elements.append(Paragraph("Spending by category", styles["Heading2"]))
-        category_rows = [["Category", "Total"]] + [
+        elements.append(Paragraph(t["spending_by_category"], styles["Heading2"]))
+        category_rows = [[t["category"], t["total"]]] + [
             [name, f"{abs(total):.2f}"]
             for name, total in sorted(category_totals.items(), key=lambda item: abs(item[1]), reverse=True)
         ]
@@ -119,16 +170,16 @@ def generate_transactions_pdf(
         elements.append(category_table)
         elements.append(Spacer(1, 0.8 * cm))
 
-    elements.append(Paragraph("Transactions", styles["Heading2"]))
-    transaction_rows = [["Date", "Description", "Category", "Type", "Amount"]] + [
+    elements.append(Paragraph(t["transactions"], styles["Heading2"]))
+    transaction_rows = [[t["date"], t["description"], t["category"], t["type"], t["amount"]]] + [
         [
-            t.date.isoformat(),
-            t.description,
-            category_names.get(t.category_id, "Uncategorized"),
-            "Income" if t.amount >= 0 else "Expense",
-            f"{t.amount:.2f}",
+            tx.date.isoformat(),
+            tx.description,
+            category_names.get(tx.category_id, t["uncategorized"]),
+            t["type_income"] if tx.amount >= 0 else t["type_expense"],
+            f"{tx.amount:.2f}",
         ]
-        for t in transactions
+        for tx in transactions
     ]
     transaction_table = Table(
         transaction_rows,
@@ -136,8 +187,8 @@ def generate_transactions_pdf(
         repeatRows=1,
     )
     style = _table_style()
-    for row_index, t in enumerate(transactions, start=1):
-        color = INCOME_COLOR if t.amount >= 0 else EXPENSE_COLOR
+    for row_index, tx in enumerate(transactions, start=1):
+        color = INCOME_COLOR if tx.amount >= 0 else EXPENSE_COLOR
         style.add("TEXTCOLOR", (3, row_index), (4, row_index), color)
         style.add("FONTNAME", (3, row_index), (4, row_index), "Helvetica-Bold")
     transaction_table.setStyle(style)

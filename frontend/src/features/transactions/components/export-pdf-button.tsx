@@ -8,13 +8,13 @@ import { useLanguage } from "@/lib/i18n";
 import { extractErrorMessage } from "@/lib/error";
 
 export function ExportPdfButton() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [isExporting, setIsExporting] = useState(false);
 
   async function handleExport() {
     setIsExporting(true);
     try {
-      const blob = await exportTransactionsPdf();
+      const blob = await exportTransactionsPdf(language);
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;

@@ -172,6 +172,7 @@ def export_transactions_pdf(
     category_id: Optional[int] = None,
     date_from: Optional[date] = None,
     date_to: Optional[date] = None,
+    lang: Annotated[str, Query(pattern=r"^(en|fr)$")] = "en",
 ):
     query = _filtered_transactions_query(db, current_user, search, category_id, date_from, date_to)
     transactions = query.order_by(Transaction.date.desc(), Transaction.id.desc()).all()
@@ -190,7 +191,7 @@ def export_transactions_pdf(
     }
 
     buffer = generate_transactions_pdf(
-        transactions, category_names, current_user.email, monthly_incomes
+        transactions, category_names, current_user.email, monthly_incomes, lang
     )
     return StreamingResponse(
         buffer,

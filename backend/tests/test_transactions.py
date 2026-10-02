@@ -622,3 +622,28 @@ def test_yearly_summary_rejects_bad_year(client):
 def test_yearly_summary_requires_auth(client):
     response = client.get("/transactions/dashboard/yearly-summary?year=2026")
     assert response.status_code == 401
+
+
+def test_pdf_export_in_french(client):
+    headers = register_and_login(client, email="pdffrench@example.com")
+    client.post(
+        "/transactions/",
+        json={"date": TODAY_ISO, "description": "Loyer", "amount": "-600.00"},
+        headers=headers,
+    )
+    response = client.get("/transactions/export/pdf?lang=fr", headers=headers)
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "application/pdf"
+    assert response.content.startswith(b"%PDF")
+
+
+def test_pdf_export_defaults_to_english(client):
+    headers = register_and_login(client, email="pdfdefaultlang@example.com")
+    response = client.get("/transactions/export/pdf", headers=headers)
+    assert response.status_code == 200
+
+
+def test_pdf_export_rejects_invalid_lang(client):
+    headers = register_and_login(client, email="pdfbadlang@example.com")
+    response = client.get("/transactions/export/pdf?lang=de", headers=headers)
+    assert response.status_code == 422
