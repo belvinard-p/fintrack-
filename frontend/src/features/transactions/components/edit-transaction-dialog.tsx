@@ -11,12 +11,12 @@ import { Label } from "@/components/ui/label";
 import { CategoryDot } from "@/components/category-dot";
 import { TransactionTypeToggle } from "@/components/transaction-type-toggle";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Combobox,
+  ComboboxContent,
+  ComboboxItem,
+  ComboboxTrigger,
+  ComboboxValue,
+} from "@/components/ui/combobox";
 import { useLanguage } from "@/lib/i18n";
 import { stripDigits } from "@/lib/text";
 import { extractErrorMessage } from "@/lib/error";
@@ -156,7 +156,7 @@ export function EditTransactionDialog({ transaction }: Readonly<{ transaction: T
 
           <div className="space-y-2">
             <Label htmlFor={`edit-category-${transaction.id}`}>{t("transactions.form.category")}</Label>
-            <Select
+            <Combobox
               value={categoryId}
               onValueChange={(value) => setCategoryId(value ?? "")}
               items={categories?.map((category) => ({
@@ -164,20 +164,21 @@ export function EditTransactionDialog({ transaction }: Readonly<{ transaction: T
                 label: category.name,
               }))}
             >
-              <SelectTrigger id={`edit-category-${transaction.id}`} className="w-full">
-                <SelectValue placeholder={t("transactions.form.uncategorized")} />
-              </SelectTrigger>
-              <SelectContent>
+              <ComboboxTrigger id={`edit-category-${transaction.id}`} className="w-full">
+                <ComboboxValue placeholder={t("transactions.form.uncategorized")} />
+              </ComboboxTrigger>
+              <ComboboxContent
+                searchPlaceholder={t("transactions.form.searchCategory")}
+                emptyMessage={t("transactions.form.noCategoryFound")}
+              >
                 {categories?.map((category) => (
-                  <SelectItem key={category.id} value={String(category.id)}>
-                    <span className="flex items-center gap-2">
-                      <CategoryDot categoryId={category.id} />
-                      {category.name}
-                    </span>
-                  </SelectItem>
+                  <ComboboxItem key={category.id} value={String(category.id)}>
+                    <CategoryDot categoryId={category.id} />
+                    {category.name}
+                  </ComboboxItem>
                 ))}
-              </SelectContent>
-            </Select>
+              </ComboboxContent>
+            </Combobox>
           </div>
 
           <DialogFooter>

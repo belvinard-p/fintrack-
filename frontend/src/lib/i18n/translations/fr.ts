@@ -350,6 +350,8 @@ export const fr: typeof en = {
       amountPlaceholder: "0.00",
       category: "Catégorie",
       uncategorized: "Non catégorisé",
+      searchCategory: "Rechercher une catégorie...",
+      noCategoryFound: "Aucune catégorie trouvée.",
       submit: "Ajouter la transaction",
       adding: "Ajout...",
       error: "Échec de la création de la transaction",

@@ -348,6 +348,8 @@ export const en = {
       amountPlaceholder: "0.00",
       category: "Category",
       uncategorized: "Uncategorized",
+      searchCategory: "Search category...",
+      noCategoryFound: "No category found.",
       submit: "Add transaction",
       adding: "Adding...",
       error: "Failed to create transaction",

@@ -14,12 +14,12 @@ import { extractErrorMessage } from "@/lib/error";
 import { getTodayIso, getFirstDayOfCurrentMonthIso } from "@/lib/date";
 import { toSignedAmount } from "@/lib/amount";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Combobox,
+  ComboboxContent,
+  ComboboxItem,
+  ComboboxTrigger,
+  ComboboxValue,
+} from "@/components/ui/combobox";
 
 export function TransactionForm() {
   const { t } = useLanguage();
@@ -99,7 +99,7 @@ export function TransactionForm() {
 
       <div className="space-y-2">
         <Label htmlFor="category">{t("transactions.form.category")}</Label>
-        <Select
+        <Combobox
           value={categoryId}
           onValueChange={(value) => setCategoryId(value ?? "")}
           items={categories?.map((category) => ({
@@ -107,20 +107,21 @@ export function TransactionForm() {
             label: category.name,
           }))}
         >
-          <SelectTrigger id="category" className="w-full">
-            <SelectValue placeholder={t("transactions.form.uncategorized")} />
-          </SelectTrigger>
-          <SelectContent>
+          <ComboboxTrigger id="category" className="w-full">
+            <ComboboxValue placeholder={t("transactions.form.uncategorized")} />
+          </ComboboxTrigger>
+          <ComboboxContent
+            searchPlaceholder={t("transactions.form.searchCategory")}
+            emptyMessage={t("transactions.form.noCategoryFound")}
+          >
             {categories?.map((category) => (
-              <SelectItem key={category.id} value={String(category.id)}>
-                <span className="flex items-center gap-2">
-                  <CategoryDot categoryId={category.id} />
-                  {category.name}
-                </span>
-              </SelectItem>
+              <ComboboxItem key={category.id} value={String(category.id)}>
+                <CategoryDot categoryId={category.id} />
+                {category.name}
+              </ComboboxItem>
             ))}
-          </SelectContent>
-        </Select>
+          </ComboboxContent>
+        </Combobox>
       </div>
 
       <Button type="submit" className="w-full" disabled={createTransaction.isPending || !date || !description || !amount}>
