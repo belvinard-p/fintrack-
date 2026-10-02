@@ -13,12 +13,12 @@ import { stripDigits } from "@/lib/text";
 import { extractErrorMessage } from "@/lib/error";
 import { toSignedAmount } from "@/lib/amount";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Combobox,
+  ComboboxContent,
+  ComboboxItem,
+  ComboboxTrigger,
+  ComboboxValue,
+} from "@/components/ui/combobox";
 
 export function RecurringTransactionForm() {
   const { t } = useLanguage();
@@ -110,7 +110,7 @@ export function RecurringTransactionForm() {
 
       <div className="space-y-2">
         <Label htmlFor="recurring-category">{t("recurring.form.category")}</Label>
-        <Select
+        <Combobox
           value={categoryId}
           onValueChange={(value) => setCategoryId(value ?? "")}
           items={categories?.map((category) => ({
@@ -118,20 +118,21 @@ export function RecurringTransactionForm() {
             label: category.name,
           }))}
         >
-          <SelectTrigger id="recurring-category" className="w-full">
-            <SelectValue placeholder={t("recurring.form.uncategorized")} />
-          </SelectTrigger>
-          <SelectContent>
+          <ComboboxTrigger id="recurring-category" className="w-full">
+            <ComboboxValue placeholder={t("recurring.form.uncategorized")} />
+          </ComboboxTrigger>
+          <ComboboxContent
+            searchPlaceholder={t("recurring.form.searchCategory")}
+            emptyMessage={t("recurring.form.noCategoryFound")}
+          >
             {categories?.map((category) => (
-              <SelectItem key={category.id} value={String(category.id)}>
-                <span className="flex items-center gap-2">
-                  <CategoryDot categoryId={category.id} />
-                  {category.name}
-                </span>
-              </SelectItem>
+              <ComboboxItem key={category.id} value={String(category.id)}>
+                <CategoryDot categoryId={category.id} />
+                {category.name}
+              </ComboboxItem>
             ))}
-          </SelectContent>
-        </Select>
+          </ComboboxContent>
+        </Combobox>
       </div>
 
       <Button type="submit" className="w-full" disabled={createRecurring.isPending || !description || !amount || !startDate}>

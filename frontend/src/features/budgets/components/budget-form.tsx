@@ -13,12 +13,12 @@ import { CategoryDot } from "@/components/category-dot";
 import { useLanguage } from "@/lib/i18n";
 import { extractErrorMessage } from "@/lib/error";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Combobox,
+  ComboboxContent,
+  ComboboxItem,
+  ComboboxTrigger,
+  ComboboxValue,
+} from "@/components/ui/combobox";
 
 export function BudgetForm() {
   const { t } = useLanguage();
@@ -63,7 +63,7 @@ export function BudgetForm() {
 
       <div className="space-y-2">
         <Label htmlFor="budget-category">{t("budgets.form.category")}</Label>
-        <Select
+        <Combobox
           value={categoryId}
           onValueChange={(value) => setCategoryId(value ?? "")}
           items={categories?.map((category) => ({
@@ -72,20 +72,21 @@ export function BudgetForm() {
           }))}
           required
         >
-          <SelectTrigger id="budget-category" className="w-full">
-            <SelectValue placeholder={t("budgets.form.selectCategory")} />
-          </SelectTrigger>
-          <SelectContent>
+          <ComboboxTrigger id="budget-category" className="w-full">
+            <ComboboxValue placeholder={t("budgets.form.selectCategory")} />
+          </ComboboxTrigger>
+          <ComboboxContent
+            searchPlaceholder={t("budgets.form.searchCategory")}
+            emptyMessage={t("budgets.form.noCategoryFound")}
+          >
             {categories?.map((category) => (
-              <SelectItem key={category.id} value={String(category.id)}>
-                <span className="flex items-center gap-2">
-                  <CategoryDot categoryId={category.id} />
-                  {category.name}
-                </span>
-              </SelectItem>
+              <ComboboxItem key={category.id} value={String(category.id)}>
+                <CategoryDot categoryId={category.id} />
+                {category.name}
+              </ComboboxItem>
             ))}
-          </SelectContent>
-        </Select>
+          </ComboboxContent>
+        </Combobox>
       </div>
 
       <div className="space-y-2">

@@ -220,6 +220,8 @@ export const fr: typeof en = {
     form: {
       category: "Catégorie",
       selectCategory: "Sélectionner une catégorie",
+      searchCategory: "Rechercher une catégorie...",
+      noCategoryFound: "Aucune catégorie trouvée.",
       month: "Mois",
       monthlyLimit: "Limite mensuelle",
       submit: "Créer le budget",
@@ -316,6 +318,8 @@ export const fr: typeof en = {
       startDate: "Date de début",
       category: "Catégorie (optionnel)",
       uncategorized: "Non catégorisé",
+      searchCategory: "Rechercher une catégorie...",
+      noCategoryFound: "Aucune catégorie trouvée.",
       submit: "Créer la transaction récurrente",
       creating: "Création...",
       error: "Échec de la création de la transaction récurrente",

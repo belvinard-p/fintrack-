@@ -218,6 +218,8 @@ export const en = {
     form: {
       category: "Category",
       selectCategory: "Select a category",
+      searchCategory: "Search category...",
+      noCategoryFound: "No category found.",
       month: "Month",
       monthlyLimit: "Monthly Limit",
       submit: "Create Budget",
@@ -314,6 +316,8 @@ export const en = {
       startDate: "Start date",
       category: "Category (optional)",
       uncategorized: "Uncategorized",
+      searchCategory: "Search category...",
+      noCategoryFound: "No category found.",
       submit: "Create recurring transaction",
       creating: "Creating...",
       error: "Failed to create recurring transaction",
