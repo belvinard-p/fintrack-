@@ -4,10 +4,15 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useCreateTransaction } from "../hooks/use-create-transaction";
 import { useCategories } from "@/features/categories";
+import {
+  useCreateRecurringTransaction,
+  useGenerateDueTransactions,
+} from "@/features/recurring-transactions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CategoryDot } from "@/components/category-dot";
+import { FrequencyToggle, type TransactionFrequency } from "@/components/frequency-toggle";
 import { useLanguage } from "@/lib/i18n";
 import { stripDigits } from "@/lib/text";
 import { extractErrorMessage } from "@/lib/error";
@@ -23,6 +28,7 @@ import {
 
 export function TransactionForm() {
   const { t } = useLanguage();
+  const [frequency, setFrequency] = useState<TransactionFrequency>("once");
   const [date, setDate] = useState("");
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
@@ -30,25 +36,42 @@ export function TransactionForm() {
   const [error, setError] = useState<string | null>(null);
 
   const createTransaction = useCreateTransaction();
+  const createRecurring = useCreateRecurringTransaction();
+  const generateDue = useGenerateDueTransactions();
   const { data: categories } = useCategories();
+
+  const isPending = createTransaction.isPending || createRecurring.isPending;
+  const dayOfMonth = date ? Math.min(Number(date.split("-")[2]), 28) : null;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
     try {
-      await createTransaction.mutateAsync({
-
-        date,
-        description,
-        amount: toSignedAmount(amount, "expense"),
-        category_id: categoryId ? parseInt(categoryId, 10) : null,
-      });
+      if (frequency === "recurring") {
+        await createRecurring.mutateAsync({
+          description,
+          amount: toSignedAmount(amount, "expense"),
+          day_of_month: dayOfMonth as number,
+          start_date: date,
+          category_id: categoryId ? parseInt(categoryId, 10) : null,
+        });
+        await generateDue.mutateAsync();
+        toast.success(t("recurring.form.created"));
+      } else {
+        await createTransaction.mutateAsync({
+          date,
+          description,
+          amount: toSignedAmount(amount, "expense"),
+          category_id: categoryId ? parseInt(categoryId, 10) : null,
+        });
+        toast.success(t("transactions.form.added"));
+      }
+      setFrequency("once");
       setDate("");
       setDescription("");
       setAmount("");
       setCategoryId("");
-      toast.success(t("transactions.form.added"));
     } catch (err) {
       setError(extractErrorMessage(err, t("transactions.form.error")));
     }
@@ -59,16 +82,34 @@ export function TransactionForm() {
       {error && <p className="text-red-600 text-sm">{error}</p>}
 
       <div className="space-y-2">
-        <Label htmlFor="date">{t("transactions.form.date")}</Label>
+        <Label>{t("transactions.form.frequency")}</Label>
+        <FrequencyToggle
+          value={frequency}
+          onChange={setFrequency}
+          onceLabel={t("transactions.form.once")}
+          recurringLabel={t("transactions.form.recurring")}
+          idPrefix="transaction-frequency"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="date">
+          {frequency === "recurring" ? t("transactions.form.startDate") : t("transactions.form.date")}
+        </Label>
         <Input
           id="date"
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          min={getFirstDayOfCurrentMonthIso()}
-          max={getTodayIso()}
+          min={frequency === "once" ? getFirstDayOfCurrentMonthIso() : undefined}
+          max={frequency === "once" ? getTodayIso() : undefined}
           required
         />
+        {frequency === "recurring" && dayOfMonth && (
+          <p className="text-xs text-muted-foreground">
+            {t("transactions.form.recurringHint", { day: dayOfMonth })}
+          </p>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -124,9 +165,12 @@ export function TransactionForm() {
         </Combobox>
       </div>
 
-      <Button type="submit" className="w-full" disabled={createTransaction.isPending || !date || !description || !amount}>
-
-        {createTransaction.isPending ? t("transactions.form.adding") : t("transactions.form.submit")}
+      <Button type="submit" className="w-full" disabled={isPending || !date || !description || !amount}>
+        {isPending
+          ? t("transactions.form.adding")
+          : frequency === "recurring"
+            ? t("recurring.form.submit")
+            : t("transactions.form.submit")}
       </Button>
     </form>
   );

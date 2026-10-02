@@ -348,7 +348,12 @@ export const fr: typeof en = {
     importFromCsv: "Importer depuis un CSV",
     allTransactions: "Toutes les transactions",
     form: {
+      frequency: "Fréquence",
+      once: "Ponctuelle",
+      recurring: "Récurrente",
+      recurringHint: "Se répétera le {day} de chaque mois.",
       date: "Date",
+      startDate: "Date de début",
       description: "Description",
       amount: "Montant",
       amountPlaceholder: "0.00",

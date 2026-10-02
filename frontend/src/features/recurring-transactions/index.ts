@@ -5,6 +5,7 @@ export { useCreateRecurringTransaction } from "./hooks/use-create-recurring-tran
 export { useUpdateRecurringTransaction } from "./hooks/use-update-recurring-transaction";
 export { useDeleteRecurringTransaction } from "./hooks/use-delete-recurring-transaction";
 export { useAutoGenerateRecurring } from "./hooks/use-auto-generate-recurring";
+export { useGenerateDueTransactions } from "./hooks/use-generate-due-transactions";
 export type {
   RecurringTransaction,
   RecurringTransactionCreate,
