@@ -90,6 +90,12 @@ export function TransactionForm() {
     }
   }
 
+  function submitLabel(pending: boolean, freq: TransactionFrequency) {
+    if (pending) return t("transactions.form.adding");
+    if (freq === "recurring") return t("recurring.form.submit");
+    return t("transactions.form.submit");
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && <p className="text-red-600 text-sm">{error}</p>}
@@ -214,11 +220,7 @@ export function TransactionForm() {
       </div>
 
       <Button type="submit" className="w-full" disabled={isPending || !date || !description || !amount || !selectedAccountId}>
-        {isPending
-          ? t("transactions.form.adding")
-          : frequency === "recurring"
-            ? t("recurring.form.submit")
-            : t("transactions.form.submit")}
+        {submitLabel(isPending, frequency)}
       </Button>
     </form>
   );
