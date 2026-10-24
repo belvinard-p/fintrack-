@@ -33,6 +33,17 @@ export const fr: typeof en = {
     register: "S'inscrire",
     howItWorks: "Comment ça marche",
   },
+  demo: {
+    try: "Essayer la démo",
+    starting: "Préparation de votre démo...",
+    or: "ou",
+    hint: "Sans inscription : explorez un compte prêt à l'emploi avec six mois de données d'exemple.",
+    error: "Impossible de lancer la démo. Réessayez dans un instant.",
+    rateLimited: "Trop de démos ont été lancées depuis votre réseau. Réessayez dans quelques minutes.",
+    banner: "Vous explorez un compte de démonstration avec des données d'exemple, supprimé au bout de 24 heures.",
+    createAccount: "Créer mon propre compte gratuit",
+    settingsNote: "La modification de l'e-mail ou du mot de passe et la suppression du compte sont désactivées dans le compte de démonstration.",
+  },
   guide: {
     title: "Découvrez ce que FinTrack peut faire pour vous",
     subtitle:

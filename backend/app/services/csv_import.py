@@ -65,15 +65,24 @@ def parse_csv(file_content: bytes) -> ParseResult:
     skipped_rows: list[SkippedRow] = []
 
     for idx, row in df.iterrows():
+        row_number = int(idx) + 2  # +1 for the header line, +1 because people count lines from 1
+        # The reason is shown to the user as is: plain words about their file, never the parser's own error text.
         try:
-            transactions.append(
-                ParsedTransaction(
-                    date=pd.to_datetime(row["date"]).date(),
-                    description=str(row["description"]).strip(),
-                    amount=Decimal(str(row["amount"])),
-                )
+            parsed_date = pd.to_datetime(row["date"]).date()
+        except (ValueError, TypeError):
+            skipped_rows.append(SkippedRow(row_number=row_number, reason=f"'{row['date']}' is not a valid date"))
+            continue
+        try:
+            parsed_amount = Decimal(str(row["amount"]).strip())
+        except InvalidOperation:
+            skipped_rows.append(SkippedRow(row_number=row_number, reason=f"'{row['amount']}' is not a valid amount"))
+            continue
+        transactions.append(
+            ParsedTransaction(
+                date=parsed_date,
+                description=str(row["description"]).strip(),
+                amount=parsed_amount,
             )
-        except (ValueError, TypeError, InvalidOperation) as e:
-            skipped_rows.append(SkippedRow(row_number=int(idx) + 2, reason=str(e)))
+        )
 
     return ParseResult(transactions=transactions, skipped_rows=skipped_rows)

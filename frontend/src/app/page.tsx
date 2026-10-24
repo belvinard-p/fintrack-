@@ -1,28 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getToken } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import { LanguageToggle } from "@/components/language-toggle";
 import { PageSpinner } from "@/components/page-spinner";
+import { TryDemoButton } from "@/features/auth";
+import { useIsClient } from "@/hooks/use-is-client";
 import { useLanguage } from "@/lib/i18n";
 
 export default function Home() {
   const router = useRouter();
   const { t } = useLanguage();
-  const [checked, setChecked] = useState(false);
+  // The token only exists in the browser: wait for it, then send a signed-in visitor straight to the dashboard.
+  const isClient = useIsClient();
+  const signedIn = isClient && getToken() !== null;
 
   useEffect(() => {
-    if (getToken()) {
+    if (signedIn) {
       router.push("/dashboard");
-    } else {
-      setChecked(true);
     }
-  }, [router]);
+  }, [signedIn, router]);
 
-  if (!checked) {
+  if (!isClient || signedIn) {
     return <PageSpinner />;
   }
 
@@ -34,8 +36,10 @@ export default function Home() {
       <h1 className="text-4xl font-bold">FinTrack</h1>
       <p className="text-muted-foreground">{t("home.tagline")}</p>
       <div className="flex flex-wrap justify-center gap-4">
+        <TryDemoButton variant="default" />
+
         <Link href="/login">
-          <Button>{t("home.login")}</Button>
+          <Button variant="outline">{t("home.login")}</Button>
         </Link>
 
         <Link href="/register">

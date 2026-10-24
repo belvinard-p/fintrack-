@@ -31,4 +31,6 @@ export interface CurrentUser {
   id: number;
   email: string;
   created_at: string;
+  /** A throwaway account made by "Try the demo": filled with sample data, deleted after a day. */
+  is_demo: boolean;
 }

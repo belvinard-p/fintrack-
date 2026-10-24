@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useIsClient } from "@/hooks/use-is-client";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
@@ -11,7 +12,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
 import { PageSpinner } from "@/components/page-spinner";
 import { useAutoGenerateRecurring } from "@/features/recurring-transactions";
-import { useSessionTimeout } from "@/features/auth";
+import { DemoBanner, useSessionTimeout } from "@/features/auth";
 import { useLanguage } from "@/lib/i18n";
 
 export default function ProtectedLayout({
@@ -22,7 +23,8 @@ export default function ProtectedLayout({
   const router = useRouter();
   const pathname = usePathname();
   const { t } = useLanguage();
-  const [checked, setChecked] = useState(false);
+  const isClient = useIsClient();
+  const hasToken = isClient && getToken() !== null;
   const [menuOpen, setMenuOpen] = useState(false);
 
   const NAV_LINKS = [
@@ -40,20 +42,17 @@ export default function ProtectedLayout({
   useSessionTimeout();
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) {
+    if (isClient && !hasToken) {
       router.push("/login");
-    } else {
-      setChecked(true);
     }
-  }, [router]);
+  }, [isClient, hasToken, router]);
 
   function handleLogout() {
     clearToken();
     router.push("/login");
   }
 
-  if (!checked) {
+  if (!hasToken) {
     return <PageSpinner />;
   }
 
@@ -157,6 +156,7 @@ export default function ProtectedLayout({
           </div>
         </div>
       </nav>
+      <DemoBanner />
       <div className="flex-1">{children}</div>
     </div>
   );

@@ -156,3 +156,34 @@ def test_import_requires_auth(client):
     csv_content = "date,description,amount\n2026-08-01,TEST,-1.00\n"
     response = client.post("/transactions/import", files=make_csv_file(csv_content))
     assert response.status_code == 401
+
+
+def test_invalid_rows_are_explained_in_plain_words_never_with_python_internals(client):
+    from tests.test_demo import register_and_login
+
+    headers = register_and_login(client, email="csvreasons@example.com")
+    account_id = client.get("/accounts/", headers=headers).json()[0]["id"]
+    content = (
+        "date,description,amount\n"
+        "2026-13-45,IMPOSSIBLE DATE,-12.00\n"
+        "not a date,TEXT DATE,-5.00\n"
+        "2026-10-01,TEXT AMOUNT,twelve euros\n"
+        "2026-10-02,GOOD ROW,-3.50\n"
+    )
+
+    response = client.post(
+        "/transactions/import",
+        data={"account_id": str(account_id)},
+        files={"file": ("statement.csv", content.encode(), "text/csv")},
+        headers=headers,
+    )
+
+    result = response.json()
+    assert result["created"] == 1
+    reasons = {detail["row_number"]: detail["reason"] for detail in result["invalid_row_details"]}
+    assert reasons == {
+        2: "'2026-13-45' is not a valid date",
+        3: "'not a date' is not a valid date",
+        4: "'twelve euros' is not a valid amount",
+    }
+    assert all("class" not in reason and "decimal" not in reason.lower() for reason in reasons.values())

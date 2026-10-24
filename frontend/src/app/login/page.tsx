@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { login } from "@/features/auth";
+import { login, TryDemoButton } from "@/features/auth";
 import { setToken, markLoginTime } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -94,6 +94,13 @@ export default function LoginPage() {
               {isSubmitting ? t("auth.login.submitting") : t("auth.login.submit")}
             </Button>
           </form>
+
+          <div className="my-4 flex items-center gap-3 text-xs text-muted-foreground">
+            <span className="h-px flex-1 bg-border" />
+            {t("demo.or")}
+            <span className="h-px flex-1 bg-border" />
+          </div>
+          <TryDemoButton className="w-full" showHint />
         </CardContent>
       </Card>
     </main>

@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { useLanguage } from "@/lib/i18n";
 import type { MonthlyBreakdownItem } from "../types";
+import { chartTheme } from "./chart-theme";
 
 export function YearlyBreakdownChart({ data }: Readonly<{ data: MonthlyBreakdownItem[] }>) {
   const { t } = useLanguage();
@@ -25,10 +26,10 @@ export function YearlyBreakdownChart({ data }: Readonly<{ data: MonthlyBreakdown
   return (
     <ResponsiveContainer width="100%" height={300}>
       <BarChart data={chartData}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="month" />
-        <YAxis />
-        <Tooltip />
+        <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.grid} />
+        <XAxis dataKey="month" tick={chartTheme.tick} />
+        <YAxis tick={chartTheme.tick} />
+        <Tooltip {...chartTheme.tooltip} />
         <Legend />
         <Bar dataKey="income" name={t("dashboard.summary.income")} fill="#059669" />
         <Bar dataKey="expenses" name={t("dashboard.summary.expenses")} fill="#dc2626" />

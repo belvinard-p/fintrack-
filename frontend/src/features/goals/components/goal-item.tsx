@@ -21,12 +21,11 @@ function progressPercent(goal: Goal): number {
 
 interface GoalItemProps {
   goal: Goal;
-  userEmail?: string;
   month: string;
   status?: GoalStatus;
 }
 
-export function GoalItem({ goal, userEmail, month, status }: Readonly<GoalItemProps>) {
+export function GoalItem({ goal, month, status }: Readonly<GoalItemProps>) {
   const { t } = useLanguage();
   const [showHistory, setShowHistory] = useState(false);
 
@@ -37,7 +36,6 @@ export function GoalItem({ goal, userEmail, month, status }: Readonly<GoalItemPr
           <p className="font-medium">{goal.name}</p>
           <p className="text-sm text-muted-foreground">
             {goal.current_amount} / {goal.target_amount}
-            {userEmail ? ` · ${userEmail}` : ""}
           </p>
         </div>
         {goal.is_completed && <Badge>{t("goals.list.goalReached")}</Badge>}

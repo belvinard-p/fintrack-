@@ -5,19 +5,15 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
+from app.core.account_data import delete_user_and_data
 from app.core.database import get_db
 from app.core.deps import get_current_user
 from app.core.jwt import create_access_token
 from app.core.limiter import limiter
 from app.core.security import hash_password, verify_password
+from app.services.demo_seed import create_demo_user, purge_expired_demo_users
 from app.models.user import User
-from app.models.transaction import Transaction
 from app.models.account import Account, AccountType
-from app.models.budget import Budget
-from app.models.category import Category
-from app.models.goal import Goal
-from app.models.audit_log import AuditLog
-from app.models.recurring_transaction import RecurringTransaction
 from app.schemas.user import UserCreate, UserLogin, UserOut, PasswordChange, EmailChange, AccountDelete
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -61,6 +57,23 @@ def login(request: Request, credentials: UserLogin, db: Annotated[Session, Depen
     return {"access_token": access_token, "token_type": "bearer"}
 
 
+DEMO_RESTRICTED_DETAIL = "This action is not available in the demo account."
+
+
+@router.post("/demo", responses={429: {"description": "Too many demo accounts requested from this address"}})
+# The number of live demo accounts is capped separately (DEMO_MAX_ACTIVE), so this only slows down abuse. It is
+# deliberately loose: if the host does not pass visitors' real addresses through, this limit is shared by everyone.
+@limiter.limit("30/hour")
+def start_demo(request: Request, db: Annotated[Session, Depends(get_db)]):
+    """Create a throwaway account filled with sample data and sign it in, so anyone can try the app without registering.
+
+    Each visitor gets their own account, deleted after DEMO_TTL_HOURS (the lifetime of its token).
+    """
+    purge_expired_demo_users(db)
+    demo_user = create_demo_user(db)
+    return {"access_token": create_access_token(subject=demo_user.email), "token_type": "bearer"}
+
+
 @router.get("/me", response_model=UserOut)
 def read_current_user(current_user: Annotated[User, Depends(get_current_user)]):
     return current_user
@@ -69,13 +82,15 @@ def read_current_user(current_user: Annotated[User, Depends(get_current_user)]):
 @router.patch(
     "/me/password",
     status_code=status.HTTP_204_NO_CONTENT,
-    responses={401: {"description": "Current password is incorrect"}},
+    responses={401: {"description": "Current password is incorrect"}, 403: {"description": DEMO_RESTRICTED_DETAIL}},
 )
 def change_password(
     payload: PasswordChange,
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
 ):
+    if current_user.is_demo:
+        raise HTTPException(status_code=403, detail=DEMO_RESTRICTED_DETAIL)
     if not verify_password(payload.current_password, current_user.password_hash):
         raise HTTPException(status_code=401, detail="Current password is incorrect")
 
@@ -88,6 +103,7 @@ def change_password(
     responses={
         401: {"description": "Current password is incorrect"},
         400: {"description": "Email already in use"},
+        403: {"description": DEMO_RESTRICTED_DETAIL},
     },
 )
 def change_email(
@@ -95,6 +111,8 @@ def change_email(
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
 ):
+    if current_user.is_demo:
+        raise HTTPException(status_code=403, detail=DEMO_RESTRICTED_DETAIL)
     if not verify_password(payload.current_password, current_user.password_hash):
         raise HTTPException(status_code=401, detail="Current password is incorrect")
 
@@ -110,21 +128,20 @@ def change_email(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.delete("/me", status_code=status.HTTP_204_NO_CONTENT, responses={401: {"description": "Incorrect password"}})
+@router.delete(
+    "/me",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={401: {"description": "Incorrect password"}, 403: {"description": DEMO_RESTRICTED_DETAIL}},
+)
 def delete_account(
     payload: AccountDelete,
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
 ):
+    if current_user.is_demo:
+        raise HTTPException(status_code=403, detail=DEMO_RESTRICTED_DETAIL)
     if not verify_password(payload.current_password, current_user.password_hash):
         raise HTTPException(status_code=401, detail="Incorrect password")
 
-    db.query(Transaction).filter(Transaction.user_id == current_user.id).delete()
-    db.query(RecurringTransaction).filter(RecurringTransaction.user_id == current_user.id).delete()
-    db.query(Account).filter(Account.user_id == current_user.id).delete()
-    db.query(Budget).filter(Budget.user_id == current_user.id).delete()
-    db.query(Category).filter(Category.user_id == current_user.id).delete()
-    db.query(Goal).filter(Goal.user_id == current_user.id).delete()
-    db.query(AuditLog).filter(AuditLog.user_id == current_user.id).delete()
-    db.delete(current_user)
+    delete_user_and_data(db, current_user)
     db.commit()

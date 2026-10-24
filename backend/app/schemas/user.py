@@ -18,6 +18,7 @@ class UserOut(BaseModel):
     id: int
     email: EmailStr
     created_at: datetime
+    is_demo: bool = False
 
 
 class PasswordChange(BaseModel):

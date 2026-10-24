@@ -190,6 +190,39 @@ def test_change_email_requires_auth(client):
     assert response.status_code == 401
 
 
+def test_delete_account_removes_debts_income_and_goal_allocations(client, db_session):
+    """Every table that points to the user must be emptied, or deleting the user fails on a foreign key."""
+    from sqlalchemy import text
+
+    month = TODAY_ISO[:7]
+    headers = register_and_login(client, email="fulldelete@example.com")
+    account_id = default_account_id(client, headers)
+
+    assert client.put(f"/income/{month}", json={"amount": "3000.00"}, headers=headers).status_code == 200
+    goal = client.post("/goals/", json={"name": "Trip", "target_amount": "900.00"}, headers=headers).json()
+    assert client.put(
+        f"/goals/{goal['id']}/allocations/{month}", json={"amount": "200.00"}, headers=headers
+    ).status_code == 200
+    debt = client.post(
+        "/debts/",
+        json={"name": "Car loan", "type": "loan", "principal": "5000.00", "annual_rate": "6.00"},
+        headers=headers,
+    ).json()
+    assert client.post(
+        f"/debts/{debt['id']}/payments",
+        json={"account_id": account_id, "date": TODAY_ISO, "amount": "300.00"},
+        headers=headers,
+    ).status_code == 201
+
+    response = client.request(
+        "DELETE", "/auth/me", headers=headers, json={"current_password": "securepass123"}
+    )
+
+    assert response.status_code == 204
+    for table in ("users", "debts", "debt_payments", "monthly_incomes", "goal_allocations", "goals", "transactions", "accounts"):
+        assert db_session.execute(text(f"select count(*) from {table}")).scalar() == 0, table
+
+
 def test_delete_account_removes_user_and_data(client):
     headers = register_and_login(client, email="deleteme@example.com")
     account_id = default_account_id(client, headers)

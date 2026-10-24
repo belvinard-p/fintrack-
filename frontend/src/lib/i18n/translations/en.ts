@@ -31,6 +31,17 @@ export const en = {
     register: "Register",
     howItWorks: "How it works",
   },
+  demo: {
+    try: "Try the demo",
+    starting: "Preparing your demo...",
+    or: "or",
+    hint: "No sign-up needed: explore a ready-made account with six months of sample data.",
+    error: "Could not start the demo. Please try again in a moment.",
+    rateLimited: "Too many demos were started from your network. Please try again in a few minutes.",
+    banner: "You are exploring a demo account with sample data, deleted after 24 hours.",
+    createAccount: "Create your own free account",
+    settingsNote: "Changing the email or password and deleting the account are turned off in the demo account.",
+  },
   guide: {
     title: "See what FinTrack can do for you",
     subtitle:

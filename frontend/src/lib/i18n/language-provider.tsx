@@ -42,13 +42,17 @@ function interpolate(template: string, params?: TranslateParams): string {
 export function LanguageProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const [language, setLanguage] = useState<Language>("en");
 
+  // The saved language lives in localStorage, which the server cannot read. It is applied after hydration, never during
+  // render, so the first client render matches the server HTML.
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       setLanguage(isLanguage(stored) ? stored : detectDefaultLanguage());
     } catch {
       setLanguage(detectDefaultLanguage());
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [setLanguage]);
 
   const setLanguageWithPersist = useCallback((next: Language) => {

@@ -2,7 +2,6 @@
 
 import { useGoals } from "../hooks/use-goals";
 import { useGoalStatus } from "../hooks/use-goal-status";
-import { useCurrentUser } from "@/features/auth";
 import { getCurrentMonth } from "@/features/budgets/utils";
 import { GoalItem } from "./goal-item";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,7 +12,6 @@ export function GoalList() {
   const month = getCurrentMonth();
   const { data: goals, isLoading, error } = useGoals();
   const { data: statuses } = useGoalStatus(month);
-  const { data: currentUser } = useCurrentUser();
 
   if (isLoading) {
     return (
@@ -33,7 +31,6 @@ export function GoalList() {
         <GoalItem
           key={goal.id}
           goal={goal}
-          userEmail={currentUser?.email}
           month={month}
           status={statuses?.find((s) => s.goal_id === goal.id)}
         />

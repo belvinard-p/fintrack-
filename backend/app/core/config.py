@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 1440
     cors_origins: str = "http://localhost:3000"
+    # "Try the demo" accounts: lifetime (matches the login token, 24 h) and the most that may exist at once.
+    demo_ttl_hours: int = 24
+    demo_max_active: int = 300
 
     model_config = SettingsConfigDict(env_file=BASE_DIR / ".env")
 

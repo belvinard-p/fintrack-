@@ -14,6 +14,12 @@ export async function login(credentials: LoginCredentials): Promise<AuthResponse
   return response.data;
 }
 
+/** Creates a throwaway account with sample data and signs it in: no registration needed. */
+export async function startDemo(): Promise<AuthResponse> {
+  const response = await api.post<AuthResponse>("/auth/demo");
+  return response.data;
+}
+
 export async function fetchCurrentUser(): Promise<CurrentUser> {
   const response = await api.get<CurrentUser>("/auth/me");
   return response.data;
