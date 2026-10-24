@@ -89,6 +89,7 @@ export const fr: typeof en = {
           "Changez de langue à tout moment depuis la barre de navigation — votre choix est mémorisé pour votre prochaine visite.",
       },
     },
+    extras: "Sécurité & extras",
     cta: {
       title: "Prêt à prendre le contrôle de vos finances ?",
       subtitle: "Créez un compte gratuit en moins d'une minute.",

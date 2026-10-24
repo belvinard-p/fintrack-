@@ -37,7 +37,7 @@ export const en = {
       "A clear, honest picture of where your money goes — not just a list of transactions.",
     features: {
       transactions: {
-        title: "Log & import expenses",
+        title: "Log and import expenses",
         description:
           "Record your expenses by hand, or import a bank statement CSV — FinTrack recognizes common column names automatically and skips duplicates.",
       },
@@ -82,11 +82,12 @@ export const en = {
           "Password hashing, rate-limited login, and a full audit log of sensitive actions — plus one-click account and data deletion, anytime.",
       },
       languages: {
-        title: "English & French",
+        title: "English and French",
         description:
           "Switch languages anytime from the navigation bar — your choice is remembered on your next visit.",
       },
     },
+    extras: "Security and extras",
     cta: {
       title: "Ready to take control of your finances?",
       subtitle: "Create a free account in under a minute.",
@@ -207,7 +208,7 @@ export const en = {
     },
   },
   income: {
-    title: "Monthly income & allocation",
+    title: "Monthly income and allocation",
     set: "Set this month's income",
     edit: "Edit income",
     dialogTitle: "Income for {month}",
