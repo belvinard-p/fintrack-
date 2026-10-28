@@ -6,6 +6,8 @@ const PORT = Number(process.env.E2E_PORT ?? 3000);
 
 export default defineConfig({
   testDir: "./e2e",
+  // `next dev` compiles each page the first time it is opened: on a cold start several tests wait for the same compilation.
+  timeout: 60_000,
   fullyParallel: true,
   retries: process.env.CI ? 2 : 0,
   reporter: "html",

@@ -4,8 +4,10 @@
 A full-stack personal finance web application that lets you track spending, import bank statements, categorize transactions automatically, manage budgets, set savings goals, and understand your money through an interactive dashboard — available in both English and French.
 
 
-🌐 **Live Demo:** [fintrack-belvinard.vercel.app](https://fintrack-belvinard.vercel.app/)
+🌐 **Live Demo:** [fintrack-belvinard.vercel.app](https://fintrack-belvinard.vercel.app/) — click **Try the demo**: no sign-up, six months of sample data ([details](#try-it-without-signing-up))
 🔌 **API Docs (Swagger):** [fintrack-backend-latest.onrender.com/docs](https://fintrack-backend-latest.onrender.com/docs)
+
+![FinTrack dashboard: net worth, monthly cash flow, spending by category](docs/screenshots/dashboard.webp)
 
 
 ---
@@ -16,17 +18,18 @@ A full-stack personal finance web application that lets you track spending, impo
 
 1. [About](#about)
 2. [Features](#features)
-3. [Tech Stack](#tech-stack)
-4. [Architecture](#architecture)
-5. [Project Structure](#project-structure)
-6. [Getting Started](#getting-started)
-7. [Configuration](#configuration)
-8. [Security](#security)
-9. [Contribution Guidelines](#contribution-guidelines)
-10. [Roadmap](#roadmap)
-11. [License](#license)
-12. [Acknowledgements](#acknowledgements)
-13. [Author](#author)
+3. [Try it without signing up](#try-it-without-signing-up)
+4. [Tech Stack](#tech-stack)
+5. [Architecture](#architecture)
+6. [Project Structure](#project-structure)
+7. [Getting Started](#getting-started)
+8. [Configuration](#configuration)
+9. [Security](#security)
+10. [Contribution Guidelines](#contribution-guidelines)
+11. [Roadmap](#roadmap)
+12. [License](#license)
+13. [Acknowledgements](#acknowledgements)
+14. [Author](#author)
 
 
 ---
@@ -35,7 +38,7 @@ A full-stack personal finance web application that lets you track spending, impo
 ## About
 
 
-Most banking apps show a raw list of transactions with little insight into spending habits. FinTrack fills that gap: it lets you log expenses and income manually or import a bank statement CSV, automatically sorts transactions into categories, tracks monthly budgets per category, manages recurring bills and savings goals, and visualizes everything on a dashboard with category and trend charts.
+Most banking apps show a raw list of transactions with little insight into spending habits. FinTrack fills that gap: it lets you log expenses and income manually or import a bank statement CSV, automatically sorts transactions into categories, tracks monthly budgets per category, manages recurring bills, savings goals and debts, and shows where you stand — net worth, cash flow, savings rate — on a dashboard with category and trend charts.
 
 
 The app started as a portfolio project and is now built to be used by real people — it has rate limiting, an audit trail, account/data deletion, and a public "how it works" guide so new users understand the value before signing up.
@@ -50,17 +53,47 @@ The app started as a portfolio project and is now built to be used by real peopl
 - **Authentication** — JWT-based auth with bcrypt password hashing and rate-limited login/register endpoints
 - **Transactions** — add manually or import a bank statement CSV (common column names detected automatically, duplicates skipped, invalid rows reported instead of failing the whole import)
 - **Automatic categorization** — new transactions are sorted into a category by keyword matching, with full support for renaming, reassigning, and custom categories
-- **Budgets** — set a monthly limit per category and see at a glance whether you're on track, with a dashboard banner when you go over budget
-- **Recurring transactions** — set up rent, subscriptions, or salary once; FinTrack generates the transaction automatically every month
-- **Savings goals** — set a target amount, track contributions, and watch progress with a visual bar
-- **Dashboard** — spending-by-category pie chart and month-over-month spending bar chart (Recharts)
-- **Export** — download your transaction history as CSV or as a formatted PDF report (with category totals and a summary)
-- **Audit log** — every sensitive action (deletions, CSV imports) is recorded and viewable in account settings
+- **Accounts and net worth** — checking, savings, cash or other accounts, each with an opening balance; the dashboard shows what you own across all of them, minus what you owe
+- **Monthly income and allocation** — declare each month's income, then give it a job: budgets and savings-goal allocations can never add up to more than the income, and the dashboard shows what is left to budget
+- **Budgets** — set a monthly limit per category and see at a glance whether you're on track; a dashboard banner and a warning when saving a transaction tell you when a category goes over
+- **Recurring transactions** — set up rent, subscriptions, or salary once; FinTrack generates the transaction automatically every month, and an existing transaction can be turned into a recurring rule
+- **Savings goals** — set a target, plan a monthly allocation, and add funds: every contribution is a real transaction, so progress always matches your accounts
+- **Debts and loans** — log a loan or credit card with its interest rate; each payment is split automatically into principal and interest, and the remaining balance is kept up to date
+- **Closed months** — once a month is over, its transactions, budgets and allocations are locked so history cannot be rewritten by accident
+- **Dashboard** — monthly cash flow compared with the previous month, savings rate, spending by category, a spending trend over the last 12 months, and a yearly view
+- **Export** — download your transaction history as CSV or as a formatted PDF report in the language you are using (with category totals and a summary)
+- **Audit log** — every create, update and delete is recorded and viewable in account settings
+- **Automatic sign-out** — after 15 minutes of inactivity, or 60 minutes in total (both configurable)
 - **Account management** — change password, or permanently delete your account and all associated data in one action
 - **Bilingual UI** — English and French, auto-detected from the browser and remembered per visitor
-- **Light/dark theme**
+- **Light/dark theme**, including the charts
 - **Responsive, accessible UI** built with shadcn/ui components on Base UI primitives
 
+| | |
+|---|---|
+| ![Budgets: one category over budget last month](docs/screenshots/budgets.webp) | ![Debts: each payment split into principal and interest](docs/screenshots/debts.webp) |
+| ![CSV import: duplicates skipped, unreadable rows explained](docs/screenshots/import-csv.webp) | ![The dashboard on a phone](docs/screenshots/mobile.webp) |
+
+
+---
+
+
+## Try it without signing up
+
+
+On the [live demo](https://fintrack-belvinard.vercel.app/), **Try the demo** creates a private account for you, filled with six months of realistic data built from today's date: three accounts, income declared every month, budgets (one of them exceeded last month), recurring rules, two savings goals, a car loan and a credit card with their payment history. Nothing is shared between visitors, and the account is deleted after 24 hours.
+
+A demo account cannot change its e-mail or password, or be deleted: those actions are refused by the API, not just hidden.
+
+**Import the sample bank statement.** [`demo/bank-statement-demo.csv`](demo/bank-statement-demo.csv) is built to show every outcome of an import. On the *Transactions* page, import it into the *Checking* account:
+
+| Result | Count | Why |
+|---|---|---|
+| Imported | 16 | each one is sorted into a category from its description (`UBER TRIP` → Transport, `PHARMACY` → Health…) |
+| Duplicates skipped | 2 | exact copies of transactions the demo already holds |
+| Rows that could not be read | 2 | an impossible date and an amount that is not a number — reported with the reason, without failing the rest |
+
+The dates are relative to the day the file was written. To refresh it, run `python backend/scripts/generate_demo_csv.py`.
 
 ---
 
@@ -75,8 +108,9 @@ The app started as a portfolio project and is now built to be used by real peopl
 - Pydantic v2 / pydantic-settings
 - python-jose (JWT) + passlib/bcrypt (password hashing)
 - slowapi (rate limiting)
+- pandas (CSV parsing and column detection)
 - ReportLab (PDF report generation)
-- pytest (92 tests)
+- pytest (208 tests, against a real PostgreSQL)
 
 
 **Frontend**
@@ -88,6 +122,7 @@ The app started as a portfolio project and is now built to be used by real peopl
 - shadcn/ui on Base UI primitives
 - Recharts (dashboard charts)
 - next-themes (dark mode), sonner (toasts)
+- Vitest + Testing Library (component tests), Playwright (browser tests)
 
 
 **Infrastructure & Deployment**
@@ -95,7 +130,7 @@ The app started as a portfolio project and is now built to be used by real peopl
 - Render (backend hosting, free tier)
 - Vercel (frontend hosting, free tier)
 - Neon (managed serverless PostgreSQL)
-- GitHub Actions (CI — backend test suite on every push)
+- GitHub Actions (CI — backend tests on every push; frontend type check, lint, tests and build)
 
 
 ---
@@ -115,7 +150,8 @@ Browser
 
 
 FastAPI API (Render, Docker container)
-       ├── Routers    → auth, transactions, budgets, categories, goals, recurring-transactions, audit-logs
+       ├── Routers    → auth, accounts, transactions, dashboard, budgets, categories, income, goals, debts,
+       │                recurring-transactions, audit-logs
        ├── SQLAlchemy → ORM models, Alembic migrations
        ├── slowapi    → rate limiting on login/register
        └── ReportLab  → CSV/PDF report generation
@@ -142,11 +178,14 @@ PostgreSQL (Neon, pooled serverless connection)
 fintrack/
 ├── backend/
 │   ├── app/
-│   │   ├── routers/          # auth, transactions, budgets, categories, goals, recurring_transactions, audit_logs
+│   │   ├── routers/          # auth, accounts, transactions, dashboard, budgets, categories, income, goals, debts,
+│   │   │                     #   recurring_transactions, audit_logs
 │   │   ├── models/           # SQLAlchemy models
 │   │   ├── schemas/          # Pydantic request/response schemas
-│   │   ├── core/             # config, security, JWT, rate limiting, categorization, audit logging
-│   │   └── services/         # CSV import, PDF export
+│   │   ├── core/             # config, security, JWT, rate limiting, categorization, audit logging, debt maths,
+│   │   │                     #   closed-month rules, income allocation, account deletion
+│   │   └── services/         # CSV import, PDF export, demo data and sample statement
+│   ├── scripts/               # generate_demo_csv.py
 │   ├── alembic/               # database migrations
 │   ├── tests/                 # pytest suite
 │   ├── Dockerfile
@@ -155,15 +194,17 @@ fintrack/
 ├── frontend/
 │   └── src/
 │       ├── app/               # Next.js App Router pages (public routes + (protected) group)
-│       ├── features/          # domain modules: auth, transactions, budgets, categories, goals,
+│       ├── features/          # domain modules: auth, accounts, transactions, budgets, categories, goals, debts,
 │       │                      #   recurring-transactions, audit-logs, dashboard
 │       ├── components/ui/     # shadcn/ui primitives
 │       ├── lib/i18n/          # translation dictionaries and language provider
 │       └── services/          # Axios client with JWT interceptor
 │
+├── demo/                      # sample bank statement (CSV) to import into the demo account
+├── docs/screenshots/          # images used in this README
 ├── docker-compose.yml         # local PostgreSQL (port 5433)
 ├── render.yaml                # Render deployment blueprint
-└── .github/workflows/         # CI — backend test suite
+└── .github/workflows/         # CI — backend tests, frontend checks
 ```
 
 
@@ -211,12 +252,20 @@ pnpm dev
 The API is available at `http://localhost:8000/docs` and the frontend at `http://localhost:3000`.
 
 
-**Run the backend test suite**
+**Run the tests**
 
 
 ```bash
+# Backend (needs the local PostgreSQL from docker compose)
 cd backend
 pytest
+
+# Frontend: type check, lint, component tests, then browser tests
+cd frontend
+pnpm tsc --noEmit
+pnpm lint
+pnpm test
+pnpm test:e2e       # E2E_PORT=3300 pnpm test:e2e if port 3000 is already taken
 ```
 
 
@@ -235,6 +284,8 @@ Backend — create `backend/.env` (gitignored):
 | `TEST_DATABASE_URL`  | PostgreSQL connection string used by the test suite  | Yes      |
 | `SECRET_KEY`         | JWT signing key — rejected at startup if short/weak  | Yes      |
 | `CORS_ORIGINS`       | Comma-separated list of allowed frontend origins     | No (defaults to `http://localhost:3000`) |
+| `DEMO_TTL_HOURS`     | How long a "Try the demo" account lives              | No (defaults to `24`) |
+| `DEMO_MAX_ACTIVE`    | Most demo accounts that may exist at once; the oldest are deleted first | No (defaults to `300`) |
 
 
 Frontend — create `frontend/.env.local`:
@@ -259,8 +310,9 @@ Frontend — create `frontend/.env.local`:
 - Login and registration are rate-limited (5/minute and 10/minute respectively) via slowapi
 - CORS only allows origins explicitly listed in `CORS_ORIGINS` — no wildcard in production
 - Every database query is scoped to the authenticated user; there is no endpoint that can return another user's data
-- Sensitive actions (deletions, CSV imports) are written to a per-user audit log
-- Account deletion is a single action that cascades across all of a user's data (transactions, budgets, categories, goals, recurring transactions, audit logs)
+- Every create, update and delete is written to a per-user audit log
+- Account deletion is a single action that removes all of a user's data, in dependency order (debts and their payments, goals, allocations and contributions, transactions, budgets, income, categories, accounts, audit logs) — covered by a test that checks every table is empty afterwards
+- Demo accounts have no usable password (the visitor receives a token directly), cannot change their e-mail or password or delete themselves — enforced by the API — are rate limited, capped in number, and deleted after 24 hours
 - All secrets (`.env`, `.env.production`) are gitignored and never committed; the Docker image excludes them entirely via `.dockerignore`
 
 
@@ -294,6 +346,9 @@ This started as a personal project but is open to contributions — bug fixes, a
 - Recurring transactions
 - Audit log and account/data deletion
 - Rate limiting and hardened JWT configuration
+- Accounts, net worth, monthly income allocation, debts and loans with principal/interest splitting, goals linked to budgets
+- Closed months, over-budget warnings, session timeout
+- "Try the demo" with six months of sample data, and a sample bank statement
 - Bilingual UI (English/French) with a public onboarding guide
 - Dockerized backend deployed to Render, frontend deployed to Vercel, Neon as the production database
 
