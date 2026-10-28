@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import React from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import { QueryProvider } from "@/lib/query-client";
 import { ThemeProvider } from "@/lib/theme-provider";
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
   description: "Track spending, manage budgets, and stay on top of your finances.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
